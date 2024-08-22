@@ -34,7 +34,7 @@ class FeatureDetailViewModel @Inject constructor(
         private val TAG = FeatureDetailViewModel::class.simpleName
 
     }
-    private var currentSwitchValue: SwitchStatusType = SwitchStatusType.Off
+
     val featureUpdates: State<FeatureUpdate<*>?>
         get() = _featureUpdates
 
@@ -47,7 +47,7 @@ class FeatureDetailViewModel @Inject constructor(
                 ?.let { feature ->
                     val isCalibrated =
                         calibrationService.startCalibration(nodeId = deviceId, feature = feature)
-
+                    Log.d(TAG, "calibration status ${isCalibrated.status}")
                     if (!isCalibrated.status) {
                         blueManager.getConfigControlUpdates(nodeId = deviceId).collect {
                             if (it is CalibrationStatus) {
@@ -74,47 +74,29 @@ class FeatureDetailViewModel @Inject constructor(
         }
     }
 
-//    fun sendExtendedCommand(featureName: String, deviceId: String,currentValue: SwitchStatusType) {
-//
-//        viewModelScope.launch {
-//
-//            val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
-//
-//            if(feature is SwitchFeature){
-//                if(currentValue == SwitchStatusType.Off)
-//                {
-//                    blueManager.writeFeatureCommand(
-//                        deviceId,
-//                        SwitchOn(feature = feature)
-//                    )
-//                }else if(currentValue == SwitchStatusType.On){
-//                    blueManager.writeFeatureCommand(
-//                        deviceId,
-//                        SwitchOff(feature = feature)
-//                    )
-//                }
-//            }
-//        }
-//    }
-
-    fun sendExtendedCommand(featureName: String, deviceId: String,flag: Boolean) {
+    fun sendCommand(featureName: String, deviceId: String,currentValue : SwitchStatusType) {
 
         viewModelScope.launch {
 
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
 
             if(feature is SwitchFeature){
-                if(flag)
+                Log.d(TAG,"$currentValue")
+                if(currentValue == SwitchStatusType.Off)
                 {
                     blueManager.writeFeatureCommand(
-                        deviceId,
-                        SwitchOn(feature = feature)
+                        nodeId = deviceId,
+                        featureCommand = SwitchOn(feature = feature),
+                        responseTimeout = 1L
                     )
-                }else{
+                    Log.d(TAG,"Switch On Called")
+                }else if(currentValue == SwitchStatusType.On){
                     blueManager.writeFeatureCommand(
-                        deviceId,
-                        SwitchOff(feature = feature)
+                        nodeId = deviceId,
+                        featureCommand = SwitchOff(feature = feature),
+                        responseTimeout = 1L
                     )
+                    Log.d(TAG,"Switch Off Called")
                 }
             }
         }

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">ST Robo Kit</string>
+    <string name="st_feature_featureNameLabel">Name: %1$s</string>
+    <string name="st_feature_updatesLabel">Updates:</string>
 </resources>

@@ -20,6 +20,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.strobokit.composables.Controller
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.STRoboKitTheme
 import com.example.strobokit.utilities.SessionManager
@@ -107,6 +108,18 @@ private fun MainScreen(){
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                         DebugConsole(
+                            viewModel = hiltViewModel(),
+                            nodeId = deviceId
+                        )
+                    }
+                }
+
+                composable(
+                    route = "feature/{deviceId}/controller",
+                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
+                        Controller(
                             viewModel = hiltViewModel(),
                             nodeId = deviceId
                         )
