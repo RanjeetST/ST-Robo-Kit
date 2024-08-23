@@ -22,6 +22,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.material3.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -29,6 +33,7 @@ import androidx.compose.ui.semantics.Role.Companion.Image
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.SecondaryColor
 import com.example.strobokit.R
+import com.example.strobokit.composables.CarModel
 
 
 @Composable
@@ -66,15 +71,11 @@ fun HomeScreen(navController: NavController){
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Image at the top
-            Image(
-                painter = painterResource(id = R.drawable.robo_car), // Replace with your image resource
-                contentDescription = "Your Image Description",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp) // Add padding if needed
-                    .size(200.dp)
-            )
+            var showCarModel by remember { mutableStateOf(true) }
+
+            if (showCarModel) {
+                CarModel()
+            }
             Column(
                 modifier = Modifier
                     .padding(horizontal = 16.dp),
@@ -83,6 +84,7 @@ fun HomeScreen(navController: NavController){
             ) {
                 Button(onClick = {
                     navController.navigate("device_list")
+                    showCarModel = false
                 },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryColor,
