@@ -28,22 +28,27 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.TertiaryColor
+import com.example.strobokit.utilities.ChangeOrientationToLandscape
 import com.example.strobokit.viewModels.ControllerViewModel
 
 
 @Composable
-fun Controller(viewModel: ControllerViewModel,nodeId : String){
+fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController){
     val gradientBrush = Brush.radialGradient(
         0.0f to TertiaryColor,
         1f to Color.DarkGray,
         radius = 1400.0f,
         tileMode = TileMode.Repeated
     )
+
+    ChangeOrientationToLandscape(context = LocalContext.current)
 
     Row(modifier = Modifier
         .fillMaxSize()
@@ -98,7 +103,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String){
                 .padding(20.dp),
                 horizontalArrangement = Arrangement.End
             ) {
-                IconButton(onClick = { /* Handle close action */ },
+                IconButton(onClick = { navController.popBackStack() },
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)

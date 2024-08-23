@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
 private fun MainScreen(){
     //to navigate between activities
     val navController = rememberNavController()
-    val startDestination = if (SessionManager.isSplashShown()) "home" else "splash_screen"
+    val startDestination = if (SessionManager.isSplashShown()) "home" else "home"
     STRoboKitTheme {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -121,7 +121,8 @@ private fun MainScreen(){
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                         Controller(
                             viewModel = hiltViewModel(),
-                            nodeId = deviceId
+                            nodeId = deviceId,
+                            navController = navController
                         )
                     }
                 }

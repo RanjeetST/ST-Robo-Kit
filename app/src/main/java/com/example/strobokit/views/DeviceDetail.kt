@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,6 +49,8 @@ import com.example.strobokit.R
 import com.example.strobokit.composables.FeatureBox
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
+import com.example.strobokit.utilities.ChangeOrientationToLandscape
+import com.example.strobokit.utilities.ChangeOrientationToPortrait
 import com.example.strobokit.viewModels.BleDeviceDetailViewModel
 import com.st.blue_sdk.models.NodeState
 
@@ -58,6 +61,7 @@ fun DeviceDetail(
     navController: NavController,
     deviceId: String
 ){
+    ChangeOrientationToPortrait(context = LocalContext.current)
     LaunchedEffect(key1 = deviceId){
         viewModel.connect(deviceId = deviceId)
     }
