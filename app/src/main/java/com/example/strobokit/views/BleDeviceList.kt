@@ -2,13 +2,9 @@ package com.example.strobokit.views
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.content.Context
-import android.content.Intent
 import android.os.Build
-import android.provider.Settings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,16 +16,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.TopAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,18 +34,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.strobokit.composables.EnableBluetoothPrompt
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.SecondaryColor
@@ -62,8 +58,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavController){
 
     var doNotShowRationale by rememberSaveable { mutableStateOf(false) }
-//    var isBluetoothEnabled by rememberSaveable { mutableStateOf(false) }
-
+    var connectionState by rememberSaveable { mutableStateOf("Scanning Device") }
     val PermissionState = rememberMultiplePermissionsState(
         permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             listOf(
@@ -83,10 +78,15 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavControlle
         }
     )
 
-//    val context = LocalContext.current
-//    val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-//    val bluetoothAdapter = bluetoothManager.adapter
-//    isBluetoothEnabled = bluetoothAdapter?.isEnabled == true
+    val backgroundGradient = Brush.linearGradient(
+        colorStops = arrayOf(
+            0.0f to PrimaryColor.copy(alpha = 0.9f),
+            0.95f to PrimaryColor.copy(alpha = 0.7f),
+            1f to PrimaryColor.copy(alpha = 0.6f)
+        ),
+        start = Offset.Zero,
+        end = Offset.Infinite
+    )
 
     if(PermissionState.allPermissionsGranted) {
 
@@ -95,7 +95,8 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavControlle
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(SecondaryColor)
+                    .background(Color.LightGray)
+                    .background(backgroundGradient)
             ) {
                 TopAppBar(
                     title = {
@@ -118,8 +119,16 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavControlle
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Scanning Devices", fontSize = 20.sp,color = Color.Black)
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Row {
+                        CircularProgressIndicator(modifier = Modifier
+                            .size(18.dp)
+                            .align(Alignment.CenterVertically),
+                            strokeWidth = 2.dp,
+                            color = OnPrimary)
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(text = "$connectionState", fontSize = 15.sp, color = OnPrimary)
+                    }
+                    Spacer(modifier = Modifier.height(15.dp))
 
                     val bleDevices = viewModel.scanBleDevices.collectAsState(initial = emptyList())
 
@@ -128,32 +137,37 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavControlle
                         .weight(1f)
                     ) {
                         itemsIndexed(items = bleDevices.value){index,item->
-                            Surface(modifier = Modifier
+                            Box(modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(4.dp),
-                                shape = RoundedCornerShape(4.dp),
-                                shadowElevation = 10.dp,
-                                onClick = {navController.navigate("detail/${item.device.address}")},
-                                color = SecondaryColor,
+                                .padding(4.dp)
+                                .background(
+                                    color = Color.White.copy(alpha = 0.2f),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .clickable {
+                                    connectionState = "Connecting"
+                                    navController.navigate("detail/${item.device.address}")
+                                }
                             ) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(8.dp),
+                                        .padding(4.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ){
                                     Column(modifier = Modifier.fillMaxWidth()){
                                         Row(verticalAlignment = Alignment.CenterVertically){
                                             Text(
-                                                modifier = Modifier.padding(8.dp),
+                                                modifier = Modifier.padding(4.dp),
                                                 text = item.device.name,
-                                                color = Color.Black
+                                                color = OnPrimary
                                             )
                                         }
                                         Text(
-                                            modifier = Modifier.padding(8.dp),
+                                            modifier = Modifier.padding(4.dp),
                                             text = item.device.address,
-                                            color = Color.Black
+                                            color = OnPrimary,
+                                            fontSize = 10.sp
                                         )
                                     }
                                 }
@@ -164,6 +178,7 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavControlle
                 }
             }
             LaunchedEffect(Unit) {
+                connectionState = "Scanning Device"
                 viewModel.startScan()
             }
     }else{
@@ -217,8 +232,6 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavControlle
     }
 }
 
-
-
 //***************** SAMPLE DATA AND PREVIEW FOR ABOVE ******************
 
 data class BleDevice(
@@ -234,14 +247,24 @@ val devices = listOf(
     BleDevice(name = "Device 5", address = "88:99:AA:BB:CC:DD")
 )
 
-@OptIn(ExperimentalMaterialApi::class)
 @Preview
 @Composable
 fun BleDeviceListPreview(){
+    val backgroundGradient = Brush.linearGradient(
+        colorStops = arrayOf(
+            0.0f to PrimaryColor.copy(alpha = 0.9f),
+            0.95f to PrimaryColor.copy(alpha = 0.7f),
+            1f to PrimaryColor.copy(alpha = 0.6f)
+        ),
+        start = Offset.Zero,
+        end = Offset.Infinite
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(SecondaryColor)
+            .background(Color.LightGray)
+            .background(backgroundGradient)
     ) {
         TopAppBar(
             title = {
@@ -263,41 +286,52 @@ fun BleDeviceListPreview(){
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
             ) {
-            Text(text = "Scanning Devices", fontSize = 20.sp)
-            Spacer(modifier = Modifier.height(6.dp))
+            Row {
+                CircularProgressIndicator(modifier = Modifier
+                    .size(18.dp)
+                    .align(Alignment.CenterVertically),
+                    strokeWidth = 2.dp,
+                    color = OnPrimary)
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(text = "Scanning Devices", fontSize = 15.sp, color = OnPrimary)
+            }
+
+            Spacer(modifier = Modifier.height(15.dp))
 
             LazyColumn(modifier = Modifier
                 .fillMaxSize()
                 .weight(1f)
-//                .border(
-//                    border = BorderStroke(2.dp, PrimaryColor)
-//                )
             ) {
                 itemsIndexed(items = devices){index,item->
-                    Surface(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp),
-                        shape = RoundedCornerShape(4.dp),
-                        shadowElevation = 10.dp,
-                        onClick = {},
-                        color = SecondaryColor,
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp)
+                            .background(
+                                color = Color.White.copy(alpha = 0.2f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable { }
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp),
+                                .padding(4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ){
                             Column(modifier = Modifier.fillMaxWidth()){
                                 Row(verticalAlignment = Alignment.CenterVertically){
                                     Text(
-                                        modifier = Modifier.padding(8.dp),
-                                        text = item.name
+                                        modifier = Modifier.padding(4.dp),
+                                        text = item.name,
+                                        color = OnPrimary
                                     )
                                 }
                                 Text(
-                                    modifier = Modifier.padding(8.dp),
-                                    text = item.address
+                                    modifier = Modifier.padding(4.dp),
+                                    text = item.address,
+                                    color = OnPrimary,
+                                    fontSize = 10.sp
                                 )
                             }
                         }

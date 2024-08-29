@@ -24,7 +24,7 @@ import io.github.sceneview.rememberNode
 
 @Composable
 fun CarModel(){
-    Box(modifier = Modifier.fillMaxWidth().size(200.dp)) {
+    Box(modifier = Modifier.fillMaxWidth().size(300.dp)) {
         val engine = rememberEngine()
         val modelLoader = rememberModelLoader(engine)
         val environmentLoader = rememberEnvironmentLoader(engine)
@@ -38,9 +38,9 @@ fun CarModel(){
         val modelNode = rememberNode {
             ModelNode(
                 modelInstance = modelLoader.createModelInstance(
-                    assetFileLocation = "models/CarRobot.glb"
+                    assetFileLocation = "models/car_project_edited.glb"
                 ),
-                scaleToUnits = 3.0f
+                scaleToUnits = 3f
             )
         }
 
@@ -54,7 +54,7 @@ fun CarModel(){
                 intensity = 100_000.0f
             },
             childNodes = listOf(centerNode,modelNode),
-            environment = environmentLoader.createEnvironment(),
+//            environment = environmentLoader.createEnvironment(),
             onFrame = {
                 cameraNode.lookAt(centerNode, upDirection = Direction(y = 0.5f))
             }

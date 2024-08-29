@@ -6,22 +6,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.strobokit.composables.Controller
-import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.STRoboKitTheme
 import com.example.strobokit.utilities.SessionManager
 import com.example.strobokit.views.BleDeviceList
@@ -109,7 +103,8 @@ private fun MainScreen(){
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                         DebugConsole(
                             viewModel = hiltViewModel(),
-                            nodeId = deviceId
+                            nodeId = deviceId,
+                            navController = navController
                         )
                     }
                 }

@@ -1,5 +1,6 @@
 package com.example.strobokit.composables
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -29,9 +31,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.TertiaryColor
@@ -47,6 +52,25 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
         radius = 1400.0f,
         tileMode = TileMode.Repeated
     )
+
+    val view = LocalView.current
+    val context = LocalContext.current
+
+    // Hide system UI elements when this screen is shown
+    DisposableEffect(context) {
+        val window = (context as Activity).window
+        val controller = WindowCompat.getInsetsController(window, view)
+
+        // Hide system bars
+        controller.isAppearanceLightStatusBars = false
+        controller.isAppearanceLightNavigationBars = false
+        controller.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+
+        onDispose {
+            // Show system bars when leaving this screen
+            controller.show(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+        }
+    }
 
     ChangeOrientationToLandscape(context = LocalContext.current)
 
