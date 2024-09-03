@@ -1,40 +1,21 @@
 package com.example.strobokit
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.content.Context
-import android.content.Intent
-import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.strobokit.composables.BluetoothChecker
 import com.example.strobokit.composables.Controller
-import com.example.strobokit.composables.LocationChecker
 import com.example.strobokit.ui.theme.STRoboKitTheme
 import com.example.strobokit.utilities.SessionManager
 import com.example.strobokit.views.BleDeviceList
@@ -61,13 +42,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MainScreen(){
-
-    BluetoothChecker()
-    LocationChecker()
     //to navigate between activities
     val navController = rememberNavController()
     val startDestination = if (SessionManager.isSplashShown()) "home" else "home"
-
 
     STRoboKitTheme {
         Scaffold(

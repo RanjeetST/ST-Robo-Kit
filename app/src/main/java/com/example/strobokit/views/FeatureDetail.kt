@@ -1,6 +1,5 @@
 package com.example.strobokit.views
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -34,7 +32,6 @@ import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.viewModels.FeatureDetailViewModel
-import com.st.blue_sdk.features.Feature
 import com.st.blue_sdk.features.switchfeature.SwitchStatusType
 
 @Composable

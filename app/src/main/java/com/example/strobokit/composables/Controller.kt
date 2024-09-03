@@ -22,8 +22,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +58,9 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
 
     val view = LocalView.current
     val context = LocalContext.current
+
+    //to store the state of the disarm button
+    var isDisarmed by remember {mutableStateOf(true)}
 
     // Hide system UI elements when this screen is shown
     DisposableEffect(context) {
@@ -156,6 +162,25 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
     }
 }
 
+@Composable
+fun SafetyButton() {
+    // Remember the state of the switch
+    val isChecked = remember { mutableStateOf(false) }
+
+    // Switch component
+    Switch(
+        checked = isChecked.value,
+        onCheckedChange = { isChecked.value = it },
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = Color.White,
+            uncheckedThumbColor = Color.White,
+            uncheckedTrackColor = Color(0xFF611616),
+            checkedTrackColor = Color(0xFF11FF00)
+        ),
+        modifier = Modifier.padding(16.dp)
+    )
+}
+
 
 @Composable
 @Preview(showBackground = true, widthDp = 800, heightDp = 400, apiLevel = 34)
@@ -250,21 +275,3 @@ fun ControllerPreview(){
     }
 }
 
-@Composable
-fun SafetyButton() {
-    // Remember the state of the switch
-    val isChecked = remember { mutableStateOf(false) }
-
-    // Switch component
-    Switch(
-        checked = isChecked.value,
-        onCheckedChange = { isChecked.value = it },
-        colors = SwitchDefaults.colors(
-            checkedThumbColor = Color.White,
-            uncheckedThumbColor = Color.White,
-            uncheckedTrackColor = Color(0xFF611616),
-            checkedTrackColor = Color(0xFF11FF00)
-        ),
-        modifier = Modifier.padding(16.dp)
-    )
-}

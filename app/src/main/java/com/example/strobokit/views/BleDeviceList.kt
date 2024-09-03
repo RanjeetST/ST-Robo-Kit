@@ -5,8 +5,6 @@ import android.annotation.SuppressLint
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,13 +19,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.TopAppBar
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,20 +44,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.strobokit.composables.BluetoothChecker
+import com.example.strobokit.composables.LocationChecker
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
-import com.example.strobokit.ui.theme.SecondaryColor
 import com.example.strobokit.viewModels.BleDeviceListViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @SuppressLint("MissingPermission")
 @Composable
-fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavController){
-
+fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavController) {
     var doNotShowRationale by rememberSaveable { mutableStateOf(false) }
     var connectionState by rememberSaveable { mutableStateOf("Scanning Device") }
+    val pullRefreshState = rememberPullRefreshState(refreshing = viewModel.isRefreshing, onRefresh = { viewModel.onRefresh() })
     val PermissionState = rememberMultiplePermissionsState(
         permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             listOf(
@@ -88,56 +88,69 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavControlle
         end = Offset.Infinite
     )
 
-    if(PermissionState.allPermissionsGranted) {
+    if (PermissionState.allPermissionsGranted) {
+        LaunchedEffect(Unit) {
+            connectionState = "Scanning Devices"
+            viewModel.startScan()
+        }
+        BluetoothChecker()
+        LocationChecker()
 
-            val scrollState = rememberScrollState()
+        val bleDevices = viewModel.scanBleDevices.collectAsState(initial = emptyList())
 
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.LightGray)
+                .background(backgroundGradient)
+        ) {
+            TopAppBar(
+                title = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentSize(align = Alignment.Center)
+                    ) {
+                        androidx.compose.material.Text("Devices")
+                    }
+                },
+                backgroundColor = PrimaryColor,
+                contentColor = Color.White
+            )
+
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.LightGray)
-                    .background(backgroundGradient)
+                    .pullRefresh(pullRefreshState)
             ) {
-                TopAppBar(
-                    title = {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    item {
+                        Row(modifier = Modifier
+                            .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .align(Alignment.CenterVertically),
+                                strokeWidth = 2.dp,
+                                color = OnPrimary
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(text = "$connectionState", fontSize = 15.sp, color = OnPrimary)
+                        }
+
+                        Spacer(modifier = Modifier.height(15.dp))
+                    }
+
+                    itemsIndexed(items = bleDevices.value) { index, item ->
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentSize(align = Alignment.Center)
-                        ) {
-                            androidx.compose.material.Text("Devices")
-                        }
-                    },
-                    backgroundColor = PrimaryColor,
-                    contentColor = Color.White
-                )
-
-                Column(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .scrollable(state = scrollState, orientation = Orientation.Vertical),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row {
-                        CircularProgressIndicator(modifier = Modifier
-                            .size(18.dp)
-                            .align(Alignment.CenterVertically),
-                            strokeWidth = 2.dp,
-                            color = OnPrimary)
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text(text = "$connectionState", fontSize = 15.sp, color = OnPrimary)
-                    }
-                    Spacer(modifier = Modifier.height(15.dp))
-
-                    val bleDevices = viewModel.scanBleDevices.collectAsState(initial = emptyList())
-
-                    LazyColumn(modifier = Modifier
-                        .fillMaxSize()
-                        .weight(1f)
-                    ) {
-                        itemsIndexed(items = bleDevices.value){index,item->
-                            Box(modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(4.dp)
                                 .background(
@@ -148,67 +161,71 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavControlle
                                     connectionState = "Connecting"
                                     navController.navigate("detail/${item.device.address}")
                                 }
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ){
-                                    Column(modifier = Modifier.fillMaxWidth()){
-                                        Row(verticalAlignment = Alignment.CenterVertically){
-                                            Text(
-                                                modifier = Modifier.padding(4.dp),
-                                                text = item.device.name,
-                                                color = OnPrimary
-                                            )
-                                        }
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
                                             modifier = Modifier.padding(4.dp),
-                                            text = item.device.address,
-                                            color = OnPrimary,
-                                            fontSize = 10.sp
+                                            text = item.device.name,
+                                            color = OnPrimary
                                         )
                                     }
+                                    Text(
+                                        modifier = Modifier.padding(4.dp),
+                                        text = item.device.address,
+                                        color = OnPrimary,
+                                        fontSize = 10.sp
+                                    )
                                 }
                             }
                         }
                     }
-
                 }
+
+                PullRefreshIndicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    refreshing = viewModel.isRefreshing,
+                    state = pullRefreshState
+                )
             }
-            LaunchedEffect(Unit) {
-                connectionState = "Scanning Device"
-                viewModel.startScan()
-            }
-    }else{
-        if(doNotShowRationale){
+        }
+    } else {
+        if (doNotShowRationale) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(8.dp)
             ) {
                 Text("Feature not available")
             }
-        }else{
+        } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(60.dp),horizontalAlignment = Alignment.CenterHorizontally,
+                    .background(Color.LightGray)
+                    .background(backgroundGradient),
+                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text("Please grant the permissions")
+                Text("Please grant the permissions", color = Color.Black)
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(modifier = Modifier.fillMaxWidth(0.8f)) {
                     Button(
                         colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                             containerColor = PrimaryColor,
                             contentColor = OnPrimary
                         ),
                         modifier = Modifier.weight(0.5f),
-                        onClick = {PermissionState.launchMultiplePermissionRequest()}
+                        onClick = {
+                            PermissionState.launchMultiplePermissionRequest()
+                        }
                     ) {
                         Text("Yes")
                     }
@@ -217,9 +234,9 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavControlle
 
                     Button(
                         colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                        containerColor = PrimaryColor,
-                        contentColor = OnPrimary
-                    ),
+                            containerColor = PrimaryColor,
+                            contentColor = OnPrimary
+                        ),
                         modifier = Modifier.weight(0.5f),
                         onClick = { doNotShowRationale = true }
                     ) {
@@ -228,9 +245,9 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel ,navController: NavControlle
                 }
             }
         }
-
     }
 }
+
 
 //***************** SAMPLE DATA AND PREVIEW FOR ABOVE ******************
 
@@ -250,6 +267,7 @@ val devices = listOf(
 @Preview
 @Composable
 fun BleDeviceListPreview(){
+
     val backgroundGradient = Brush.linearGradient(
         colorStops = arrayOf(
             0.0f to PrimaryColor.copy(alpha = 0.9f),
@@ -344,19 +362,33 @@ fun BleDeviceListPreview(){
 }
 
 @Composable
-@Preview(showBackground = true)
+@Preview
 fun PermissionBoxPreview(){
+    val backgroundGradient = Brush.linearGradient(
+        colorStops = arrayOf(
+            0.0f to PrimaryColor.copy(alpha = 0.9f),
+            0.95f to PrimaryColor.copy(alpha = 0.7f),
+            1f to PrimaryColor.copy(alpha = 0.6f)
+        ),
+        start = Offset.Zero,
+        end = Offset.Infinite
+    )
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(60.dp),horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(60.dp)
+            .background(Color.LightGray)
+            .background(backgroundGradient)
+        ,horizontalAlignment = Alignment.CenterHorizontally
+        ,
+
         verticalArrangement = Arrangement.Center
     ) {
         Text("Please grant the permissions")
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth(0.8f)) {
             Button(
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
                     containerColor = PrimaryColor,

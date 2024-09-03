@@ -22,7 +22,7 @@ import com.example.strobokit.ui.theme.PrimaryColor
 
 @SuppressLint("MissingPermission")
 @Composable
-fun BluetoothChecker() {
+fun BluetoothChecker() : Boolean{
     val context = LocalContext.current
     val bluetoothManager = remember { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
     val bluetoothAdapter = remember { bluetoothManager.adapter }
@@ -66,4 +66,5 @@ fun BluetoothChecker() {
             }
         )
     }
+    return true
 }
