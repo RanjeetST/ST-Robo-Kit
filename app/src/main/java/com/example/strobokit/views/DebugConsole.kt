@@ -2,8 +2,10 @@ package com.example.strobokit.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -97,33 +99,32 @@ fun DebugConsole(
             .fillMaxSize()
             .background(OnPrimary)
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(PrimaryColor)
-        ){
-            Row(modifier = Modifier
-                .fillMaxWidth(),
+                .background(PrimaryColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                androidx.compose.material.IconButton(onClick = {navController.popBackStack()}) {
+                androidx.compose.material.IconButton(onClick = { navController.popBackStack() }) {
                     androidx.compose.material.Icon(
                         Icons.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = OnPrimary
                     )
                 }
-                Column(modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                    androidx.compose.material3.Text(
-                        text = "Debug Console",
-                        fontSize = 20.sp,
-                        color = OnPrimary,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                Spacer(modifier = Modifier.weight(1f))
             }
+            androidx.compose.material3.Text(
+                text = "Debug Console",
+                fontSize = 20.sp,
+                color = OnPrimary,
+                fontWeight = FontWeight.SemiBold
+            )
         }
         OutlinedTextField(
             modifier = Modifier
