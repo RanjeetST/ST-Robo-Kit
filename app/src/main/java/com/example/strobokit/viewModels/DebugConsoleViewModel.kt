@@ -1,6 +1,5 @@
 package com.example.strobokit.viewModels
 
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.st.blue_sdk.BlueManager
@@ -10,7 +9,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -26,7 +24,7 @@ class DebugConsoleViewModel @Inject constructor(
 
     fun sendDebugMessage(nodeId : String , msg : String){
         viewModelScope.launch{
-            _debugMessages.value += DebugConsoleMsg.DebugConsoleCommand(
+            _debugMessages.value = _debugMessages.value + DebugConsoleMsg.DebugConsoleCommand(
                 command = msg, time = LocalDateTime.now().format(dateTimeFormatter)
             )
 
@@ -36,12 +34,12 @@ class DebugConsoleViewModel @Inject constructor(
         }
     }
 
-    fun recieveDebugMessage(nodeId: String){
+    fun receiveDebugMessage(nodeId: String){
         viewModelScope.launch {
-            var lastRecievedData = System.currentTimeMillis()
+            var lastReceivedData = System.currentTimeMillis()
             blueManager.getDebugMessages(nodeId = nodeId)?.collect{
                 val currentTime = System.currentTimeMillis()
-                if((currentTime - lastRecievedData) > 100){
+                if((currentTime - lastReceivedData) > 100){
                     _debugMessages.value += DebugConsoleMsg.DebugConsoleResponse(
                         response = it,time = LocalDateTime.now().format(dateTimeFormatter)
                     )
@@ -50,7 +48,7 @@ class DebugConsoleViewModel @Inject constructor(
                         response = it,time = null
                     )
                 }
-                lastRecievedData = currentTime
+                lastReceivedData = currentTime
             }
         }
     }

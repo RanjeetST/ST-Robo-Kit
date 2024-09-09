@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
+import kotlinx.coroutines.CoroutineScope
 
 @SuppressLint("MissingPermission")
 @Composable

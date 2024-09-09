@@ -24,7 +24,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
@@ -65,6 +64,10 @@ fun DebugConsole(
                 scrollState.animateScrollTo(scrollState.maxValue)
             }
         }
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.receiveDebugMessage(nodeId = nodeId)
     }
     
     val annotedString : AnnotatedString  = buildAnnotatedString {

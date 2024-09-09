@@ -32,7 +32,6 @@ class FeatureDetailViewModel @Inject constructor(
 
     companion object {
         private val TAG = FeatureDetailViewModel::class.simpleName
-
     }
 
     val featureUpdates: State<FeatureUpdate<*>?>

@@ -2,6 +2,8 @@ package com.example.strobokit.views
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothManager
+import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,14 +55,22 @@ import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.viewModels.BleDeviceListViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.st.blue_sdk.models.NodeState
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @SuppressLint("MissingPermission")
 @Composable
 fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavController) {
+
     var doNotShowRationale by rememberSaveable { mutableStateOf(false) }
-    var connectionState by rememberSaveable { mutableStateOf("Scanning Device") }
+    val connectionState by viewModel.connectionState.collectAsState()
+
     val pullRefreshState = rememberPullRefreshState(refreshing = viewModel.isRefreshing, onRefresh = { viewModel.onRefresh() })
+    val context = LocalContext.current
+
+    val bluetoothManager = remember { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
+    val bluetoothAdapter = remember { bluetoothManager.adapter }
+
     val PermissionState = rememberMultiplePermissionsState(
         permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             listOf(
@@ -89,12 +101,12 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
     )
 
     if (PermissionState.allPermissionsGranted) {
-        LaunchedEffect(Unit) {
-            connectionState = "Scanning Devices"
-            viewModel.startScan()
+        LaunchedEffect(BluetoothChecker() && LocationChecker()) {
+            if(bluetoothAdapter.isEnabled)
+            {
+                viewModel.startScan()
+            }
         }
-        BluetoothChecker()
-        LocationChecker()
 
         val bleDevices = viewModel.scanBleDevices.collectAsState(initial = emptyList())
 
@@ -142,9 +154,12 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                                 color = OnPrimary
                             )
                             Spacer(modifier = Modifier.width(5.dp))
-                            Text(text = "$connectionState", fontSize = 15.sp, color = OnPrimary)
+                            if(connectionState == NodeState.Disconnected){
+                                Text(text = "Scanning Devices", fontSize = 15.sp, color = OnPrimary)
+                            }else{
+                                Text(text = "$connectionState", fontSize = 15.sp, color = OnPrimary)
+                            }
                         }
-
                         Spacer(modifier = Modifier.height(15.dp))
                     }
 
@@ -158,10 +173,15 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                                     shape = RoundedCornerShape(8.dp)
                                 )
                                 .clickable {
-                                    connectionState = "Connecting"
-                                    navController.navigate("detail/${item.device.address}")
+                                    viewModel.connect(item.device.address)
                                 }
                         ) {
+                            LaunchedEffect(connectionState) {
+                                if(connectionState == NodeState.Connected)
+                                {
+                                    navController.navigate("detail/${item.device.address}")
+                                }
+                            }
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()

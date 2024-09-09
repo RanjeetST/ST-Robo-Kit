@@ -66,15 +66,9 @@ fun DeviceDetail(
     deviceId: String
 ){
     ChangeOrientationToPortrait(context = LocalContext.current)
-    LaunchedEffect(key1 = deviceId){
-        viewModel.connect(deviceId = deviceId)
-    }
-    var isNavigating by remember { mutableStateOf(false) }
 
     val bleDevice = viewModel.bleDevice(deviceId = deviceId).collectAsState(initial = null)
     val features = viewModel.features.collectAsState()
-    val connectionStatus = bleDevice.value?.connectionStatus?.current?.name?.uppercase()
-    println(connectionStatus)
 
     if(bleDevice.value?.connectionStatus?.current == NodeState.Ready){
         viewModel.getFeatures(deviceId = deviceId)
@@ -83,11 +77,8 @@ fun DeviceDetail(
     val backHandlingEnabled by remember { mutableStateOf(true) }
 
     BackHandler(enabled = backHandlingEnabled) {
-        if (!isNavigating) {
-            isNavigating = true
             viewModel.disconnect(deviceId = deviceId)
             navController.popBackStack()
-        }
     }
 
     val scrollState = rememberScrollState()
@@ -95,8 +86,8 @@ fun DeviceDetail(
 
     val backgroundGradient = Brush.verticalGradient(
         colorStops = arrayOf(
-            0.0f to PrimaryColor,  // Start with PrimaryColor
-            1f to PrimaryColor.copy(alpha = 0.6f)      // Transition to White at the bottom-right corner
+            0.0f to PrimaryColor,
+            1f to PrimaryColor.copy(alpha = 0.6f)
         ),
         startY = 0.0f,
         endY = 1500.0f
@@ -125,11 +116,8 @@ fun DeviceDetail(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(onClick = {
-                        if (!isNavigating) {
-                            isNavigating = true
                             viewModel.disconnect(deviceId = deviceId)
                             navController.popBackStack()
-                        }
                     }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = OnPrimary)
                     }
@@ -195,7 +183,6 @@ fun DeviceDetail(
             ) {
                 Text(text = "Features", fontSize = 20.sp, color = OnPrimary, fontWeight = FontWeight.SemiBold)
 
-                //column for options (LazyRender to be done later)
                 Column(modifier = Modifier
                     .fillMaxWidth()
                 ) {
@@ -205,7 +192,7 @@ fun DeviceDetail(
                             .fillMaxWidth()
                             .scrollable(
                                 state = scrollState,
-                                orientation = Orientation.Horizontal // Changed to Horizontal
+                                orientation = Orientation.Horizontal
                             ),
                     ) {
                         val items = features.value.filter { it.isDataNotifyFeature }
@@ -214,7 +201,7 @@ fun DeviceDetail(
 
                         itemsIndexed(items = itemNames) { index, item ->
                             Log.d("Device Detail",item)
-                            if(item == "Switch"){
+                            if(item == "Switch" || item == "Accelerometer"){
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -225,8 +212,10 @@ fun DeviceDetail(
                                                 navController.navigate("feature/${deviceId}/controller")
                                             } else if (item == "Plot Data") {
                                                 navController.navigate("feature/${deviceId}/controller")
-                                            } else {
+                                            } else if (item == "Switch") {
                                                 navController.navigate("feature/${deviceId}/${item}")
+                                            } else {
+                                                navController.navigate("feature/${deviceId}/plot")
                                             }
                                         }
                                 ) {
@@ -248,123 +237,6 @@ fun DeviceDetail(
             }
         }
     }
-
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(OnPrimary)
-//    ){
-//        TopAppBar(
-//            title = { androidx.compose.material.Text("Device Features") },
-//            navigationIcon = {
-//                IconButton(onClick = {
-//                    viewModel.disconnect(deviceId = deviceId)
-//                    navController.popBackStack()
-//                }) {
-//                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
-//                }
-//            },
-//            backgroundColor = PrimaryColor,
-//            contentColor = Color.White
-//        )
-//
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(10.dp)
-//        ) {
-//            Row(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .fillMaxHeight(0.8f)
-//            ) {
-//                Column(
-//                    modifier = Modifier
-//                        .fillMaxWidth(0.5f)
-//                        .fillMaxHeight(),
-//                    verticalArrangement = Arrangement.Center
-//                ) {
-//                    CarModel()
-//                }
-//
-//                Column(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                    ,horizontalAlignment = Alignment.CenterHorizontally
-//                ) {
-//                    Text(text = "Features", fontSize = 26.sp,
-//                        fontWeight = FontWeight.Bold,
-//                        color = PrimaryColor)
-//                    Column(
-//                        modifier = Modifier.fillMaxWidth(0.8f)
-//                    ) {
-//                        Column(
-//                            horizontalAlignment = Alignment.CenterHorizontally
-//                        ) {
-//                            Box(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .clickable {
-//                                        navController.navigate("feature/${deviceId}/debugConsole")
-//                                    }
-//                                ,
-//                            ){
-//                                FeatureBox("Debug Console")
-//                            }
-//                            Box(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .clickable {
-//                                        navController.navigate("feature/${deviceId}/controller")
-//                                    }
-//                                ,
-//                            ){
-//                                FeatureBox("Controller")
-//                            }
-//                        }
-//
-//                        LazyColumn(modifier = Modifier
-//                            .fillMaxWidth()
-//                            .scrollable(
-//                                state = scrollState,
-//                                orientation = Orientation.Vertical
-//                            ),
-//                            horizontalAlignment = Alignment.CenterHorizontally
-//                        ) {
-//                            val items = features.value.filter { it.isDataNotifyFeature }
-//                            itemsIndexed(items = items) {index , item ->
-//                                Box(
-//                                    modifier = Modifier
-//                                        .fillMaxWidth()
-//                                        .clickable {
-//                                            navController.navigate("feature/${deviceId}/${item.name}")
-//                                        }
-//                                    ,
-//                                ) {
-//                                    FeatureBox(item.name)
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            androidx.compose.material.Text(
-//                "Name: ${bleDevice.value?.device?.name ?: ""}",
-//                style = MaterialTheme.typography.h4
-//            )
-//
-//            Spacer(modifier = Modifier.height(4.dp))
-//
-//            androidx.compose.material.Text(
-//                "Status: ${bleDevice.value?.connectionStatus?.current?.name?.uppercase() ?: ""}",
-//                style = MaterialTheme.typography.h5
-//            )
-//
-//            Spacer(modifier = Modifier.height(4.dp))
-//
-//            androidx.compose.material.Text("Features: ", style = MaterialTheme.typography.h5)
-//        }
-//    }
 }
 
 data class Feature(val name: String, val isDataNotifyFeature: Boolean)

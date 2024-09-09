@@ -130,4 +130,7 @@ dependencies {
     //to render 3D model
     implementation("io.github.sceneview:sceneview:2.2.1")
 
+    //for plot charts
+    implementation 'co.yml:ycharts:2.1.0'
+
 }
