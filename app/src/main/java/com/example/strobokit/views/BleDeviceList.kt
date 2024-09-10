@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.strobokit.composables.BluetoothChecker
 import com.example.strobokit.composables.LocationChecker
@@ -70,6 +71,8 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
 
     val bluetoothManager = remember { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
     val bluetoothAdapter = remember { bluetoothManager.adapter }
+
+    val isScanning by viewModel.isLoading.collectAsStateWithLifecycle()
 
     val PermissionState = rememberMultiplePermissionsState(
         permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -101,7 +104,7 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
     )
 
     if (PermissionState.allPermissionsGranted) {
-        LaunchedEffect(BluetoothChecker() && LocationChecker()) {
+        LaunchedEffect(LocationChecker() && BluetoothChecker()) {
             if(bluetoothAdapter.isEnabled)
             {
                 viewModel.startScan()
@@ -155,7 +158,13 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             if(connectionState == NodeState.Disconnected){
-                                Text(text = "Scanning Devices", fontSize = 15.sp, color = OnPrimary)
+                                if(isScanning)
+                                {
+                                    Text(text = "Scanning Devices", fontSize = 15.sp, color = OnPrimary)
+                                }else{
+                                    Text(text = "Scanning Stopped. Pull to rescan", fontSize = 15.sp, color = OnPrimary)
+                                }
+
                             }else{
                                 Text(text = "$connectionState", fontSize = 15.sp, color = OnPrimary)
                             }

@@ -67,5 +67,5 @@ fun BluetoothChecker() : Boolean{
             }
         )
     }
-    return true
+    return bluetoothAdapter.isEnabled
 }

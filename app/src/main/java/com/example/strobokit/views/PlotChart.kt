@@ -52,6 +52,8 @@ import com.example.strobokit.viewModels.PlotViewModel
 import com.st.blue_sdk.features.pressure.Pressure
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun PlotChart(
@@ -75,6 +77,7 @@ fun PlotChart(
         .steps(10)
         .axisStepSize(2.8.dp)
         .labelAndAxisLinePadding(5.dp)
+        .backgroundColor(Color.White)
         .build()
 
     val yMinValue by remember {
@@ -106,8 +109,9 @@ fun PlotChart(
             val stepSize = range / numberOfSteps
             (yMinValue + index * stepSize).toInt().toString()
         }
-        .axisLineColor(Color.White)
+        .axisLineColor(Color.Black)
         .axisLabelColor(Color.Gray)
+        .backgroundColor(Color.White)
         .axisLabelFontSize(12.sp)
         .build()
 
@@ -224,7 +228,7 @@ fun PlotChart(
                 Icon(Icons.Filled.ArrowDropDown, contentDescription = "Back", tint = PrimaryColor)
             }
             DropdownMenu(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().background(OnPrimary),
                 expanded = isDropDownExpanded.value,
                 onDismissRequest = {
                     isDropDownExpanded.value = false
@@ -243,7 +247,7 @@ fun PlotChart(
         }
 
         if (xLineData.isNotEmpty() && yLineData.isNotEmpty() && zLineData.isNotEmpty()) {
-            Row(modifier = Modifier.fillMaxWidth(),
+            Row(modifier = Modifier.fillMaxWidth().background(Color.White),
                 verticalAlignment = Alignment.CenterVertically,) {
                 Text(
                     text = "${selectedFeature.value} (${featureUnits[selectedFeature.value]})",
@@ -254,6 +258,7 @@ fun PlotChart(
 
                 LineChart(
                     modifier = Modifier
+                        .background(OnPrimary)
                         .fillMaxWidth()
                         .fillMaxHeight(),
                     lineChartData = lineChartData
@@ -268,8 +273,12 @@ fun PlotChart(
             val values = logValue.split(",").map { it.trim().toFloat() }
             if (values.size == 3) {
                 val (x, y, z) = values
-                val tempMax = (ceil(maxOf(x, y, z) / 100) * 100).toFloat()
-                val tempMin = (floor(minOf(x, y, z) / 100) * 100).toFloat()
+                var tempMax = (ceil(maxOf(x, y, z) / 100) * 100).toFloat()
+                var tempMin = (floor(minOf(x, y, z) / 100) * 100).toFloat()
+                if(selectedFeature.value == "Gyroscope"){
+                    tempMax = max(tempMax,1000f)
+                    tempMin = min(tempMin,-1000f)
+                }
                 xLineData = xLineData + Point(xValue, x)
                 yLineData = yLineData + Point(xValue, y)
                 zLineData = zLineData + Point(xValue, z)

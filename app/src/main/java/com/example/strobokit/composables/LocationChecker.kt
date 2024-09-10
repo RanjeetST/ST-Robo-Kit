@@ -64,7 +64,7 @@ fun LocationChecker() : Boolean {
         )
     }
 
-    return true
+    return isLocationEnabled(context)
 }
 
 private fun isLocationEnabled(context: Context): Boolean {

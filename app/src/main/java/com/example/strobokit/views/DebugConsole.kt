@@ -56,7 +56,7 @@ fun DebugConsole(
     val debugMessages by viewModel.debugMessages.collectAsStateWithLifecycle()
     var queryState by rememberSaveable { mutableStateOf(value = "") }
     val scrollState = rememberScrollState()
-    var autoScroll by rememberSaveable { mutableStateOf(value = true) }
+    val autoScroll by rememberSaveable { mutableStateOf(value = true) }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val coroutineScope = rememberCoroutineScope()
