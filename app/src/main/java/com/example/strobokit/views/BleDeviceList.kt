@@ -66,11 +66,16 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
     var doNotShowRationale by rememberSaveable { mutableStateOf(false) }
     val connectionState by viewModel.connectionState.collectAsState()
 
-    val pullRefreshState = rememberPullRefreshState(refreshing = viewModel.isRefreshing, onRefresh = { viewModel.onRefresh() })
     val context = LocalContext.current
 
     val bluetoothManager = remember { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
     val bluetoothAdapter = remember { bluetoothManager.adapter }
+
+    val pullRefreshState = rememberPullRefreshState(refreshing = viewModel.isRefreshing, onRefresh = {
+        if(bluetoothAdapter?.isEnabled == true){
+            viewModel.onRefresh()
+        }
+    })
 
     val isScanning by viewModel.isLoading.collectAsStateWithLifecycle()
 
@@ -104,8 +109,10 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
     )
 
     if (PermissionState.allPermissionsGranted) {
-        LaunchedEffect(LocationChecker() && BluetoothChecker()) {
-            if(bluetoothAdapter.isEnabled)
+        LocationChecker()
+        BluetoothChecker()
+        LaunchedEffect(Unit) {
+            if(bluetoothAdapter?.isEnabled == true)
             {
                 viewModel.startScan()
             }
@@ -413,7 +420,7 @@ fun PermissionBoxPreview(){
 
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Please grant the permissions")
+        Text("Please grant the permissions",color = OnPrimary)
 
         Spacer(modifier = Modifier.height(4.dp))
 
