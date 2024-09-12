@@ -196,12 +196,12 @@ fun DeviceDetail(
                             ),
                     ) {
                         val items = features.value.filter { it.isDataNotifyFeature }
-                        val itemNames =  listOf("Remote Control") + items.map { it.name }
+                        val itemNames =  items.map { it.name }
 //                        val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
 
                         itemsIndexed(items = itemNames) { index, item ->
                             Log.d("Device Detail",item)
-                            if(item == "Switch" || item == "Accelerometer" || item == "Remote Control"){
+                            if(item == "Switch"){
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
