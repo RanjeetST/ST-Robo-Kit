@@ -412,7 +412,6 @@ fun PermissionBoxPreview(){
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(60.dp)
             .background(Color.LightGray)
             .background(backgroundGradient)
         ,horizontalAlignment = Alignment.CenterHorizontally

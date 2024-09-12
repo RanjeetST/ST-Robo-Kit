@@ -1,8 +1,12 @@
 package com.example.strobokit.composables
 
 import android.app.Activity
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,18 +14,25 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,19 +47,36 @@ import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.utilities.ChangeOrientationToLandscape
 import com.example.strobokit.viewModels.ControllerViewModel
+import kotlin.math.roundToInt
 
 
 @Composable
 fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController){
+    val isDisarmed = remember { mutableStateOf(false) }
+    val shake = remember { Animatable(0f) }
+    var trigger by remember { mutableStateOf(0L) }
+    LaunchedEffect(trigger) {
+        if (trigger != 0L) {
+            for (i in 0..10) {
+                when (i % 2) {
+                    0 -> shake.animateTo(5f, spring(stiffness = 100_000f))
+                    else -> shake.animateTo(-5f, spring(stiffness = 100_000f))
+                }
+            }
+            shake.animateTo(0f)
+        }
+    }
     val gradientBrush = Brush.radialGradient(
         0.0f to TertiaryColor,
         1f to Color.DarkGray,
@@ -59,22 +87,19 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
     val view = LocalView.current
     val context = LocalContext.current
 
-    //to store the state of the disarm button
-    var isDisarmed by remember {mutableStateOf(true)}
-
-    // Hide system UI elements when this screen is shown
     DisposableEffect(context) {
         val window = (context as Activity).window
         val controller = WindowCompat.getInsetsController(window, view)
 
-        // Hide system bars
+        // Hide system bars and make the content appear behind them
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         controller.isAppearanceLightStatusBars = false
         controller.isAppearanceLightNavigationBars = false
-        controller.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+        controller.hide(WindowInsetsCompat.Type.systemBars())
 
         onDispose {
             // Show system bars when leaving this screen
-            controller.show(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+            controller.show(WindowInsetsCompat.Type.systemBars())
         }
     }
 
@@ -91,8 +116,59 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
             //Top left status icon row
             Row(modifier = Modifier
                 .fillMaxHeight(0.4f)
-                .fillMaxWidth()) {
-                Text(text = "STATUS ICONS")
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 20.dp)
+                ,
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.SpaceBetween) {
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BatteryFull,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SignalCellularAlt,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Help,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
             }
 
             Column(
@@ -103,7 +179,14 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(color = OnPrimary, fontSize = 18.sp, text = "Linear Motion")
-                JoyStick()
+
+                JoyStick( onHandleMoved = {
+                    trigger = if(!isDisarmed.value){
+                        System.currentTimeMillis()
+                    }else{
+                        0
+                    }
+                })
             }
         }
 
@@ -118,7 +201,22 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally){
 
-                SafetyButton()
+                Box(
+                    modifier = Modifier
+                        .offset { IntOffset(shake.value.roundToInt(), y = 0) }
+                ) {
+                    Switch(
+                        checked = isDisarmed.value,
+                        onCheckedChange = { isDisarmed.value = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            uncheckedThumbColor = Color.White,
+                            uncheckedTrackColor = Color(0xFF611616),
+                            checkedTrackColor = Color(0xFF11FF00)
+                        ),
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
                 Text(text = "Disarmed", color = OnPrimary)
             }
         }
@@ -137,7 +235,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color.Gray.copy(alpha = 0.6f))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -156,36 +254,36 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
             ) {
                 Text(color = OnPrimary, fontSize = 18.sp, text = "Direction Motion")
                 Spacer(modifier = Modifier.height(10.dp))
-                DirectionMotion()
+                DirectionMotion(
+                    onHandleMoved = {
+                        trigger = if (!isDisarmed.value) {
+                            System.currentTimeMillis()
+                        } else {
+                            0
+                        }
+                    })
             }
         }
     }
 }
 
 @Composable
-fun SafetyButton() {
-    // Remember the state of the switch
-    val isChecked = remember { mutableStateOf(false) }
-
-    // Switch component
-    Switch(
-        checked = isChecked.value,
-        onCheckedChange = { isChecked.value = it },
-        colors = SwitchDefaults.colors(
-            checkedThumbColor = Color.White,
-            uncheckedThumbColor = Color.White,
-            uncheckedTrackColor = Color(0xFF611616),
-            checkedTrackColor = Color(0xFF11FF00)
-        ),
-        modifier = Modifier.padding(16.dp)
-    )
-}
-
-
-@Composable
 @Preview(showBackground = true, widthDp = 800, heightDp = 400, apiLevel = 34)
 fun ControllerPreview(){
     val isDisarmed = remember { mutableStateOf(false) }
+    val shake = remember { Animatable(0f) }
+    var trigger by remember { mutableStateOf(0L) }
+    LaunchedEffect(trigger) {
+        if (trigger != 0L) {
+            for (i in 0..10) {
+                when (i % 2) {
+                    0 -> shake.animateTo(5f, spring(stiffness = 100_000f))
+                    else -> shake.animateTo(-5f, spring(stiffness = 100_000f))
+                }
+            }
+            shake.animateTo(0f)
+        }
+    }
     val gradientBrush = Brush.radialGradient(
         0.0f to TertiaryColor,
         1f to Color.DarkGray,
@@ -204,8 +302,59 @@ fun ControllerPreview(){
             //Top left status icon row
             Row(modifier = Modifier
                 .fillMaxHeight(0.4f)
-                .fillMaxWidth()) {
-                Text(text = "STATUS ICONS")
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 20.dp)
+                ,
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.SpaceBetween) {
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BatteryFull,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SignalCellularAlt,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Help,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
             }
 
             Column(
@@ -216,7 +365,14 @@ fun ControllerPreview(){
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(color = OnPrimary, fontSize = 18.sp, text = "Linear Motion")
-                JoyStick()
+
+                    JoyStick(onHandleMoved = {
+                        trigger = if(!isDisarmed.value){
+                            System.currentTimeMillis()
+                        }else{
+                            0
+                        }
+                    })
             }
         }
 
@@ -231,7 +387,23 @@ fun ControllerPreview(){
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally){
 
-                SafetyButton()
+
+                Box(
+                    modifier = Modifier
+                        .offset { IntOffset(shake.value.roundToInt(), y = 0) }
+                ) {
+                    Switch(
+                        checked = isDisarmed.value,
+                        onCheckedChange = { isDisarmed.value = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            uncheckedThumbColor = Color.White,
+                            uncheckedTrackColor = Color(0xFF611616),
+                            checkedTrackColor = Color(0xFF11FF00)
+                        ),
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
                 Text(text = "Disarmed", color = OnPrimary)
             }
         }
@@ -250,7 +422,7 @@ fun ControllerPreview(){
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color.Gray.copy(alpha = 0.6f))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -269,7 +441,14 @@ fun ControllerPreview(){
             ) {
                 Text(color = OnPrimary, fontSize = 18.sp, text = "Direction Motion")
                 Spacer(modifier = Modifier.height(10.dp))
-                    DirectionMotion()
+                    DirectionMotion(
+                     onHandleMoved = {
+                        trigger = if (!isDisarmed.value) {
+                            System.currentTimeMillis()
+                        } else {
+                            0
+                        }
+                    })
             }
         }
     }

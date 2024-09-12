@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -35,8 +36,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 @Composable
-@Preview(showBackground = true, backgroundColor = 0xFF3BB4E6, widthDp = 800, heightDp = 400)
-fun DirectionMotion() {
+fun DirectionMotion(onHandleMoved : ()->Unit) {
     var angle by remember { mutableStateOf(0f) } // Start from the top
     var isDragging by remember { mutableStateOf(false) }
     // Rotating Circle
@@ -66,6 +66,7 @@ fun DirectionMotion() {
 
     Box(
         modifier = Modifier
+            .clip(CircleShape)
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { offset ->
@@ -89,6 +90,7 @@ fun DirectionMotion() {
                             )
                         ) + 450) % 360).toFloat() // Adjust for 0 degrees at the top
                     }
+                    onHandleMoved()
                 }
             },
         contentAlignment = Alignment.Center
