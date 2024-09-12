@@ -196,12 +196,12 @@ fun DeviceDetail(
                             ),
                     ) {
                         val items = features.value.filter { it.isDataNotifyFeature }
-                        val itemNames =  listOf("Remote Control") + items.map { it.name }
+                        val itemNames =  listOf("Remote Control","Plot Data") + items.map { it.name }
 //                        val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
 
                         itemsIndexed(items = itemNames) { index, item ->
                             Log.d("Device Detail",item)
-                            if(item == "Switch" || item == "Accelerometer" || item == "Remote Control"){
+                            if(item == "Switch" || item == "Plot Data" || item == "Remote Control"){
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -211,11 +211,9 @@ fun DeviceDetail(
                                             } else if (item == "Follow Me") {
                                                 navController.navigate("feature/${deviceId}/controller")
                                             } else if (item == "Plot Data") {
-                                                navController.navigate("feature/${deviceId}/controller")
+                                                navController.navigate("feature/${deviceId}/plot")
                                             } else if (item == "Switch") {
                                                 navController.navigate("feature/${deviceId}/${item}")
-                                            } else {
-                                                navController.navigate("feature/${deviceId}/plot")
                                             }
                                         }
                                 ) {
