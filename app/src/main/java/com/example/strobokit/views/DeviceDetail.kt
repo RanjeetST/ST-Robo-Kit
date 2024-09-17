@@ -1,4 +1,4 @@
-package com.example.strobokit.views
+package com.example.strobokit. views
 
 import android.annotation.SuppressLint
 import android.util.Log
@@ -24,13 +24,13 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Battery2Bar
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,9 +51,11 @@ import com.example.strobokit.R
 import com.example.strobokit.composables.CarModel
 import com.example.strobokit.composables.FeatureBox
 import com.example.strobokit.composables.SettingsDialog
+import com.example.strobokit.ui.theme.ErrorColor
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.SecondaryColor
+import com.example.strobokit.ui.theme.SuccessColor
 import com.example.strobokit.utilities.ChangeOrientationToPortrait
 import com.example.strobokit.viewModels.BleDeviceDetailViewModel
 import com.st.blue_sdk.models.NodeState
@@ -69,6 +71,9 @@ fun DeviceDetail(
 
     val bleDevice = viewModel.bleDevice(deviceId = deviceId).collectAsState(initial = null)
     val features = viewModel.features.collectAsState()
+
+    val batteryData by viewModel.batteryData.collectAsState(initial = null)
+    val batteryPercentage = batteryData?.percentage?.value?.toInt()
 
     if(bleDevice.value?.connectionStatus?.current == NodeState.Ready){
         viewModel.getFeatures(deviceId = deviceId)
@@ -156,13 +161,19 @@ fun DeviceDetail(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     IconButton(onClick = {}) {
-                        Icon(Icons.Filled.BatteryFull, contentDescription = "Back", tint = SecondaryColor)
+                        if (batteryPercentage != null) {
+                            if(batteryPercentage > 20) {
+                                Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SuccessColor)
+                            }else{
+                                Icon(Icons.Filled.Battery2Bar, contentDescription = "BatterLow", tint = ErrorColor)
+                            }
+                        }
                     }
                     IconButton(onClick = {}) {
-                        Icon(Icons.Filled.Thermostat, contentDescription = "Back", tint = SecondaryColor)
+                        Icon(Icons.Filled.Thermostat, contentDescription = "RSSI", tint = SecondaryColor)
                     }
                     IconButton(onClick = {}) {
-                        Icon(Icons.Filled.SignalCellularAlt, contentDescription = "Back", tint = SecondaryColor)
+                        Icon(Icons.Filled.SignalCellularAlt, contentDescription = "Signal", tint = SecondaryColor)
                     }
                 }
             }
