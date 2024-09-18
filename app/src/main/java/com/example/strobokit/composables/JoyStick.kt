@@ -23,30 +23,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
 
 
 @Composable
 fun JoyStick(onHandleMoved: ()-> Unit) {
     val parentBackgroundColor = TertiaryColor
-    val hoverAreaColor = parentBackgroundColor.copy(alpha = 0.8f).let {
+    val gradientBrush = Brush.linearGradient(
+        colors = listOf(PrimaryColor, Color.White),
+        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+        end = androidx.compose.ui.geometry.Offset(900f, 900f)
+    )
+    val buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
         Color(
             red = (it.red * 0.8f).toFloat(),
             green = (it.green * 0.8f).toFloat(),
             blue = (it.blue * 0.8f).toFloat(),
-            alpha = 0.4f // Adjust transparency here
-        )
-    }
-    val buttonColor = parentBackgroundColor.copy(alpha = 0.8f).let {
-        Color(
-            red = (it.red * 0.8f).toFloat(),
-            green = (it.green * 0.8f).toFloat(),
-            blue = (it.blue * 0.8f).toFloat(),
-            alpha = 0.6f // Adjust transparency here
+            alpha = 0.3f // Adjust transparency here
         )
     }
     var joystickCenter by remember { mutableStateOf(Offset.Zero) }
@@ -79,8 +79,9 @@ fun JoyStick(onHandleMoved: ()-> Unit) {
 
             // Draw the outer circle
             drawCircle(
-                color = hoverAreaColor,
+                brush = gradientBrush,
                 radius = size.minDimension / 2,
+                style = Stroke(width = 2.dp.toPx())
             )
 
             // Draw the handle
@@ -120,20 +121,17 @@ fun JoyStick(onHandleMoved: ()-> Unit) {
 @Preview(showBackground = true, widthDp = 800, heightDp = 400)
 fun JoyStickPreview() {
     val parentBackgroundColor = TertiaryColor
-    val hoverAreaColor = parentBackgroundColor.copy(alpha = 0.8f).let {
+    val gradientBrush = Brush.linearGradient(
+        colors = listOf(PrimaryColor, Color.White),
+        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+        end = androidx.compose.ui.geometry.Offset(100f, 100f)
+    )
+    val buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
         Color(
             red = (it.red * 0.8f).toFloat(),
             green = (it.green * 0.8f).toFloat(),
             blue = (it.blue * 0.8f).toFloat(),
-            alpha = 0.4f // Adjust transparency here
-        )
-    }
-    val buttonColor = parentBackgroundColor.copy(alpha = 0.8f).let {
-        Color(
-            red = (it.red * 0.8f).toFloat(),
-            green = (it.green * 0.8f).toFloat(),
-            blue = (it.blue * 0.8f).toFloat(),
-            alpha = 0.6f // Adjust transparency here
+            alpha = 0.3f // Adjust transparency here
         )
     }
     var joystickCenter by remember { mutableStateOf(Offset.Zero) }
@@ -164,8 +162,9 @@ fun JoyStickPreview() {
 
             // Draw the outer circle
             drawCircle(
-                color = hoverAreaColor,
+                brush = gradientBrush,
                 radius = size.minDimension / 2,
+                style = Stroke(width = 2.dp.toPx())
             )
 
             // Draw the handle

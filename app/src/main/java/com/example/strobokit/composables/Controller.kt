@@ -4,6 +4,7 @@ import android.app.Activity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,8 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Help
@@ -55,6 +58,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
 import com.example.strobokit.ui.theme.OnPrimary
+import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.utilities.ChangeOrientationToLandscape
 import com.example.strobokit.viewModels.ControllerViewModel
@@ -79,11 +83,15 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
     }
     val gradientBrush = Brush.radialGradient(
         0.0f to TertiaryColor,
-        1f to Color.DarkGray,
+        1f to PrimaryColor,
         radius = 1400.0f,
         tileMode = TileMode.Repeated
     )
-
+    val borderBrush = Brush.linearGradient(
+        colors = listOf(PrimaryColor, Color.White),
+        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+        end = androidx.compose.ui.geometry.Offset(200f, 200f)
+    )
     val view = LocalView.current
     val context = LocalContext.current
 
@@ -113,58 +121,22 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
         Column(modifier = Modifier
             .fillMaxWidth(0.3f)
         ) {
-            //Top left status icon row
+            //Top Left close button
             Row(modifier = Modifier
                 .fillMaxHeight(0.4f)
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 20.dp)
-                ,
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.SpaceBetween) {
-                IconButton(onClick = { /* Handle close action */ },
+                .padding(20.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                IconButton(onClick = {navController.popBackStack() },
                     modifier = Modifier
-                        .size(30.dp)
+                        .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
+                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Close Button",
-                        tint = OnPrimary
-                    )
-                }
-                IconButton(onClick = { /* Handle close action */ },
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.LightGray.copy(alpha = 0.4f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.BatteryFull,
-                        contentDescription = "Close Button",
-                        tint = OnPrimary
-                    )
-                }
-                IconButton(onClick = { /* Handle close action */ },
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.LightGray.copy(alpha = 0.4f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.SignalCellularAlt,
-                        contentDescription = "Close Button",
-                        tint = OnPrimary
-                    )
-                }
-                IconButton(onClick = { /* Handle close action */ },
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.LightGray.copy(alpha = 0.4f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Help,
+                        imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Close Button",
                         tint = OnPrimary
                     )
@@ -217,28 +189,79 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                         modifier = Modifier.padding(16.dp)
                     )
                 }
-                Text(text = "Disarmed", color = OnPrimary)
+                if(isDisarmed.value)
+                {
+                    Text(text = "Armed", color = OnPrimary)
+                }else{
+                    Text(text = "Disarmed", color = OnPrimary)
+                }
+
             }
         }
 
         //Right Column
         Column(modifier = Modifier
             .fillMaxWidth()) {
-            //Top Right close button
+            //Top right status icon row
             Row(modifier = Modifier
                 .fillMaxHeight(0.4f)
                 .fillMaxWidth()
-                .padding(20.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-                IconButton(onClick = { navController.popBackStack() },
+                .padding(horizontal = 20.dp, vertical = 20.dp)
+                ,
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.SpaceBetween) {
+                IconButton(onClick = { /* Handle close action */ },
                     modifier = Modifier
                         .size(40.dp)
-                        .clip(CircleShape)
+                        .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
+                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BatteryFull,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SignalCellularAlt,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Help,
                         contentDescription = "Close Button",
                         tint = OnPrimary
                     )
@@ -268,7 +291,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
 }
 
 @Composable
-@Preview(showBackground = true, widthDp = 800, heightDp = 400, apiLevel = 34)
+@Preview( widthDp = 800, heightDp = 400, apiLevel = 34)
 fun ControllerPreview(){
     val isDisarmed = remember { mutableStateOf(false) }
     val shake = remember { Animatable(0f) }
@@ -286,9 +309,15 @@ fun ControllerPreview(){
     }
     val gradientBrush = Brush.radialGradient(
         0.0f to TertiaryColor,
-        1f to Color.DarkGray,
+        1f to PrimaryColor,
         radius = 1400.0f,
         tileMode = TileMode.Repeated
+    )
+
+    val borderBrush = Brush.linearGradient(
+        colors = listOf(PrimaryColor, Color.White),
+        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+        end = androidx.compose.ui.geometry.Offset(200f, 200f)
     )
 
     Row(modifier = Modifier
@@ -299,58 +328,22 @@ fun ControllerPreview(){
         Column(modifier = Modifier
             .fillMaxWidth(0.3f)
         ) {
-            //Top left status icon row
+            //Top Left close button
             Row(modifier = Modifier
                 .fillMaxHeight(0.4f)
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 20.dp)
-                ,
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.SpaceBetween) {
+                .padding(20.dp),
+                horizontalArrangement = Arrangement.Start
+            ) {
                 IconButton(onClick = { /* Handle close action */ },
                     modifier = Modifier
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
+                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Close Button",
-                        tint = OnPrimary
-                    )
-                }
-                IconButton(onClick = { /* Handle close action */ },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.LightGray.copy(alpha = 0.4f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.BatteryFull,
-                        contentDescription = "Close Button",
-                        tint = OnPrimary
-                    )
-                }
-                IconButton(onClick = { /* Handle close action */ },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.LightGray.copy(alpha = 0.4f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.SignalCellularAlt,
-                        contentDescription = "Close Button",
-                        tint = OnPrimary
-                    )
-                }
-                IconButton(onClick = { /* Handle close action */ },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.LightGray.copy(alpha = 0.4f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Help,
+                        imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Close Button",
                         tint = OnPrimary
                     )
@@ -411,21 +404,66 @@ fun ControllerPreview(){
         //Right Column
         Column(modifier = Modifier
             .fillMaxWidth()) {
-            //Top Right close button
+            //Top right status icon row
             Row(modifier = Modifier
                 .fillMaxHeight(0.4f)
                 .fillMaxWidth()
-                .padding(20.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
+                .padding(horizontal = 20.dp, vertical = 20.dp)
+                ,
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.SpaceBetween) {
                 IconButton(onClick = { /* Handle close action */ },
                     modifier = Modifier
                         .size(40.dp)
-                        .clip(CircleShape)
+                        .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
+                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.BatteryFull,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SignalCellularAlt,
+                        contentDescription = "Close Button",
+                        tint = OnPrimary
+                    )
+                }
+                IconButton(onClick = { /* Handle close action */ },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray.copy(alpha = 0.4f))
+                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Help,
                         contentDescription = "Close Button",
                         tint = OnPrimary
                     )

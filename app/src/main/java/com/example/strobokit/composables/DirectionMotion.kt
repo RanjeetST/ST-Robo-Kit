@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
@@ -55,6 +56,11 @@ fun DirectionMotion(onHandleMoved : ()->Unit) {
             alpha = 0.4f // Adjust transparency here
         )
     }
+    val gradientBrush = Brush.linearGradient(
+        colors = listOf(PrimaryColor, Color.White),
+        start = androidx.compose.ui.geometry.Offset(0f, 0f),
+        end = androidx.compose.ui.geometry.Offset(900f, 900f)
+    )
     val buttonColor = knobColor.copy(alpha = 0.8f).let {
         Color(
             red = (it.red * 0.8f).toFloat(),
@@ -99,6 +105,11 @@ fun DirectionMotion(onHandleMoved : ()->Unit) {
         Canvas(modifier = Modifier.size(150.dp)) {
             val ringWidth = 25.dp.toPx()
             val radius = size.width / 2 - ringWidth / 2
+            drawCircle(
+                brush = gradientBrush,
+                style = Stroke(width = 4.dp.toPx()),
+                radius =( size.width + 2f)/2
+            )
             drawCircle(
                 color = hoverAreaColor,
                 style = Stroke(width = ringWidth),

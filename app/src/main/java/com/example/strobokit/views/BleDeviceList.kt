@@ -248,7 +248,7 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text("Please grant the permissions", color = Color.Black)
+                Text("Please grant the permissions", color = Color.White)
 
                 Spacer(modifier = Modifier.height(4.dp))
 
