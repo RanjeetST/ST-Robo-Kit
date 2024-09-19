@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
@@ -31,10 +32,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,17 +47,12 @@ import co.yml.charts.ui.linechart.model.LineChartData
 import co.yml.charts.ui.linechart.model.LinePlotData
 import co.yml.charts.ui.linechart.model.LineStyle
 import co.yml.charts.ui.linechart.model.LineType
-import com.example.strobokit.ui.theme.Maroon
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.ST_Magenta
 import com.example.strobokit.ui.theme.SecondaryColor
 import com.example.strobokit.viewModels.PlotViewModel
-import com.st.blue_sdk.features.pressure.Pressure
 import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.max
-import kotlin.math.min
 
 @Composable
 fun PlotChartNew(
@@ -79,6 +73,8 @@ fun PlotChartNew(
 
     var maxLineData3 by remember { mutableStateOf(listOf<Point>()) }
     var minLineData3 by remember { mutableStateOf(listOf<Point>()) }
+
+    var isStart by remember {mutableStateOf(true)}
 
     var xValue by remember { mutableStateOf(0f) }
     var xAxisMinValue by remember { mutableStateOf(0f) }
@@ -204,7 +200,16 @@ fun PlotChartNew(
         ),
         xAxisData = xAxisData,
         yAxisData = yAxisData1,
-        gridLines = GridLines(enableVerticalLines = false),
+        gridLines = GridLines(
+            enableVerticalLines = false,
+            drawHorizontalLines = { xStart, y, xEnd ->
+                drawLine(
+                    color = Color.LightGray.copy(alpha = 0.5f),
+                    start = Offset(xStart, y),
+                    end = Offset(xEnd, y)
+                )
+            }
+        ),
         backgroundColor = ST_Magenta.copy(alpha = 0.3f),
         isZoomAllowed = false
     )
@@ -228,7 +233,16 @@ fun PlotChartNew(
         ),
         xAxisData = xAxisData,
         yAxisData = yAxisData2,
-        gridLines = GridLines(enableVerticalLines = false),
+        gridLines = GridLines(
+            enableVerticalLines = false,
+            drawHorizontalLines = { xStart, y, xEnd ->
+                drawLine(
+                    color = Color.LightGray.copy(alpha = 0.5f),
+                    start = Offset(xStart, y),
+                    end = Offset(xEnd, y)
+                )
+            }
+        ),
         backgroundColor = SecondaryColor.copy(alpha = 0.3f),
         isZoomAllowed = false
     )
@@ -252,7 +266,16 @@ fun PlotChartNew(
         ),
         xAxisData = xAxisData,
         yAxisData = yAxisData3,
-        gridLines = GridLines(enableVerticalLines = false),
+        gridLines = GridLines(
+            enableVerticalLines = false,
+            drawHorizontalLines = { xStart, y, xEnd ->
+                drawLine(
+                    color = Color.LightGray.copy(alpha = 0.5f),
+                    start = Offset(xStart, y),
+                    end = Offset(xEnd, y)
+                )
+            }
+        ),
         backgroundColor = PrimaryColor.copy(alpha = 0.3f),
         isZoomAllowed = false
     )
@@ -269,14 +292,25 @@ fun PlotChartNew(
         navController.popBackStack()
     }
 
+    var lastX by remember { mutableStateOf<Float?>(null) }
+    var lastY by remember { mutableStateOf<Float?>(null) }
+    var lastZ by remember { mutableStateOf<Float?>(null) }
+
     Column(modifier = Modifier
         .fillMaxSize()
         .background(OnPrimary)) {
         val logValue = viewModel.featureUpdates.value?.data?.logValue
         val values = logValue?.split(",")?.map { it.trim().toFloat() }
-        val x = values?.get(0)
-        val y = values?.get(1)
-        val z = values?.get(2)
+        val x = if (isStart) values?.get(0) else lastX
+        val y = if (isStart) values?.get(1) else lastY
+        val z = if (isStart) values?.get(2) else lastZ
+
+        if (isStart) {
+            // Update the last known values
+            if (x != null) lastX = x
+            if (y != null) lastY = y
+            if (z != null) lastZ = z
+        }
 
         Box(
             modifier = Modifier
@@ -309,17 +343,6 @@ fun PlotChartNew(
             )
         }
 
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(10.dp)) {
-            Text(text = "X: $x ${featureUnits[selectedFeature.value]},", color = ST_Magenta)
-            Spacer(modifier = Modifier.width(5.dp))
-            Text(text = "Y: $y ${featureUnits[selectedFeature.value]},", color = SecondaryColor)
-            Spacer(modifier = Modifier.width(5.dp))
-            Text(text = "Z: $z ${featureUnits[selectedFeature.value]}", color = PrimaryColor)
-        }
-
         Box(
         ) {
             Row(
@@ -329,14 +352,29 @@ fun PlotChartNew(
                     .clickable {
                         isDropDownExpanded.value = true
                     }
-                    .padding(5.dp)
+                    .padding(12.dp)
             ) {
                 Text(text = usernames[itemPosition.value], fontSize = 12.sp)
                 Icon(Icons.Filled.ArrowDropDown, contentDescription = "Back", tint = PrimaryColor)
+                IconButton(onClick = { isStart = !isStart }) {
+                    if(!isStart){
+                        Icon(
+                            Icons.Filled.PlayCircle,
+                            contentDescription = "play",
+                            tint = PrimaryColor
+                        )
+                    }else{
+                        Icon(
+                            Icons.Filled.StopCircle,
+                            contentDescription = "pause",
+                            tint = ST_Magenta
+                        )
+                    }
+
+                }
             }
             DropdownMenu(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .background(OnPrimary),
                 expanded = isDropDownExpanded.value,
                 onDismissRequest = {
@@ -353,17 +391,21 @@ fun PlotChartNew(
                         })
                 }
             }
-
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(
-                    Icons.Filled.PlayCircle,
-                    contentDescription = "Back",
-                    tint = OnPrimary
-                )
-            }
         }
 
+
+
         if (xLineData.isNotEmpty() && yLineData.isNotEmpty() && zLineData.isNotEmpty()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)) {
+                Text(text = "X: $x ${featureUnits[selectedFeature.value]},", color = ST_Magenta)
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(text = "Y: $y ${featureUnits[selectedFeature.value]},", color = SecondaryColor)
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(text = "Z: $z ${featureUnits[selectedFeature.value]}", color = PrimaryColor)
+            }
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
@@ -414,7 +456,7 @@ fun PlotChartNew(
 
     LaunchedEffect(viewModel.featureUpdates.value?.data?.logValue) {
         val logValue = viewModel.featureUpdates.value?.data?.logValue
-        if (!logValue.isNullOrEmpty()) {
+        if (!logValue.isNullOrEmpty() && isStart) {
             val values = logValue.split(",").map { it.trim().toFloat() }
             if (values.size == 3) {
                 val (x, y, z) = values
