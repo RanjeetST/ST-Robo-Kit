@@ -40,7 +40,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(navController: NavController){
-    // Start with the car in the center
+
     val carYPosition = remember { Animatable(0f) }
     val backgroundGradient = Brush.linearGradient(
         colorStops = arrayOf(
@@ -56,7 +56,6 @@ fun SplashScreen(navController: NavController){
     var animationComplete by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    // Launch the animation when the composable enters the composition
     LaunchedEffect(Unit) {
         delay(1000)
         carYPosition.animateTo(
@@ -73,8 +72,6 @@ fun SplashScreen(navController: NavController){
             .background(brush = backgroundGradient),
         contentAlignment = Alignment.Center
     ) {
-//        SmokeParticles(carYPosition = carYPosition.value)
-//        SmokeEffect(emissionPoint = Offset(0F,carYPosition.value))
 
         Image(
             painter = painterResource(id = R.drawable.robo_car_launch), // Replace with your car image
@@ -90,7 +87,6 @@ fun SplashScreen(navController: NavController){
             enter = fadeIn(animationSpec = tween(durationMillis = 2000)),
             exit = fadeOut(animationSpec = tween(durationMillis = 2000))
         ) {
-            // Message text
             Text(text = "ST Robotics", fontSize = 40.sp, color = Color.White)
         }
 
@@ -98,7 +94,7 @@ fun SplashScreen(navController: NavController){
 
     LaunchedEffect(visibility) {
         if (visibility) {
-            delay(1000) // Wait for the text to be fully visible
+            delay(1000)
             animationComplete = true
         }
     }

@@ -12,11 +12,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -31,6 +33,7 @@ import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,9 +62,10 @@ import com.example.strobokit.ui.theme.SuccessColor
 import com.example.strobokit.utilities.ChangeOrientationToPortrait
 import com.example.strobokit.viewModels.BleDeviceDetailViewModel
 import com.st.blue_sdk.models.NodeState
+import com.st.blue_sdk.models.RssiData
 
 @SuppressLint("MissingPermission")
-@Composable 
+@Composable
 fun DeviceDetail(
     viewModel : BleDeviceDetailViewModel,
     navController: NavController,
@@ -74,16 +78,27 @@ fun DeviceDetail(
 
     val batteryData by viewModel.batteryData.collectAsState(initial = null)
     val batteryPercentage = batteryData?.percentage?.value?.toInt()
+    
+    val rssiData : String = bleDevice.value?.rssi?.rssi.toString()
 
-    if(bleDevice.value?.connectionStatus?.current == NodeState.Ready){
+    var isFeaturesFetched by remember { mutableStateOf(false) }
+
+    if(bleDevice.value?.connectionStatus?.current == NodeState.Ready && !isFeaturesFetched){
         viewModel.getFeatures(deviceId = deviceId)
+        isFeaturesFetched = true
     }
 
     val backHandlingEnabled by remember { mutableStateOf(true) }
 
     BackHandler(enabled = backHandlingEnabled) {
-            viewModel.disconnect(deviceId = deviceId)
-            navController.popBackStack()
+        viewModel.disconnect(deviceId = deviceId)
+        navController.popBackStack()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.disableFeatures(deviceId = deviceId)
+        }
     }
 
     val scrollState = rememberScrollState()
@@ -121,8 +136,8 @@ fun DeviceDetail(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(onClick = {
-                            viewModel.disconnect(deviceId = deviceId)
-                            navController.popBackStack()
+                        viewModel.disconnect(deviceId = deviceId)
+                        navController.popBackStack()
                     }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = OnPrimary)
                     }
@@ -161,20 +176,26 @@ fun DeviceDetail(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     IconButton(onClick = {}) {
+                        Log.d("Device detail",batteryPercentage.toString())
                         if (batteryPercentage != null) {
                             if(batteryPercentage > 20) {
                                 Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SuccessColor)
                             }else{
                                 Icon(Icons.Filled.Battery2Bar, contentDescription = "BatterLow", tint = ErrorColor)
                             }
+                        }else{
+                            Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SecondaryColor)
                         }
                     }
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Filled.Thermostat, contentDescription = "RSSI", tint = SecondaryColor)
+
+                    Row(verticalAlignment = Alignment.CenterVertically){
+                        IconButton(onClick = {}) {
+                            Icon(Icons.Filled.SignalCellularAlt, contentDescription = "RSSI", tint = SecondaryColor)
+                        }
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(text = "Rssi: $rssiData [dBm]")
                     }
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Filled.SignalCellularAlt, contentDescription = "Signal", tint = SecondaryColor)
-                    }
+                    
                 }
             }
         }
@@ -240,8 +261,8 @@ fun DeviceDetail(
                     .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = "@ 2024 Robotics Inc.",color = OnPrimary)
-                    Text(text = "Version 1.0.0",color = OnPrimary)
+                    Text(text = "",color = OnPrimary)
+                    Text(text = "",color = OnPrimary)
                 }
             }
         }
@@ -369,27 +390,27 @@ fun DeviceDetailPreview(){
                 Column(modifier = Modifier
                     .fillMaxWidth()
                 ) {
-                        LazyRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .scrollable(
-                                    state = scrollState,
-                                    orientation = Orientation.Horizontal // Changed to Horizontal
-                                ),
-                        ) {
-                            val items = sampleFeatures.value.filter { it.isDataNotifyFeature }
-                            val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .scrollable(
+                                state = scrollState,
+                                orientation = Orientation.Horizontal // Changed to Horizontal
+                            ),
+                    ) {
+                        val items = sampleFeatures.value.filter { it.isDataNotifyFeature }
+                        val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
 
-                            itemsIndexed(items = itemNames) { index, item ->
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {}
-                                ) {
-                                    FeatureBox(item)
-                                }
+                        itemsIndexed(items = itemNames) { index, item ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {}
+                            ) {
+                                FeatureBox(item)
                             }
                         }
+                    }
                 }
 
                 Row(modifier = Modifier
