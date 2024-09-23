@@ -47,7 +47,7 @@ class BleDeviceDetailViewModel @Inject constructor(
         }
 
     fun getFeatures(deviceId: String) {
-//        features.update { blueManager.nodeFeatures(nodeId = deviceId) }
+        features.update { blueManager.nodeFeatures(nodeId = deviceId) }
 
         if(batteryFeature == null){
             blueManager.nodeFeatures(nodeId = deviceId).find{

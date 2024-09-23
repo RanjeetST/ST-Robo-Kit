@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,14 +27,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.strobokit.R
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.utilities.SessionManager
-import com.example.strobokit.views.SplashAnimation.ControlledExplosion
+import com.example.strobokit.views.splashAnimation.ControlledExplosion
 import kotlinx.coroutines.delay
 
 @Composable
@@ -74,7 +72,7 @@ fun SplashScreen(navController: NavController){
     ) {
 
         Image(
-            painter = painterResource(id = R.drawable.robo_car_launch), // Replace with your car image
+            painter = painterResource(id = R.drawable.robo_car_launch),
             contentDescription = null,
             modifier = Modifier
                 .offset(y = carYPosition.value.dp)

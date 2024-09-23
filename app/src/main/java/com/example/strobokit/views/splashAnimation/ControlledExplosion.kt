@@ -1,4 +1,4 @@
-package com.example.strobokit.views.SplashAnimation
+package com.example.strobokit.views.splashAnimation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable

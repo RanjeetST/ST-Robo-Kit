@@ -277,8 +277,8 @@ data class Feature(val name: String, val isDataNotifyFeature: Boolean)
 fun DeviceDetailPreview(){
     val backgroundGradient = Brush.verticalGradient(
         colorStops = arrayOf(
-            0.0f to PrimaryColor,  // Start with PrimaryColor
-            1f to PrimaryColor.copy(alpha = 0.6f)      // Transition to White at the bottom-right corner
+            0.0f to PrimaryColor,
+            1f to PrimaryColor.copy(alpha = 0.6f)
         ),
         startY = 0.0f,
         endY = 1500.0f

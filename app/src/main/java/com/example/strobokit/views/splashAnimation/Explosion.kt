@@ -1,4 +1,4 @@
-package com.example.strobokit.views.SplashAnimation
+package com.example.strobokit.views.splashAnimation
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
@@ -28,7 +28,7 @@ fun Explosion(progress: Float,carYPosition : Float) {
                     Color.LightGray.toArgb(),
                     Color.White.toArgb()).random()),
                 startYPosition = sizePxHalf.toInt(),
-                startXPosition = (sizePxHalf + carYPosition.dpToPx()).toInt() + 40.dp.toPx().toInt(), // Adjusted for car position
+                startXPosition = (sizePxHalf + carYPosition.dpToPx()).toInt() + 40.dp.toPx().toInt(),
                 maxHorizontalDisplacement = sizePx * randomInRange(-0.4f, 0.4f),
                 maxVerticalDisplacement = sizePx * randomInRange(0f, 0f)
             )

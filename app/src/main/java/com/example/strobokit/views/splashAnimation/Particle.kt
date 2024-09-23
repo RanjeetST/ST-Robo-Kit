@@ -1,4 +1,4 @@
-package com.example.strobokit.views.SplashAnimation
+package com.example.strobokit.views.splashAnimation
 
 
 import androidx.compose.ui.unit.dp
