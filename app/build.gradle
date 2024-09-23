@@ -133,4 +133,7 @@ dependencies {
     //for plot charts
     implementation libs.ycharts
 
+    //for splash screen
+    implementation(libs.core.splashscreen)
+
 }

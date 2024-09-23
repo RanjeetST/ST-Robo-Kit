@@ -4,6 +4,7 @@ activityComposeVersion = "1.8.2"
 agp = "8.5.0"
 appcompat = "1.6.1"
 coreKtxVersion = "1.12.0"
+coreSplashscreenVersion = "1.0.1"
 hiltAndroid = "2.50"
 hiltNavigationCompose = "1.1.0"
 hiltNavigationFragment = "1.1.0"
@@ -50,6 +51,7 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx"
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata" }
 androidx-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding" }
+core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreenVersion" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

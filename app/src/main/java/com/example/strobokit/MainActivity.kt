@@ -46,7 +46,7 @@ class MainActivity : ComponentActivity() {
 private fun MainScreen(){
     //to navigate between activities
     val navController = rememberNavController()
-    val startDestination = if (SessionManager.isSplashShown()) "home" else "home"
+    val startDestination = if (SessionManager.isSplashShown()) "home" else "splash_screen"
 
     STRoboKitTheme {
         Scaffold(
