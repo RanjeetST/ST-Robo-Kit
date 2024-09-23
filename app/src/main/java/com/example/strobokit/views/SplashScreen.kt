@@ -44,9 +44,9 @@ fun SplashScreen(navController: NavController){
     val carYPosition = remember { Animatable(0f) }
     val backgroundGradient = Brush.linearGradient(
         colorStops = arrayOf(
-            0.0f to PrimaryColor.copy(alpha = 0.9f),  // Start with PrimaryColor
-            0.95f to PrimaryColor.copy(alpha = 0.7f), // Keep PrimaryColor until 95% of the screen
-            1f to PrimaryColor.copy(alpha = 0.6f)      // Transition to White at the bottom-right corner
+            0.0f to PrimaryColor.copy(alpha = 0.9f),
+            0.95f to PrimaryColor.copy(alpha = 0.7f),
+            1f to PrimaryColor.copy(alpha = 0.6f)
         ),
         start = Offset.Zero,
         end = Offset.Infinite
