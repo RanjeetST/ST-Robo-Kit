@@ -280,7 +280,7 @@ fun PlotChartNew(
         isZoomAllowed = false
     )
 
-    val usernames = listOf("Gyroscope", "Magnetometer", "Accelerometer")
+    val usernames = listOf("Accelerometer","Gyroscope", "Magnetometer")
     val isDropDownExpanded = remember { mutableStateOf(false) }
     val itemPosition = remember { mutableStateOf(0) }
     val selectedFeature = remember { mutableStateOf(usernames[itemPosition.value]) }

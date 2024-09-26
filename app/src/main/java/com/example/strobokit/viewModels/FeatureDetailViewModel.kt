@@ -78,21 +78,20 @@ class FeatureDetailViewModel @Inject constructor(
         viewModelScope.launch {
 
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
-
             if(feature is SwitchFeature){
                 Log.d(TAG,"$currentValue")
                 if(currentValue == SwitchStatusType.Off)
                 {
                     blueManager.writeFeatureCommand(
                         nodeId = deviceId,
-                        featureCommand = SwitchOn(feature = feature),
+                        featureCommand = SwitchOn(feature, byteArrayOf(2)),
                         responseTimeout = 1L
                     )
                     Log.d(TAG,"Switch On Called")
                 }else if(currentValue == SwitchStatusType.On){
                     blueManager.writeFeatureCommand(
                         nodeId = deviceId,
-                        featureCommand = SwitchOff(feature = feature),
+                        featureCommand = SwitchOff(feature = feature, "Hello , World".toByteArray()),
                         responseTimeout = 1L
                     )
                     Log.d(TAG,"Switch Off Called")

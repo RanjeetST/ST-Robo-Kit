@@ -51,7 +51,7 @@ fun FeatureBox(featureName: String){
             Text(
                 text = featureName,
                 color = OnPrimary,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .size(50.dp)

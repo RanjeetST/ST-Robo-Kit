@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -62,7 +60,6 @@ import com.example.strobokit.ui.theme.SuccessColor
 import com.example.strobokit.utilities.ChangeOrientationToPortrait
 import com.example.strobokit.viewModels.BleDeviceDetailViewModel
 import com.st.blue_sdk.models.NodeState
-import com.st.blue_sdk.models.RssiData
 
 @SuppressLint("MissingPermission")
 @Composable
@@ -188,14 +185,12 @@ fun DeviceDetail(
                         }
                     }
 
-                    Row(verticalAlignment = Alignment.CenterVertically){
-                        IconButton(onClick = {}) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally){
+                        IconButton(onClick = {},modifier = Modifier.size(20.dp)) {
                             Icon(Icons.Filled.SignalCellularAlt, contentDescription = "RSSI", tint = SecondaryColor)
                         }
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text(text = "Rssi: $rssiData [dBm]")
+                        Text(text = "$rssiData dBm", fontSize = 10.sp)
                     }
-                    
                 }
             }
         }
@@ -213,7 +208,7 @@ fun DeviceDetail(
                 .fillMaxHeight(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "Features", fontSize = 20.sp, color = OnPrimary, fontWeight = FontWeight.SemiBold)
+                Text(text = "Features", fontSize = 25.sp, color = OnPrimary, fontWeight = FontWeight.SemiBold)
 
                 Column(modifier = Modifier
                     .fillMaxWidth()
@@ -228,19 +223,18 @@ fun DeviceDetail(
                             ),
                     ) {
                         val items = features.value.filter { it.isDataNotifyFeature }
-                        val itemNames =  listOf("Remote Control","Plot Data") + items.map { it.name }
+//                        val itemNames =  listOf("Remote Control","Plot Data","Switch") + items.map { it.name }
+                        val itemNames =  listOf("Remote Control","Plot Data","Switch")
 //                        val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
 
                         itemsIndexed(items = itemNames) { index, item ->
-                            Log.d("Device Detail",item)
+//                            Log.d("Device Detail",item)
                             if(item == "Switch" || item == "Plot Data" || item == "Remote Control"){
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
                                             if (item == "Remote Control") {
-                                                navController.navigate("feature/${deviceId}/controller")
-                                            } else if (item == "Follow Me") {
                                                 navController.navigate("feature/${deviceId}/controller")
                                             } else if (item == "Plot Data") {
                                                 navController.navigate("feature/${deviceId}/plot")
