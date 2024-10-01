@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
@@ -133,7 +134,11 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = borderBrush,
+                            shape = RoundedCornerShape(10.dp)
+                        )
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -158,7 +163,11 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                     }else{
                         0
                     }
-                })
+                },
+                    viewModel = hiltViewModel(),
+                    nodeId = nodeId,
+                    isDisarmed
+                )
             }
         }
 
@@ -215,7 +224,11 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = borderBrush,
+                            shape = RoundedCornerShape(10.dp)
+                        )
 
                 ) {
                     Icon(
@@ -229,7 +242,11 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = borderBrush,
+                            shape = RoundedCornerShape(10.dp)
+                        )
 
                 ) {
                     Icon(
@@ -243,7 +260,11 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = borderBrush,
+                            shape = RoundedCornerShape(10.dp)
+                        )
 
                 ) {
                     Icon(
@@ -257,7 +278,11 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = borderBrush,
+                            shape = RoundedCornerShape(10.dp)
+                        )
 
                 ) {
                     Icon(
@@ -284,11 +309,19 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                         } else {
                             0
                         }
-                    })
+                    },
+                    viewModel = hiltViewModel(),
+                    nodeId = nodeId,
+                    isDisarmed = isDisarmed)
             }
         }
     }
 }
+
+enum class controllerAction{
+    Forward , Backward , Right , Left , Stop
+}
+
 
 @Composable
 @Preview( widthDp = 800, heightDp = 400, apiLevel = 34)
@@ -340,7 +373,11 @@ fun ControllerPreview(){
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = borderBrush,
+                            shape = RoundedCornerShape(10.dp)
+                        )
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -359,13 +396,18 @@ fun ControllerPreview(){
             ) {
                 Text(color = OnPrimary, fontSize = 18.sp, text = "Linear Motion")
 
-                    JoyStick(onHandleMoved = {
-                        trigger = if(!isDisarmed.value){
-                            System.currentTimeMillis()
-                        }else{
-                            0
-                        }
-                    })
+                    JoyStick(
+                        onHandleMoved = {
+                            trigger = if (!isDisarmed.value) {
+                                System.currentTimeMillis()
+                            } else {
+                                0
+                            }
+                        },
+                        viewModel = hiltViewModel(),
+                        nodeId = "",
+                        isDisarmed
+                    )
             }
         }
 
@@ -417,7 +459,11 @@ fun ControllerPreview(){
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = borderBrush,
+                            shape = RoundedCornerShape(10.dp)
+                        )
 
                 ) {
                     Icon(
@@ -431,7 +477,11 @@ fun ControllerPreview(){
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = borderBrush,
+                            shape = RoundedCornerShape(10.dp)
+                        )
 
                 ) {
                     Icon(
@@ -445,7 +495,11 @@ fun ControllerPreview(){
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = borderBrush,
+                            shape = RoundedCornerShape(10.dp)
+                        )
 
                 ) {
                     Icon(
@@ -459,7 +513,11 @@ fun ControllerPreview(){
                         .size(40.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(width = 1.dp, brush = borderBrush, shape = RoundedCornerShape(10.dp))
+                        .border(
+                            width = 1.dp,
+                            brush = borderBrush,
+                            shape = RoundedCornerShape(10.dp)
+                        )
 
                 ) {
                     Icon(
@@ -486,7 +544,10 @@ fun ControllerPreview(){
                         } else {
                             0
                         }
-                    })
+                    },
+                        viewModel = hiltViewModel(),
+                        nodeId = "",
+                        isDisarmed)
             }
         }
     }

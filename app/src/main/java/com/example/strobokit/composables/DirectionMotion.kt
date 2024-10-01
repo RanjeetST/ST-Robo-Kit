@@ -1,5 +1,6 @@
 package com.example.strobokit.composables
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -9,9 +10,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +33,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
+import com.example.strobokit.viewModels.ControllerViewModel
+import com.st.blue_sdk.features.switchfeature.SwitchStatusType
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.hypot
@@ -37,9 +44,13 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 @Composable
-fun DirectionMotion(onHandleMoved : ()->Unit) {
+fun DirectionMotion(onHandleMoved : ()->Unit,viewModel: ControllerViewModel,nodeId : String , isDisarmed : MutableState<Boolean>) {
     var angle by remember { mutableStateOf(0f) } // Start from the top
     var isDragging by remember { mutableStateOf(false) }
+    var lastSentAngle by remember { mutableStateOf(-1) } // Track the last sent angle
+    var shouldSendCommand by remember { mutableStateOf(false) } // Control when to send the command
+    val coroutineScope = rememberCoroutineScope()
+
     // Rotating Circle
     val ringRadius = 73.dp.dpToPx() - 10.dp.dpToPx() // Adjust radius to fit within the ring
     val angleRad = Math.toRadians(angle.toDouble())
@@ -89,13 +100,48 @@ fun DirectionMotion(onHandleMoved : ()->Unit) {
                     if (isDragging) {
                         val x = change.position.x - size.width / 2
                         val y = change.position.y - size.height / 2
-                        angle = ((Math.toDegrees(
+                        val newAngle = ((Math.toDegrees(
                             atan2(
                                 y.toDouble(),
                                 x.toDouble()
                             )
                         ) + 450) % 360).toFloat() // Adjust for 0 degrees at the top
+
+                        if (newAngle != angle) {
+                            angle = newAngle
+                            shouldSendCommand = false
+                            coroutineScope.launch {
+                                delay(1000)
+                                shouldSendCommand = true
+                                if (isDisarmed.value && shouldSendCommand) {
+                                    val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
+                                    if (angleInteger != lastSentAngle) {
+                                        if (angleInteger in 1..179) {
+                                            Log.d("Controller", "Move right : $angleInteger")
+                                            viewModel.sendCommand(
+                                                "Switch",
+                                                nodeId,
+                                                SwitchStatusType.On,
+                                                controllerAction.Right,
+                                                angleInteger
+                                            )
+                                        } else if (angleInteger in 181..359) {
+                                            Log.d("Controller", "Move left : ${360 - angleInteger}")
+                                            viewModel.sendCommand(
+                                                "Switch",
+                                                nodeId,
+                                                SwitchStatusType.On,
+                                                controllerAction.Left,
+                                                angleInteger
+                                            )
+                                        }
+                                        lastSentAngle = angleInteger // Update the last sent angle
+                                    }
+                                }
+                            }
+                        }
                     }
+
                     onHandleMoved()
                 }
             },

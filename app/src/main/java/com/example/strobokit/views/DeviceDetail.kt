@@ -224,7 +224,7 @@ fun DeviceDetail(
                     ) {
                         val items = features.value.filter { it.isDataNotifyFeature }
 //                        val itemNames =  listOf("Remote Control","Plot Data","Switch") + items.map { it.name }
-                        val itemNames =  listOf("Remote Control","Plot Data","Switch")
+                        val itemNames =  listOf("Remote Control","Plot Data")
 //                        val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
 
                         itemsIndexed(items = itemNames) { index, item ->

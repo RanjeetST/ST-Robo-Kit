@@ -1,5 +1,6 @@
 package com.example.strobokit.composables
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,15 +33,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
+import com.example.strobokit.viewModels.ControllerViewModel
+import com.st.blue_sdk.features.switchfeature.SwitchStatusType
 
 
 @Composable
-fun JoyStick(onHandleMoved: ()-> Unit) {
+fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : String,isDisarmed : MutableState<Boolean>) {
     val parentBackgroundColor = TertiaryColor
     val gradientBrush = Brush.linearGradient(
         colors = listOf(PrimaryColor, Color.White),
-        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-        end = androidx.compose.ui.geometry.Offset(900f, 900f)
+        start = Offset(0f, 0f),
+        end = Offset(900f, 900f)
     )
     val buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
         Color(
@@ -51,6 +55,7 @@ fun JoyStick(onHandleMoved: ()-> Unit) {
     }
     var joystickCenter by remember { mutableStateOf(Offset.Zero) }
     var handlePosition by remember { mutableStateOf(Offset.Zero) }
+    var lastCommand by remember { mutableStateOf("") }
     Box(
         modifier = Modifier
             .padding(6.dp)
@@ -63,7 +68,19 @@ fun JoyStick(onHandleMoved: ()-> Unit) {
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragEnd = {
+                            if(isDisarmed.value == true)
+                            {
+                                Log.d("JOYSTICK", "Stop Called")
+                                viewModel.sendCommand(
+                                    featureName = "Switch",
+                                    nodeId,
+                                    SwitchStatusType.On,
+                                    controllerAction.Stop
+                                )
+                            }
+
                            handlePosition = Offset.Zero
+                            lastCommand = ""
                         }
                     ) { change, dragAmount ->
                         change.consume()
@@ -71,6 +88,39 @@ fun JoyStick(onHandleMoved: ()-> Unit) {
                             x = 0f, // Restrict movement to the Y-axis
                             y = (handlePosition.y + dragAmount.y).coerceIn(-120f, 120f)
                         )
+
+                        if(isDisarmed.value == true){
+                            when (handlePosition.y.toInt()) {
+                                -120 -> {
+                                    if (lastCommand != "Forward") {
+                                        Log.d("JOYSTICK", "Forward Called")
+                                        viewModel.sendCommand(
+                                            featureName = "Switch",
+                                            nodeId,
+                                            SwitchStatusType.On,
+                                            controllerAction.Forward
+                                        )
+                                        lastCommand = "Forward"
+                                    }
+                                }
+                                120 -> {
+                                    if (lastCommand != "Backward") {
+                                        Log.d("JOYSTICK", "Backward Called")
+                                        viewModel.sendCommand(
+                                            featureName = "Switch",
+                                            nodeId,
+                                            SwitchStatusType.On,
+                                            controllerAction.Backward
+                                        )
+                                        lastCommand = "Backward"
+                                    }
+                                }
+                                else -> {
+                                    lastCommand = ""
+                                }
+                            }
+                        }
+
                         onHandleMoved()
                     }
                 }
@@ -123,8 +173,8 @@ fun JoyStickPreview() {
     val parentBackgroundColor = TertiaryColor
     val gradientBrush = Brush.linearGradient(
         colors = listOf(PrimaryColor, Color.White),
-        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-        end = androidx.compose.ui.geometry.Offset(100f, 100f)
+        start = Offset(0f, 0f),
+        end = Offset(100f, 100f)
     )
     val buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
         Color(
