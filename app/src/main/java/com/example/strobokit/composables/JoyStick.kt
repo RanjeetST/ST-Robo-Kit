@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.viewModels.ControllerViewModel
-import com.st.blue_sdk.features.switchfeature.SwitchStatusType
 
 
 @Composable
@@ -68,14 +67,14 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragEnd = {
-                            if(isDisarmed.value == true)
+                            if(isDisarmed.value)
                             {
                                 Log.d("JOYSTICK", "Stop Called")
                                 viewModel.sendCommand(
-                                    featureName = "Switch",
+                                    featureName = "Navigation Control",
                                     nodeId,
-                                    SwitchStatusType.On,
-                                    controllerAction.Stop
+                                    controllerAction.Stop,
+                                    angle = 0
                                 )
                             }
 
@@ -90,26 +89,28 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
                         )
 
                         if(isDisarmed.value == true){
+
                             when (handlePosition.y.toInt()) {
-                                -120 -> {
+                                in -120..-1 -> {
                                     if (lastCommand != "Forward") {
+                                        val speed = calculateSpeed(handlePosition.y.toInt() ,-120)
                                         Log.d("JOYSTICK", "Forward Called")
                                         viewModel.sendCommand(
-                                            featureName = "Switch",
+                                            featureName = "Navigation Control",
                                             nodeId,
-                                            SwitchStatusType.On,
-                                            controllerAction.Forward
+                                            controllerAction.Forward,
+                                            speed
                                         )
                                         lastCommand = "Forward"
                                     }
                                 }
-                                120 -> {
+                                in 1..120 -> {
                                     if (lastCommand != "Backward") {
+                                        val speed = calculateSpeed(handlePosition.y.toInt(),120)
                                         Log.d("JOYSTICK", "Backward Called")
                                         viewModel.sendCommand(
-                                            featureName = "Switch",
+                                            featureName = "Navigation Control",
                                             nodeId,
-                                            SwitchStatusType.On,
                                             controllerAction.Backward
                                         )
                                         lastCommand = "Backward"
@@ -165,6 +166,12 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
             }
         }
     }
+}
+
+fun calculateSpeed(position: Int,maxPosition : Int): Int {
+
+    val percentage = (position.toFloat() / maxPosition.toFloat()) * 100
+    return percentage.toInt()
 }
 
 @Composable

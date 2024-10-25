@@ -119,18 +119,16 @@ fun DirectionMotion(onHandleMoved : ()->Unit,viewModel: ControllerViewModel,node
                                         if (angleInteger in 1..179) {
                                             Log.d("Controller", "Move right : $angleInteger")
                                             viewModel.sendCommand(
-                                                "Switch",
+                                                "Navigation Control",
                                                 nodeId,
-                                                SwitchStatusType.On,
                                                 controllerAction.Right,
                                                 angleInteger
                                             )
                                         } else if (angleInteger in 181..359) {
                                             Log.d("Controller", "Move left : ${360 - angleInteger}")
                                             viewModel.sendCommand(
-                                                "Switch",
+                                                "Navigation Control",
                                                 nodeId,
-                                                SwitchStatusType.On,
                                                 controllerAction.Left,
                                                 angleInteger
                                             )
