@@ -33,92 +33,45 @@ class ControllerViewModel @Inject constructor(
 
         viewModelScope.launch {
 
-            val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
-            if(feature is NavigationControl){
+//            val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
+
                     when(action){
                         controllerAction.Forward -> {
                             lastAction = 'F'
-                            lastSpeed = speed
-                            blueManager.writeFeatureCommand(
+                            blueManager.writeDebugMessage(
                                 nodeId = deviceId,
-                                featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                    feature = feature,
-                                    action = 0x10u,
-                                    direction = 'F'.code.toUByte(),
-                                    speed = speed.toUByte(),
-                                    angle = angle.toByte(),
-                                    res = byteArrayOf(0)
-                                ),//[linear motion , Directional motion , angle]
-                                responseTimeout = 1L
+                                msg = lastAction.toString()
                             )
                         }
-
                         controllerAction.Backward -> {
                             lastAction = 'B'
                             lastSpeed = speed
-                            blueManager.writeFeatureCommand(
+                            blueManager.writeDebugMessage(
                                 nodeId = deviceId,
-                                featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                    feature = feature,
-                                    action = 0x10u,
-                                    direction = 'B'.code.toUByte(),
-                                    speed = speed.toUByte(),
-                                    angle = angle.toByte(),
-                                    res = byteArrayOf(0)
-//                                    byteArrayOf('B'.code.toByte(),'R'.code.toByte(),(angle/10).toByte())
-                                ),
-                                responseTimeout = 1L
+                                msg = lastAction.toString()
                             )
                         }
                         controllerAction.Right -> {
-                            blueManager.writeFeatureCommand(
+                            blueManager.writeDebugMessage(
                                 nodeId = deviceId,
-                                featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                    feature = feature,
-                                    action = 0x10u,
-                                    direction = 'R'.code.toUByte(),
-                                    speed = speed.toUByte(),
-                                    angle = angle.toByte(),
-                                    res = byteArrayOf(0)
-//                                    byteArrayOf(lastAction.code.toByte(),'R'.code.toByte(),(angle/10).toByte())
-                                ),
-                                responseTimeout = 1L
+                                msg = 'R'.toString()
                             )
                         }
                         controllerAction.Left -> {
-                            blueManager.writeFeatureCommand(
+                            blueManager.writeDebugMessage(
                                 nodeId = deviceId,
-                                featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                    feature = feature,
-                                    action = 0x10u,
-                                    direction = 'L'.code.toUByte(),
-                                    speed = speed.toUByte(),
-                                    angle = (360 - angle).toByte(),
-                                    res = byteArrayOf(0)
-//                                    byteArrayOf(lastAction.code.toByte(),'L'.code.toByte(),((360 - angle)/10).toByte())
-                                ),
-                                responseTimeout = 1L
+                                msg = 'L'.toString()
                             )
                         }
 
                         controllerAction.Stop -> {
                             lastAction = 'S'
-                            blueManager.writeFeatureCommand(
+                            blueManager.writeDebugMessage(
                                 nodeId = deviceId,
-                                featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                    feature = feature,
-                                    action = 0x10u,
-                                    direction = 'F'.code.toUByte(),
-                                    speed = 0u,
-                                    angle = 0,
-                                    res = byteArrayOf(0)
-                                ),
-                                responseTimeout = 1L
+                                msg = lastAction.toString()
                             )
                         }
                     }
-
-            }
         }
     }
 }
