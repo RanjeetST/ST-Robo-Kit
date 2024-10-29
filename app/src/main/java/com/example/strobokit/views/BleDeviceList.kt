@@ -212,12 +212,24 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                                             color = OnPrimary
                                         )
                                     }
-                                    Text(
-                                        modifier = Modifier.padding(4.dp),
-                                        text = item.device.address,
-                                        color = OnPrimary,
-                                        fontSize = 10.sp
-                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            modifier = Modifier.padding(4.dp),
+                                            text = item.device.address,
+                                            color = OnPrimary,
+                                            fontSize = 10.sp
+                                        )
+                                        Text(
+                                            modifier = Modifier.padding(4.dp),
+                                            text = "RSSI : ${item.rssi?.rssi.toString()} dBm",
+                                            color = OnPrimary,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+
                                 }
                             }
                         }
