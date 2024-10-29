@@ -58,7 +58,7 @@ fun SplashScreen(navController: NavController){
         delay(1000)
         carYPosition.animateTo(
             targetValue = -600f, // Move upwards
-            animationSpec = tween(durationMillis = 3000, easing = LinearEasing)
+            animationSpec = tween(durationMillis = 2000, easing = LinearEasing)
         )
         visibility = true
     }
@@ -82,8 +82,8 @@ fun SplashScreen(navController: NavController){
         ControlledExplosion(carYPosition = carYPosition.value)
         AnimatedVisibility(
             visible = visibility,
-            enter = fadeIn(animationSpec = tween(durationMillis = 2000)),
-            exit = fadeOut(animationSpec = tween(durationMillis = 2000))
+            enter = fadeIn(animationSpec = tween(durationMillis = 1000)),
+            exit = fadeOut(animationSpec = tween(durationMillis = 1000))
         ) {
             Text(text = "ST Robotics", fontSize = 40.sp, color = Color.White)
         }
