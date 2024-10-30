@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,18 +28,25 @@ fun FeatureBox(featureName: String){
 
     if(featureName == "Remote Control"){
         painter = R.drawable.controller
-    }else if(featureName == "Follow Me"){
-        painter = R.drawable.baseline_directions_walk_24
     }else if(featureName == "Plot Data"){
         painter = R.drawable.baseline_auto_graph_24
+    }else if(featureName == "Debug"){
+        painter = R.drawable.baseline_bug_report_24
+    }else if(featureName == "Free navigation"){
+        painter = R.drawable.baseline_assistant_navigation_24
+    }else if(featureName == "Follow me"){
+        painter = R.drawable.baseline_directions_walk_24
+    }else if(featureName == "Edge detection"){
+        painter = R.drawable.baseline_border_outer_24
     }
     Box(modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 35.dp)
+        .padding(horizontal = 25.dp)
         .background(Color.Transparent),
     ){
         Column(
             modifier= Modifier.fillMaxWidth()
+
             ,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -51,10 +59,10 @@ fun FeatureBox(featureName: String){
             Text(
                 text = featureName,
                 color = OnPrimary,
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .size(50.dp)
+                    .size(70.dp)
                     .align(Alignment.CenterHorizontally) // This centers the text horizontally
             )
         }

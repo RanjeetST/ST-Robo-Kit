@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -75,7 +78,7 @@ fun DeviceDetail(
 
     val batteryData by viewModel.batteryData.collectAsState(initial = null)
     val batteryPercentage = batteryData?.percentage?.value?.toInt()
-    
+
     val rssiData : String = bleDevice.value?.rssi?.rssi.toString()
 
     var isFeaturesFetched by remember { mutableStateOf(false) }
@@ -121,34 +124,33 @@ fun DeviceDetail(
             .background(Color.LightGray)
             .background(backgroundGradient)
         ) {
-            //top bar column
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(10.dp)
-            ){
-                Row(modifier = Modifier
-                    .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
                 ) {
-                    IconButton(onClick = {
-                        viewModel.disconnect(deviceId = deviceId)
-                        navController.popBackStack()
-                    }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = OnPrimary)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = {
+                            viewModel.disconnect(deviceId = deviceId)
+                            navController.popBackStack()
+                        }) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = OnPrimary)
+                        }
                     }
 
-                    Text(text = "Robot Menu", fontSize = 25.sp,color = OnPrimary, fontWeight = FontWeight.SemiBold)
-
-                    IconButton(onClick = {
-                        showDialog = true
-                    }) {
-                        Icon(Icons.Filled.Settings, contentDescription = "Back",tint = OnPrimary)
-                    }
-                    if (showDialog){
-                        SettingsDialog(navController = navController, onDismiss = {showDialog = false},deviceId)
-                    }
+                    Text(
+                        text = "Dashboard",
+                        fontSize = 25.sp,
+                        color = OnPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
             }
 
@@ -172,18 +174,32 @@ fun DeviceDetail(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    IconButton(onClick = {}) {
-                        Log.d("Device detail",batteryPercentage.toString())
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        IconButton(onClick = {},modifier = Modifier.size(20.dp)) {
+                            Log.d("Device detail",batteryPercentage.toString())
+                            if (batteryPercentage != null) {
+                                if(batteryPercentage > 20) {
+                                    Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SuccessColor)
+                                }else{
+                                    Icon(Icons.Filled.Battery2Bar, contentDescription = "BatterLow", tint = ErrorColor)
+                                }
+                            }else{
+                                Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SecondaryColor)
+                            }
+                        }
+
                         if (batteryPercentage != null) {
                             if(batteryPercentage > 20) {
-                                Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SuccessColor)
+                                Text(text = "OK", fontSize = 10.sp)
                             }else{
-                                Icon(Icons.Filled.Battery2Bar, contentDescription = "BatterLow", tint = ErrorColor)
+                                Text(text = "LOW", fontSize = 10.sp)
                             }
                         }else{
-                            Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SecondaryColor)
+                            Text(text = "NA", fontSize = 10.sp)
                         }
+
                     }
+
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally){
                         IconButton(onClick = {},modifier = Modifier.size(20.dp)) {
@@ -206,10 +222,10 @@ fun DeviceDetail(
                 .fillMaxWidth()
                 .padding(10.dp)
                 .fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.Top
             ) {
                 Text(text = "Features", fontSize = 25.sp, color = OnPrimary, fontWeight = FontWeight.SemiBold)
-
+                Spacer(modifier = Modifier.height(30.dp))
                 Column(modifier = Modifier
                     .fillMaxWidth()
                 ) {
@@ -221,15 +237,16 @@ fun DeviceDetail(
                                 state = scrollState,
                                 orientation = Orientation.Horizontal
                             ),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         val items = features.value.filter { it.isDataNotifyFeature }
 //                        val itemNames =  listOf("Remote Control","Plot Data","Switch") + items.map { it.name }
-                        val itemNames =  listOf("Remote Control","Plot Data")
+                        val itemNames =  listOf("Remote Control","Plot Data","Debug","Free navigation","Follow me","Edge detection")
 //                        val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
 
                         itemsIndexed(items = itemNames) { index, item ->
 //                            Log.d("Device Detail",item)
-                            if(item == "Switch" || item == "Plot Data" || item == "Remote Control"){
+                            if(item == "Switch" || item == "Plot Data" || item == "Remote Control" || item == "Debug" || item == "Free navigation" || item == "Follow me" || item == "Edge detection"){
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -238,9 +255,16 @@ fun DeviceDetail(
                                                 navController.navigate("feature/${deviceId}/controller")
                                             } else if (item == "Plot Data") {
                                                 navController.navigate("feature/${deviceId}/plot")
-                                            } else if (item == "Switch") {
-                                                navController.navigate("feature/${deviceId}/${item}")
+                                            } else if (item == "Debug") {
+                                                navController.navigate("feature/${deviceId}/debugConsole")
+                                            } else if (item == "Free navigation") {
+                                                navController.navigate("feature/${deviceId}/debugConsole")
+                                            } else if (item == "Follow me") {
+                                                navController.navigate("feature/${deviceId}/debugConsole")
+                                            } else if (item == "Edge detection") {
+                                                navController.navigate("feature/${deviceId}/debugConsole")
                                             }
+
                                         }
                                 ) {
                                     FeatureBox(item)
@@ -249,14 +273,6 @@ fun DeviceDetail(
 
                         }
                     }
-                }
-
-                Row(modifier = Modifier
-                    .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = "",color = OnPrimary)
-                    Text(text = "",color = OnPrimary)
                 }
             }
         }

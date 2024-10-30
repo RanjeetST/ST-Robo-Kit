@@ -194,8 +194,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                             uncheckedThumbColor = Color.White,
                             uncheckedTrackColor = Color(0xFF611616),
                             checkedTrackColor = Color(0xFF11FF00)
-                        ),
-                        modifier = Modifier.padding(16.dp)
+                        )
                     )
                 }
                 if(isDisarmed.value)
