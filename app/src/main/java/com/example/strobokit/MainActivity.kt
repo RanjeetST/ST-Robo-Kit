@@ -18,12 +18,12 @@ import androidx.navigation.navArgument
 import com.example.strobokit.composables.Controller
 import com.example.strobokit.ui.theme.STRoboKitTheme
 import com.example.strobokit.utilities.SessionManager
+import com.example.strobokit.views.AlgorithmSelection
 import com.example.strobokit.views.BleDeviceList
 import com.example.strobokit.views.DebugConsole
 import com.example.strobokit.views.DeviceDetail
 import com.example.strobokit.views.FeatureDetail
 import com.example.strobokit.views.HomeScreen
-import com.example.strobokit.views.PlotChart
 import com.example.strobokit.views.PlotChartNew
 import com.example.strobokit.views.SplashScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -131,6 +131,19 @@ private fun MainScreen(){
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                         PlotChartNew(
+                            viewModel = hiltViewModel(),
+                            deviceId = deviceId,
+                            navController = navController
+                        )
+                    }
+                }
+
+                composable(
+                    route = "feature/{deviceId}/algorithms",
+                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
+                        AlgorithmSelection(
                             viewModel = hiltViewModel(),
                             deviceId = deviceId,
                             navController = navController

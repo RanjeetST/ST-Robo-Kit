@@ -1,4 +1,4 @@
-package com.example.strobokit. views
+package com.example.strobokit.views
 
 import android.annotation.SuppressLint
 import android.util.Log
@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -54,7 +53,6 @@ import androidx.navigation.NavController
 import com.example.strobokit.R
 import com.example.strobokit.composables.CarModel
 import com.example.strobokit.composables.FeatureBox
-import com.example.strobokit.composables.SettingsDialog
 import com.example.strobokit.ui.theme.ErrorColor
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
@@ -241,12 +239,13 @@ fun DeviceDetail(
                     ) {
                         val items = features.value.filter { it.isDataNotifyFeature }
 //                        val itemNames =  listOf("Remote Control","Plot Data","Switch") + items.map { it.name }
-                        val itemNames =  listOf("Remote Control","Plot Data","Debug","Free navigation","Follow me","Edge detection")
+//                        val itemNames =  listOf("Remote Control","Plot Data","Debug","Free navigation","Follow me","Edge detection")
+                        val itemNames =  listOf("Remote Control","Plot Data","Debug","Algorithm selection")
 //                        val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
 
                         itemsIndexed(items = itemNames) { index, item ->
 //                            Log.d("Device Detail",item)
-                            if(item == "Switch" || item == "Plot Data" || item == "Remote Control" || item == "Debug" || item == "Free navigation" || item == "Follow me" || item == "Edge detection"){
+                            if(item == "Switch" || item == "Plot Data" || item == "Remote Control" || item == "Debug" || item == "Algorithm selection"){
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -257,14 +256,9 @@ fun DeviceDetail(
                                                 navController.navigate("feature/${deviceId}/plot")
                                             } else if (item == "Debug") {
                                                 navController.navigate("feature/${deviceId}/debugConsole")
-                                            } else if (item == "Free navigation") {
-                                                navController.navigate("feature/${deviceId}/debugConsole")
-                                            } else if (item == "Follow me") {
-                                                navController.navigate("feature/${deviceId}/debugConsole")
-                                            } else if (item == "Edge detection") {
-                                                navController.navigate("feature/${deviceId}/debugConsole")
+                                            } else if(item == "Algorithm selection") {
+                                                navController.navigate("feature/${deviceId}/algorithms")
                                             }
-
                                         }
                                 ) {
                                     FeatureBox(item)

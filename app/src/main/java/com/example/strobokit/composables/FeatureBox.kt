@@ -38,6 +38,8 @@ fun FeatureBox(featureName: String){
         painter = R.drawable.baseline_directions_walk_24
     }else if(featureName == "Edge detection"){
         painter = R.drawable.baseline_border_outer_24
+    }else if(featureName == "Algorithm selection"){
+        painter = R.drawable.baseline_border_outer_24
     }
     Box(modifier = Modifier
         .fillMaxWidth()
