@@ -1,11 +1,14 @@
 package com.example.strobokit.composables
 
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.consumeAllChanges
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import io.github.sceneview.Scene
 import io.github.sceneview.math.Direction
@@ -20,7 +23,18 @@ import io.github.sceneview.rememberNode
 
 @Composable
 fun CarModel(){
-    Box(modifier = Modifier.fillMaxWidth().size(300.dp)) {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .size(300.dp)
+        .pointerInput(Unit) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent()
+                    event.changes.forEach { it.consume() }
+                }
+            }
+        }
+    ) {
         val engine = rememberEngine()
         val modelLoader = rememberModelLoader(engine)
         val environmentLoader = rememberEnvironmentLoader(engine)
@@ -34,9 +48,10 @@ fun CarModel(){
         val modelNode = rememberNode {
             ModelNode(
                 modelInstance = modelLoader.createModelInstance(
-                    assetFileLocation = "models/car_project_edited.glb"
+                    assetFileLocation = "models/car_animated.glb"
                 ),
-                scaleToUnits = 3f
+                scaleToUnits = 3f,
+                autoAnimate = true
             )
         }
 
