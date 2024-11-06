@@ -8,12 +8,28 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.strobokit.composables.controllerAction
 import com.st.blue_sdk.BlueManager
+import com.st.blue_sdk.features.Feature
+import com.st.blue_sdk.features.battery.Battery
+import com.st.blue_sdk.features.battery.BatteryInfo
 import com.st.blue_sdk.features.extended.navigation_control.NavigationControl
 import com.st.blue_sdk.features.extended.navigation_control.request.MoveCommandDifferentialDriveSimpleMove
 import com.st.blue_sdk.features.switchfeature.SwitchFeature
 import com.st.blue_sdk.features.switchfeature.SwitchStatusType
 import com.st.blue_sdk.features.switchfeature.request.SwitchOn
+import com.st.blue_sdk.models.Node
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,6 +44,86 @@ class ControllerViewModel @Inject constructor(
 
     private var lastAction = 'S'
     private var lastSpeed = 0
+
+    val features = MutableStateFlow<List<Feature<*>>>(emptyList())
+
+    private var batteryFeature : Feature<*> ? = null
+
+    private val _batteryData = MutableSharedFlow<BatteryInfo>()
+    val batteryData: Flow<BatteryInfo>
+        get() = _batteryData
+
+    private var featureJob: Job? = null
+    private var rssiJob: Job? = null
+
+    fun bleDevice(deviceId: String): Flow<Node> =
+        try {
+            blueManager.getNodeStatus(nodeId = deviceId)
+        } catch (ex: IllegalStateException) {
+            flowOf()
+        }
+
+    fun getFeatures(deviceId: String) {
+        features.update { blueManager.nodeFeatures(nodeId = deviceId) }
+
+        if(batteryFeature == null){
+            blueManager.nodeFeatures(nodeId = deviceId).find{
+                Battery.NAME == it.name
+            }?.let { f ->
+                batteryFeature = f
+            }
+        }
+
+        batteryFeature?.let{
+            featureJob = viewModelScope.launch{
+                blueManager.getFeatureUpdates(nodeId = deviceId, listOf(it))
+                    .flowOn(Dispatchers.IO)
+                    .take(1)
+                    .first { update ->
+                        val data = update.data
+                        if(data is BatteryInfo){
+                            _batteryData.emit(data)
+                            true
+                        }else{
+                            false
+                        }
+                    }
+            }
+        }
+
+        rssiJob = viewModelScope.launch {
+            try {
+                while(isActive){
+                    blueManager.getRssi(deviceId)
+                    delay(1000)
+                }
+            }catch (
+                _: IllegalStateException
+            ){ }
+
+        }
+
+    }
+
+    fun disableFeatures(deviceId : String){
+        batteryFeature?.let {
+            viewModelScope.launch{
+                blueManager.disableFeatures(deviceId, listOf(it))
+            }
+        }
+        featureJob?.cancel()
+        rssiJob?.cancel()
+    }
+
+
+    fun disconnect(deviceId: String) {
+        features.update { emptyList() }
+
+        viewModelScope.launch {
+            blueManager.disconnect(nodeId = deviceId)
+        }
+    }
+
 
     fun sendCommand(featureName: String, deviceId: String,action : controllerAction,angle : Int = 0, speed : Int = lastSpeed) {
 
@@ -117,7 +213,6 @@ class ControllerViewModel @Inject constructor(
                             )
                         }
                     }
-
             }
         }
     }

@@ -1,8 +1,12 @@
 package com.example.strobokit.composables
 
 import android.app.Activity
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -26,6 +31,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIos
+import androidx.compose.material.icons.filled.Battery2Bar
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Help
@@ -37,6 +43,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,11 +66,16 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.strobokit.ui.theme.ErrorColor
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
+import com.example.strobokit.ui.theme.SecondaryColor
+import com.example.strobokit.ui.theme.SuccessColor
 import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.utilities.ChangeOrientationToLandscape
 import com.example.strobokit.viewModels.ControllerViewModel
+import com.st.blue_sdk.models.NodeState
+import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
 
@@ -95,6 +108,32 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
     )
     val view = LocalView.current
     val context = LocalContext.current
+
+    val bleDevice = viewModel.bleDevice(deviceId = nodeId).collectAsState(initial = null)
+    val batteryData by viewModel.batteryData.collectAsState(initial = null)
+    val batteryPercentage by remember { mutableStateOf(batteryData?.percentage?.value?.toInt()) }
+
+    val rssiData : String = bleDevice.value?.rssi?.rssi.toString()
+
+    var isFeaturesFetched by remember { mutableStateOf(false) }
+
+    if(bleDevice.value?.connectionStatus?.current == NodeState.Ready && !isFeaturesFetched){
+        viewModel.getFeatures(deviceId = nodeId)
+        isFeaturesFetched = true
+    }
+
+    val backHandlingEnabled by remember { mutableStateOf(true) }
+    BackHandler(enabled = backHandlingEnabled) {
+        viewModel.disconnect(deviceId = nodeId)
+        navController.popBackStack()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.disableFeatures(deviceId = nodeId)
+        }
+    }
+
 
     DisposableEffect(context) {
         val window = (context as Activity).window
@@ -174,13 +213,63 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
         //Mid Column
         Column(modifier = Modifier
             .fillMaxWidth(0.5f)) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.5f)
+                .padding(vertical = 20.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .padding(10.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally){
+                        if (batteryPercentage != null) {
+                            if(batteryPercentage!! > 20) {
+                                Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SuccessColor)
+                            }else{
+                                Icon(Icons.Filled.Battery2Bar, contentDescription = "BatterLow", tint = ErrorColor)
+                            }
+                        }else{
+                            Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SecondaryColor)
+                        }
+
+                        if (batteryPercentage != null) {
+                            if(batteryPercentage!! > 20) {
+                                androidx.compose.material3.Text(text = "OK", fontSize = 10.sp, color = OnPrimary)
+                            }else{
+                                androidx.compose.material3.Text(text = "LOW", fontSize = 10.sp, color = OnPrimary)
+                            }
+                        }else{
+                            androidx.compose.material3.Text(text = "NA", fontSize = 10.sp,color = OnPrimary)
+                        }
+                    }
+
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally){
+                        Icon(
+                            imageVector = Icons.Default.SignalCellularAlt,
+                            contentDescription = "Close Button",
+                            tint = SecondaryColor
+                        )
+                        Text(text = "$rssiData dBm", fontSize = 10.sp, color = OnPrimary)
+                    }
+                }
+            }
+
 
             Column(modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth()
                 .padding(bottom = 24.dp),
                 verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.CenterHorizontally){
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
 
                 Box(
                     modifier = Modifier
@@ -197,12 +286,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                         )
                     )
                 }
-                if(isDisarmed.value)
-                {
-                    Text(text = "Armed", color = OnPrimary)
-                }else{
-                    Text(text = "Disarmed", color = OnPrimary)
-                }
+                ArmDisarmText(isDisarmed = isDisarmed)
 
             }
         }
@@ -217,7 +301,8 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                 .padding(horizontal = 20.dp, vertical = 20.dp)
                 ,
                 verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.SpaceBetween) {
+                horizontalArrangement = Arrangement.End
+            ) {
                 IconButton(onClick = { /* Handle close action */ },
                     modifier = Modifier
                         .size(40.dp)
@@ -228,50 +313,16 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                             brush = borderBrush,
                             shape = RoundedCornerShape(10.dp)
                         )
-
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
-                        contentDescription = "Close Button",
+                        contentDescription = "Settings",
                         tint = OnPrimary
                     )
                 }
-                IconButton(onClick = { /* Handle close action */ },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(
-                            width = 1.dp,
-                            brush = borderBrush,
-                            shape = RoundedCornerShape(10.dp)
-                        )
 
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.BatteryFull,
-                        contentDescription = "Close Button",
-                        tint = OnPrimary
-                    )
-                }
-                IconButton(onClick = { /* Handle close action */ },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.LightGray.copy(alpha = 0.4f))
-                        .border(
-                            width = 1.dp,
-                            brush = borderBrush,
-                            shape = RoundedCornerShape(10.dp)
-                        )
+                Spacer(modifier = Modifier.width(16.dp))
 
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.SignalCellularAlt,
-                        contentDescription = "Close Button",
-                        tint = OnPrimary
-                    )
-                }
                 IconButton(onClick = { /* Handle close action */ },
                     modifier = Modifier
                         .size(40.dp)
@@ -286,7 +337,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                 ) {
                     Icon(
                         imageVector = Icons.Default.Help,
-                        contentDescription = "Close Button",
+                        contentDescription = "Help",
                         tint = OnPrimary
                     )
                 }
@@ -321,6 +372,26 @@ enum class controllerAction{
     Forward , Backward , Right , Left , Stop
 }
 
+@Composable
+fun ArmDisarmText(isDisarmed: State<Boolean>) {
+    var isVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isDisarmed.value) {
+        if (isDisarmed.value) {
+            isVisible = true
+            delay(3000) // Delay for 3 seconds
+            isVisible = false
+        }
+    }
+
+    if(isDisarmed.value && isVisible){
+        Text(text = "Active", color = OnPrimary)
+    }else if(isDisarmed.value && !isVisible){
+        Text(text = "", color = OnPrimary)
+    }else{
+        Text(text = "Inactive", color = OnPrimary)
+    }
+}
 
 @Composable
 @Preview( widthDp = 800, heightDp = 400, apiLevel = 34)

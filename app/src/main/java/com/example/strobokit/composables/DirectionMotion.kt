@@ -59,7 +59,7 @@ fun DirectionMotion(onHandleMoved : ()->Unit,viewModel: ControllerViewModel,node
 
     val parentBackgroundColor = TertiaryColor
     val knobColor = PrimaryColor
-    val hoverAreaColor = parentBackgroundColor.copy(alpha = 0.8f).let {
+    var hoverAreaColor = parentBackgroundColor.copy(alpha = 0.8f).let {
         Color(
             red = (it.red * 0.8f).toFloat(),
             green = (it.green * 0.8f).toFloat(),
@@ -67,11 +67,31 @@ fun DirectionMotion(onHandleMoved : ()->Unit,viewModel: ControllerViewModel,node
             alpha = 0.4f // Adjust transparency here
         )
     }
-    val gradientBrush = Brush.linearGradient(
+    var gradientBrush = Brush.linearGradient(
         colors = listOf(PrimaryColor, Color.White),
         start = androidx.compose.ui.geometry.Offset(0f, 0f),
         end = androidx.compose.ui.geometry.Offset(900f, 900f)
     )
+
+    if(!isDisarmed.value){
+        gradientBrush = Brush.linearGradient(
+            colors = listOf(
+                PrimaryColor.copy(alpha = 0.5f), // Reduced opacity for PrimaryColor
+                Color.White.copy(alpha = 0.5f)   // Reduced opacity for White
+            ),
+            start = androidx.compose.ui.geometry.Offset(0f, 0f),
+            end = androidx.compose.ui.geometry.Offset(900f, 900f)
+        )
+        hoverAreaColor = parentBackgroundColor.copy(alpha = 0.8f).let {
+            Color(
+                red = (it.red * 0.8f).toFloat(),
+                green = (it.green * 0.8f).toFloat(),
+                blue = (it.blue * 0.8f).toFloat(),
+                alpha = 0.2f // Adjust transparency here
+            )
+        }
+    }
+
     val buttonColor = knobColor.copy(alpha = 0.8f).let {
         Color(
             red = (it.red * 0.8f).toFloat(),

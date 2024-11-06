@@ -39,18 +39,38 @@ import com.example.strobokit.viewModels.ControllerViewModel
 @Composable
 fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : String,isDisarmed : MutableState<Boolean>) {
     val parentBackgroundColor = TertiaryColor
-    val gradientBrush = Brush.linearGradient(
+    var gradientBrush = Brush.linearGradient(
         colors = listOf(PrimaryColor, Color.White),
         start = Offset(0f, 0f),
         end = Offset(900f, 900f)
     )
-    val buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
+    var buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
         Color(
             red = (it.red * 0.8f).toFloat(),
             green = (it.green * 0.8f).toFloat(),
             blue = (it.blue * 0.8f).toFloat(),
-            alpha = 0.3f // Adjust transparency here
+            alpha = 0.4f // Adjust transparency here
         )
+    }
+
+    if(!isDisarmed.value){
+        gradientBrush = Brush.linearGradient(
+            colors = listOf(
+                PrimaryColor.copy(alpha = 0.5f), // Reduced opacity for PrimaryColor
+                Color.White.copy(alpha = 0.5f)   // Reduced opacity for White
+            ),
+            start = Offset(0f, 0f),
+            end = Offset(900f, 900f)
+        )
+
+        buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
+            Color(
+                red = (it.red * 0.8f).toFloat(),
+                green = (it.green * 0.8f).toFloat(),
+                blue = (it.blue * 0.8f).toFloat(),
+                alpha = 0.2f // Reduced transparency to make it more faded
+            )
+        }
     }
     var joystickCenter by remember { mutableStateOf(Offset.Zero) }
     var handlePosition by remember { mutableStateOf(Offset.Zero) }
