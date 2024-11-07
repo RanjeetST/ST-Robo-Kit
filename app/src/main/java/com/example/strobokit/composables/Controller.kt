@@ -116,9 +116,17 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
 
     val backHandlingEnabled by remember { mutableStateOf(true) }
 
+    var isFeaturesFetched by remember { mutableStateOf(false) }
+
+    if(bleDevice.value?.connectionStatus?.current == NodeState.Ready && !isFeaturesFetched){
+        viewModel.getRssi(deviceId = nodeId)
+        isFeaturesFetched = true
+    }
+
     BackHandler(enabled = backHandlingEnabled) {
         navController.popBackStack()
     }
+
 
     DisposableEffect(context) {
         val window = (context as Activity).window

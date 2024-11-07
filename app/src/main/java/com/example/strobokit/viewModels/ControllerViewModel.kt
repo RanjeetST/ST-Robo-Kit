@@ -54,7 +54,7 @@ class ControllerViewModel @Inject constructor(
             flowOf()
         }
 
-    fun getFeatures(deviceId: String) {
+    fun getRssi(deviceId: String) {
 
         rssiJob = viewModelScope.launch {
             try {
