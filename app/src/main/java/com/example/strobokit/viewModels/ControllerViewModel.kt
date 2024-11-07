@@ -45,15 +45,6 @@ class ControllerViewModel @Inject constructor(
     private var lastAction = 'S'
     private var lastSpeed = 0
 
-    val features = MutableStateFlow<List<Feature<*>>>(emptyList())
-
-    private var batteryFeature : Feature<*> ? = null
-
-    private val _batteryData = MutableSharedFlow<BatteryInfo>()
-    val batteryData: Flow<BatteryInfo>
-        get() = _batteryData
-
-    private var featureJob: Job? = null
     private var rssiJob: Job? = null
 
     fun bleDevice(deviceId: String): Flow<Node> =
@@ -64,32 +55,6 @@ class ControllerViewModel @Inject constructor(
         }
 
     fun getFeatures(deviceId: String) {
-        features.update { blueManager.nodeFeatures(nodeId = deviceId) }
-
-        if(batteryFeature == null){
-            blueManager.nodeFeatures(nodeId = deviceId).find{
-                Battery.NAME == it.name
-            }?.let { f ->
-                batteryFeature = f
-            }
-        }
-
-        batteryFeature?.let{
-            featureJob = viewModelScope.launch{
-                blueManager.getFeatureUpdates(nodeId = deviceId, listOf(it))
-                    .flowOn(Dispatchers.IO)
-                    .take(1)
-                    .first { update ->
-                        val data = update.data
-                        if(data is BatteryInfo){
-                            _batteryData.emit(data)
-                            true
-                        }else{
-                            false
-                        }
-                    }
-            }
-        }
 
         rssiJob = viewModelScope.launch {
             try {
@@ -100,30 +65,12 @@ class ControllerViewModel @Inject constructor(
             }catch (
                 _: IllegalStateException
             ){ }
-
         }
-
     }
 
     fun disableFeatures(deviceId : String){
-        batteryFeature?.let {
-            viewModelScope.launch{
-                blueManager.disableFeatures(deviceId, listOf(it))
-            }
-        }
-        featureJob?.cancel()
         rssiJob?.cancel()
     }
-
-
-    fun disconnect(deviceId: String) {
-        features.update { emptyList() }
-
-        viewModelScope.launch {
-            blueManager.disconnect(nodeId = deviceId)
-        }
-    }
-
 
     fun sendCommand(featureName: String, deviceId: String,action : controllerAction,angle : Int = 0, speed : Int = lastSpeed) {
 

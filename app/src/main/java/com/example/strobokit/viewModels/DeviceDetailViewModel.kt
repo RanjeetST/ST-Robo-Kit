@@ -59,18 +59,12 @@ class BleDeviceDetailViewModel @Inject constructor(
 
         batteryFeature?.let{
             featureJob = viewModelScope.launch{
-                blueManager.getFeatureUpdates(nodeId = deviceId, listOf(it))
-                    .flowOn(Dispatchers.IO)
-                    .take(1)
-                    .first { update ->
-                        val data = update.data
-                        if(data is BatteryInfo){
-                            _batteryData.emit(data)
-                            true
-                        }else{
-                            false
-                        }
+                blueManager.getFeatureUpdates(nodeId = deviceId, listOf(it)).collect {
+                    val data = it.data
+                    if (data is BatteryInfo) {
+                        _batteryData.emit(data)
                     }
+                }
             }
         }
 

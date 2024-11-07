@@ -237,7 +237,10 @@ fun DeviceDetail(
                             ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val items = features.value.filter { it.isDataNotifyFeature }
+                        val items = features.value
+                        items.map { item->
+                            Log.d("FEATURES",item.name)
+                        }
 //                        val itemNames =  listOf("Remote Control","Plot Data","Switch") + items.map { it.name }
 //                        val itemNames =  listOf("Remote Control","Plot Data","Debug","Free navigation","Follow me","Edge detection")
                         val itemNames =  listOf("Remote Control","Plot Data","Debug","Algorithm selection")
@@ -251,7 +254,7 @@ fun DeviceDetail(
                                         .fillMaxWidth()
                                         .clickable {
                                             if (item == "Remote Control") {
-                                                navController.navigate("feature/${deviceId}/controller")
+                                                navController.navigate("feature/${deviceId}/controller/${batteryPercentage}")
                                             } else if (item == "Plot Data") {
                                                 navController.navigate("feature/${deviceId}/plot")
                                             } else if (item == "Debug") {

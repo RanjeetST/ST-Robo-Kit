@@ -80,7 +80,8 @@ import kotlin.math.roundToInt
 
 
 @Composable
-fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController){
+fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController,batteryPercentage: Int){
+    ChangeOrientationToLandscape(context = LocalContext.current)
     val isDisarmed = remember { mutableStateOf(false) }
     val shake = remember { Animatable(0f) }
     var trigger by remember { mutableStateOf(0L) }
@@ -110,30 +111,14 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
     val context = LocalContext.current
 
     val bleDevice = viewModel.bleDevice(deviceId = nodeId).collectAsState(initial = null)
-    val batteryData by viewModel.batteryData.collectAsState(initial = null)
-    val batteryPercentage by remember { mutableStateOf(batteryData?.percentage?.value?.toInt()) }
 
     val rssiData : String = bleDevice.value?.rssi?.rssi.toString()
 
-    var isFeaturesFetched by remember { mutableStateOf(false) }
-
-    if(bleDevice.value?.connectionStatus?.current == NodeState.Ready && !isFeaturesFetched){
-        viewModel.getFeatures(deviceId = nodeId)
-        isFeaturesFetched = true
-    }
-
     val backHandlingEnabled by remember { mutableStateOf(true) }
+
     BackHandler(enabled = backHandlingEnabled) {
-        viewModel.disconnect(deviceId = nodeId)
         navController.popBackStack()
     }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.disableFeatures(deviceId = nodeId)
-        }
-    }
-
 
     DisposableEffect(context) {
         val window = (context as Activity).window
@@ -146,12 +131,10 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
         controller.hide(WindowInsetsCompat.Type.systemBars())
 
         onDispose {
-            // Show system bars when leaving this screen
+            viewModel.disableFeatures(deviceId = nodeId)
             controller.show(WindowInsetsCompat.Type.systemBars())
         }
     }
-
-    ChangeOrientationToLandscape(context = LocalContext.current)
 
     Row(modifier = Modifier
         .fillMaxSize()
@@ -228,7 +211,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally){
                         if (batteryPercentage != null) {
-                            if(batteryPercentage!! > 20) {
+                            if(batteryPercentage > 20) {
                                 Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SuccessColor)
                             }else{
                                 Icon(Icons.Filled.Battery2Bar, contentDescription = "BatterLow", tint = ErrorColor)
