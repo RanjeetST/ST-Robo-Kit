@@ -114,9 +114,8 @@ private fun MainScreen(){
                 }
 
                 composable(
-                    route = "feature/{deviceId}/controller/{batteryPercentage}",
-                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType },
-                            navArgument("batteryPercentage") { type = NavType.IntType }
+                    route = "feature/{deviceId}/controller",
+                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
@@ -125,7 +124,6 @@ private fun MainScreen(){
                                 Controller(
                                     viewModel = hiltViewModel(),
                                     nodeId = deviceId,
-                                    batteryPercentage = batteryPercentage,
                                     navController = navController
                                 )
                             }

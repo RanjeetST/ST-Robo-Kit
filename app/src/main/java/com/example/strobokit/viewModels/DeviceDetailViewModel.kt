@@ -1,11 +1,13 @@
 package com.example.strobokit.viewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.st.blue_sdk.BlueManager
 import com.st.blue_sdk.features.Feature
 import com.st.blue_sdk.features.battery.Battery
 import com.st.blue_sdk.features.battery.BatteryInfo
+import com.st.blue_sdk.features.extended.hs_datalog_config.model.Tag
 import com.st.blue_sdk.models.Node
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

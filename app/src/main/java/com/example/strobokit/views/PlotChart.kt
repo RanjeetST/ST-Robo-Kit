@@ -1,5 +1,6 @@
 package com.example.strobokit.views
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -163,6 +164,7 @@ fun PlotChart(
         .fillMaxSize()
         .background(OnPrimary)) {
         val logValue = viewModel.featureUpdates.value?.data?.logValue
+        Log.d("PLOT","$logValue")
         val values = logValue?.split(",")?.map { it.trim().toFloat() }
         val x = values?.get(0)
         val y = values?.get(1)
@@ -269,6 +271,7 @@ fun PlotChart(
 
     LaunchedEffect(viewModel.featureUpdates.value?.data?.logValue) {
         val logValue = viewModel.featureUpdates.value?.data?.logValue
+
         if (!logValue.isNullOrEmpty()) {
             val values = logValue.split(",").map { it.trim().toFloat() }
             if (values.size == 3) {

@@ -80,7 +80,7 @@ import kotlin.math.roundToInt
 
 
 @Composable
-fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController,batteryPercentage: Int){
+fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController){
     ChangeOrientationToLandscape(context = LocalContext.current)
     val isDisarmed = remember { mutableStateOf(false) }
     val shake = remember { Animatable(0f) }
@@ -117,6 +117,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
     val backHandlingEnabled by remember { mutableStateOf(true) }
 
     var isFeaturesFetched by remember { mutableStateOf(false) }
+    val batteryPercentage = 21
 
     if(bleDevice.value?.connectionStatus?.current == NodeState.Ready && !isFeaturesFetched){
         viewModel.getRssi(deviceId = nodeId)

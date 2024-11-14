@@ -77,7 +77,9 @@ class ControllerViewModel @Inject constructor(
         viewModelScope.launch {
 
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
+
             if(feature is NavigationControl){
+                Log.d(TAG,"$action + $speed")
                     when(action){
                         controllerAction.Forward -> {
                             lastAction = 'F'

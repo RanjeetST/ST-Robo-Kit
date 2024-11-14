@@ -175,6 +175,8 @@ fun DeviceDetail(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         IconButton(onClick = {},modifier = Modifier.size(20.dp)) {
                             Log.d("Device detail",batteryPercentage.toString())
+                            Log.d("battery","${batteryData}")
+                            Log.d("battery","${batteryData?.status}")
                             if (batteryPercentage != null) {
                                 if(batteryPercentage > 20) {
                                     Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SuccessColor)
@@ -254,7 +256,7 @@ fun DeviceDetail(
                                         .fillMaxWidth()
                                         .clickable {
                                             if (item == "Remote Control") {
-                                                navController.navigate("feature/${deviceId}/controller/${batteryPercentage}")
+                                                navController.navigate("feature/${deviceId}/controller")
                                             } else if (item == "Plot Data") {
                                                 navController.navigate("feature/${deviceId}/plot")
                                             } else if (item == "Debug") {

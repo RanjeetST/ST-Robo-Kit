@@ -65,6 +65,7 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
 
     var doNotShowRationale by rememberSaveable { mutableStateOf(false) }
     val connectionState by viewModel.connectionState.collectAsState()
+    var hasNavigated by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -193,8 +194,9 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                                 }
                         ) {
                             LaunchedEffect(connectionState) {
-                                if(connectionState == NodeState.Connected)
+                                if(connectionState == NodeState.Connected && !hasNavigated)
                                 {
+                                    hasNavigated = true
                                     navController.navigate("detail/${item.device.address}")
                                 }
                             }

@@ -1,5 +1,6 @@
 package com.example.strobokit.views
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -52,6 +53,9 @@ import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.ST_Magenta
 import com.example.strobokit.ui.theme.SecondaryColor
 import com.example.strobokit.viewModels.PlotViewModel
+import com.st.blue_sdk.features.acceleration.Acceleration
+import com.st.blue_sdk.features.gyroscope.Gyroscope
+import com.st.blue_sdk.features.magnetometer.Magnetometer
 import kotlin.math.ceil
 
 @Composable
@@ -280,7 +284,7 @@ fun PlotChartNew(
         isZoomAllowed = false
     )
 
-    val usernames = listOf("Accelerometer","Gyroscope", "Magnetometer")
+    val usernames = listOf(Acceleration.NAME,Gyroscope.NAME, Magnetometer.NAME)
     val isDropDownExpanded = remember { mutableStateOf(false) }
     val itemPosition = remember { mutableStateOf(0) }
     val selectedFeature = remember { mutableStateOf(usernames[itemPosition.value]) }
@@ -300,6 +304,7 @@ fun PlotChartNew(
         .fillMaxSize()
         .background(OnPrimary)) {
         val logValue = viewModel.featureUpdates.value?.data?.logValue
+//        Log.d("PLOT","$logValue")
         val values = logValue?.split(",")?.map { it.trim().toFloat() }
         val x = if (isStart) values?.get(0) else lastX
         val y = if (isStart) values?.get(1) else lastY
@@ -462,7 +467,7 @@ fun PlotChartNew(
                 val (x, y, z) = values
                 var buffer = 500f
 
-                if(selectedFeature.value == "Gyroscope"){
+                if(selectedFeature.value == Gyroscope.NAME){
                     buffer = 1000f
                 }
 
