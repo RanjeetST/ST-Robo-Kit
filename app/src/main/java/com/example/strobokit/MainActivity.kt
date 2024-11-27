@@ -1,6 +1,7 @@
 package com.example.strobokit
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -22,9 +23,12 @@ import com.example.strobokit.views.AlgorithmSelection
 import com.example.strobokit.views.BleDeviceList
 import com.example.strobokit.views.DebugConsole
 import com.example.strobokit.views.DeviceDetail
+import com.example.strobokit.views.DeviceDetailV2
 import com.example.strobokit.views.FeatureDetail
 import com.example.strobokit.views.HomeScreen
 import com.example.strobokit.views.PlotChartNew
+import com.example.strobokit.views.PlotChartV2
+import com.example.strobokit.views.SceneDescriptor
 import com.example.strobokit.views.SplashScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -46,7 +50,7 @@ class MainActivity : ComponentActivity() {
 private fun MainScreen(){
     //to navigate between activities
     val navController = rememberNavController()
-    val startDestination = if (SessionManager.isSplashShown()) "home" else "splash_screen"
+    val startDestination = if (SessionManager.isSplashShown()) "home" else "home"
 
     STRoboKitTheme {
         Scaffold(
@@ -73,7 +77,7 @@ private fun MainScreen(){
                     arguments = listOf(navArgument("deviceId"){type = NavType.StringType})
                 ){backStackEntry ->
                    backStackEntry.arguments?.getString("deviceId")?.let{deviceId ->
-                       DeviceDetail(
+                       DeviceDetailV2 (
                            viewModel = hiltViewModel(),
                            navController = navController,
                            deviceId = deviceId
@@ -114,17 +118,20 @@ private fun MainScreen(){
                 }
 
                 composable(
-                    route = "feature/{deviceId}/controller",
-                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType }
+                    route = "feature/{deviceId}/controller/{batteryPercentage}",
+                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType },
+                        navArgument("batteryPercentage") { type = NavType.IntType }
                     )
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                         backStackEntry.arguments?.getInt("batteryPercentage")
                             ?.let { batteryPercentage ->
+//                                Log.d("main",batteryPercentage.toString())
                                 Controller(
                                     viewModel = hiltViewModel(),
                                     nodeId = deviceId,
-                                    navController = navController
+                                    navController = navController,
+                                    batteryPercentage = batteryPercentage
                                 )
                             }
                     }
@@ -135,7 +142,7 @@ private fun MainScreen(){
                     arguments = listOf(navArgument("deviceId") { type = NavType.StringType })
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
-                        PlotChartNew(
+                        PlotChartV2(
                             viewModel = hiltViewModel(),
                             deviceId = deviceId,
                             navController = navController

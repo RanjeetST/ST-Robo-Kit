@@ -20,6 +20,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.viewModels.ControllerViewModel
+import kotlinx.coroutines.Job
 
 
 @Composable
@@ -75,6 +77,11 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
     var joystickCenter by remember { mutableStateOf(Offset.Zero) }
     var handlePosition by remember { mutableStateOf(Offset.Zero) }
     var lastCommand by remember { mutableStateOf("") }
+    var lastOffsetSent by remember { mutableStateOf(0) }
+
+
+    var timerJob by remember { mutableStateOf<Job?>(null) }
+
     Box(
         modifier = Modifier
             .padding(6.dp)
@@ -108,37 +115,47 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
                             y = (handlePosition.y + dragAmount.y).coerceIn(-120f, 120f)
                         )
 
-                        if(isDisarmed.value == true){
-
-                            when (handlePosition.y.toInt()) {
-                                in -120..-1 -> {
-                                    if (lastCommand != "Forward") {
-                                        val speed = calculateSpeed(handlePosition.y.toInt() ,-120)
+                        if (isDisarmed.value) {
+                            val offsetDifference = (handlePosition.y - lastOffsetSent).toInt()
+                            if (offsetDifference >= 40 || offsetDifference <= -40 || handlePosition.y == 0f) {
+                                when {
+                                    handlePosition.y.toInt() in -120..-1 -> {
+                                        val speed = calculateSpeed(handlePosition.y.toInt(), -120)
                                         Log.d("JOYSTICK", "Forward Called")
+                                        Log.d("JOYSTICK", "speed = $speed")
                                         viewModel.sendCommand(
                                             featureName = "Navigation Control",
-                                            nodeId,
-                                            controllerAction.Forward,
-                                            speed
+                                            deviceId = nodeId,
+                                            action = controllerAction.Forward,
+                                            speed = speed
                                         )
                                         lastCommand = "Forward"
                                     }
-                                }
-                                in 1..120 -> {
-                                    if (lastCommand != "Backward") {
-                                        val speed = calculateSpeed(handlePosition.y.toInt(),120)
+                                    handlePosition.y.toInt() in 1..120 -> {
+                                        val speed = calculateSpeed(handlePosition.y.toInt(), 120)
                                         Log.d("JOYSTICK", "Backward Called")
+                                        Log.d("JOYSTICK", "speed = $speed")
                                         viewModel.sendCommand(
                                             featureName = "Navigation Control",
-                                            nodeId,
-                                            controllerAction.Backward
+                                            deviceId = nodeId,
+                                            action = controllerAction.Backward,
+                                            speed = speed
                                         )
                                         lastCommand = "Backward"
                                     }
+                                    handlePosition.y.toInt() == 0 -> {
+                                        Log.d("JOYSTICK", "Stop Called")
+                                        viewModel.sendCommand(
+                                            featureName = "Navigation Control",
+                                            deviceId = nodeId,
+                                            action = controllerAction.Stop,
+                                            speed = 0,
+                                            angle = 0
+                                        )
+                                        lastCommand = "Stop"
+                                    }
                                 }
-                                else -> {
-                                    lastCommand = ""
-                                }
+                                lastOffsetSent = handlePosition.y.toInt()
                             }
                         }
 
@@ -191,7 +208,7 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
 fun calculateSpeed(position: Int,maxPosition : Int): Int {
 
     val percentage = (position.toFloat() / maxPosition.toFloat()) * 100
-    return percentage.toInt()
+    return percentage.toInt()/3
 }
 
 @Composable

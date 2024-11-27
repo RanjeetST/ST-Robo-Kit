@@ -175,7 +175,7 @@ fun DeviceDetail(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         IconButton(onClick = {},modifier = Modifier.size(20.dp)) {
                             Log.d("Device detail",batteryPercentage.toString())
-                            Log.d("battery","${batteryData}")
+                            Log.d("battery","$batteryData")
                             Log.d("battery","${batteryData?.status}")
                             if (batteryPercentage != null) {
                                 if(batteryPercentage > 20) {
@@ -190,12 +190,12 @@ fun DeviceDetail(
 
                         if (batteryPercentage != null) {
                             if(batteryPercentage > 20) {
-                                Text(text = "OK", fontSize = 10.sp)
+                                Text(text = "OK", color = OnPrimary, fontSize = 10.sp)
                             }else{
-                                Text(text = "LOW", fontSize = 10.sp)
+                                Text(text = "LOW",color = OnPrimary, fontSize = 10.sp)
                             }
                         }else{
-                            Text(text = "NA", fontSize = 10.sp)
+                            Text(text = "NA",color = OnPrimary, fontSize = 10.sp)
                         }
 
                     }
@@ -205,7 +205,7 @@ fun DeviceDetail(
                         IconButton(onClick = {},modifier = Modifier.size(20.dp)) {
                             Icon(Icons.Filled.SignalCellularAlt, contentDescription = "RSSI", tint = SecondaryColor)
                         }
-                        Text(text = "$rssiData dBm", fontSize = 10.sp)
+                        Text(text = "$rssiData dBm",color = OnPrimary, fontSize = 10.sp)
                     }
                 }
             }
@@ -256,13 +256,16 @@ fun DeviceDetail(
                                         .fillMaxWidth()
                                         .clickable {
                                             if (item == "Remote Control") {
-                                                navController.navigate("feature/${deviceId}/controller")
+                                                val batteryValue = batteryPercentage ?: -1
+                                                navController.navigate("feature/${deviceId}/controller/${batteryValue}")
                                             } else if (item == "Plot Data") {
                                                 navController.navigate("feature/${deviceId}/plot")
                                             } else if (item == "Debug") {
                                                 navController.navigate("feature/${deviceId}/debugConsole")
                                             } else if(item == "Algorithm selection") {
                                                 navController.navigate("feature/${deviceId}/algorithms")
+                                            } else if(item == "Scene descriptor"){
+                                                navController.navigate("scene")
                                             }
                                         }
                                 ) {

@@ -12,6 +12,7 @@ import com.st.blue_sdk.models.Node
 import com.st.blue_sdk.models.NodeState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -50,19 +51,20 @@ class BleDeviceListViewModel @Inject constructor(
     fun startScan() {
         scanPeripheralJob?.cancel()
         scanPeripheralJob = viewModelScope.launch {
-            blueManager.scanNodes().map {
-                isLoading.tryEmit(it.status == Status.LOADING)
+            blueManager.scanNodes().map {resource ->
+                isLoading.tryEmit(value = resource.status == Status.LOADING)
 
-                it.data ?: emptyList()
-            }.collect {
-                scanBleDevices.tryEmit(it)
+                resource.data ?: emptyList()
+            }.collect {nodes->
+                scanBleDevices.tryEmit(value = nodes)
             }
         }
     }
 
-    fun connect(deviceId: String, maxConnectionRetries: Int = MAX_RETRY_CONNECTION) {
+    fun connect(deviceId: String, maxConnectionRetries: Int = MAX_RETRY_CONNECTION,onNodeReady: (()-> Unit)? = null) {
         viewModelScope.launch {
             var retryCount = 0
+            var callback = onNodeReady
             blueManager.connectToNode(deviceId).collect {
 
                 val previousNodeState = it.connectionStatus.prev
@@ -85,6 +87,13 @@ class BleDeviceListViewModel @Inject constructor(
 
                     Log.d(TAG, "Retry connection...")
                     blueManager.connectToNode(deviceId)
+                }
+
+                if (currentNodeState == NodeState.Ready) {
+
+                    delay(500)
+                    callback?.invoke()
+                    callback = null
                 }
             }
         }

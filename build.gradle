@@ -16,7 +16,7 @@ buildscript {
         desugaring_version = '2.0.4'
         espresso_core_version = '3.5.1'
         google_material_version = '1.11.0'
-        gradle_version = '8.2.2'
+        gradle_version = '8.5.0'
         hilt_version = '2.50'
         hilt_compose_version = '1.1.0'
         hilt_navigation_fragment_version = '1.1.0'

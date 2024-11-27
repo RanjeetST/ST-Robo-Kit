@@ -136,21 +136,21 @@ fun DirectionMotion(onHandleMoved : ()->Unit,viewModel: ControllerViewModel,node
                                 if (isDisarmed.value && shouldSendCommand) {
                                     val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
                                     if (angleInteger != lastSentAngle) {
-                                        if (angleInteger in 1..179) {
+                                        if (angleInteger in 1..180) {
                                             Log.d("Controller", "Move right : $angleInteger")
                                             viewModel.sendCommand(
-                                                "Navigation Control",
-                                                nodeId,
-                                                controllerAction.Right,
-                                                angleInteger
+                                                featureName = "Navigation Control",
+                                                deviceId = nodeId,
+                                                action = controllerAction.Right,
+                                                angle = angleInteger
                                             )
                                         } else if (angleInteger in 181..359) {
                                             Log.d("Controller", "Move left : ${360 - angleInteger}")
                                             viewModel.sendCommand(
-                                                "Navigation Control",
-                                                nodeId,
-                                                controllerAction.Left,
-                                                angleInteger
+                                                featureName = "Navigation Control",
+                                                deviceId = nodeId,
+                                                action = controllerAction.Left,
+                                                angle = angleInteger
                                             )
                                         }
                                         lastSentAngle = angleInteger // Update the last sent angle

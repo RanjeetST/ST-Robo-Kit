@@ -2,9 +2,11 @@ package com.example.strobokit.views
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -69,8 +71,15 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
 
     val context = LocalContext.current
 
-    val bluetoothManager = remember { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
-    val bluetoothAdapter = remember { bluetoothManager.adapter }
+    var bluetoothManager by remember { mutableStateOf<BluetoothManager?>(null) }
+    var bluetoothAdapter by remember { mutableStateOf<BluetoothAdapter?>(null) }
+
+    // LaunchedEffect to update the variables whenever the page renders
+    LaunchedEffect(Unit) {
+        bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        bluetoothAdapter = bluetoothManager?.adapter
+    }
+
 
     val pullRefreshState = rememberPullRefreshState(refreshing = viewModel.isRefreshing, onRefresh = {
         if(bluetoothAdapter?.isEnabled == true){
@@ -79,6 +88,8 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
     })
 
     val isScanning by viewModel.isLoading.collectAsStateWithLifecycle()
+
+    var connectedDeviceAddress by remember { mutableStateOf<String?>(null) }
 
     val PermissionState = rememberMultiplePermissionsState(
         permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -157,13 +168,15 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .align(Alignment.CenterVertically),
-                                strokeWidth = 2.dp,
-                                color = OnPrimary
-                            )
+                            if(isScanning){
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .align(Alignment.CenterVertically),
+                                    strokeWidth = 2.dp,
+                                    color = OnPrimary
+                                )
+                            }
                             Spacer(modifier = Modifier.width(5.dp))
                             if(connectionState == NodeState.Disconnected){
                                 if(isScanning)
@@ -190,16 +203,15 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                                     shape = RoundedCornerShape(8.dp)
                                 )
                                 .clickable {
-                                    viewModel.connect(item.device.address)
+                                    if (bluetoothAdapter?.isEnabled == true) {
+                                        viewModel.connect(item.device.address)
+                                        connectedDeviceAddress = item.device.address
+                                    } else {
+                                        // Handle the case when Bluetooth is turned off
+                                        Toast.makeText(context, "Bluetooth is turned off", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                         ) {
-                            LaunchedEffect(connectionState) {
-                                if(connectionState == NodeState.Connected && !hasNavigated)
-                                {
-                                    hasNavigated = true
-                                    navController.navigate("detail/${item.device.address}")
-                                }
-                            }
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -210,7 +222,7 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
                                             modifier = Modifier.padding(4.dp),
-                                            text = item.device.name,
+                                            text = item.device.name ?: "Unknown Device",
                                             color = OnPrimary
                                         )
                                     }
@@ -220,7 +232,7 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                                     ) {
                                         Text(
                                             modifier = Modifier.padding(4.dp),
-                                            text = item.device.address,
+                                            text = item.device.address ?: "N.A",
                                             color = OnPrimary,
                                             fontSize = 10.sp
                                         )
@@ -234,6 +246,14 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
 
                                 }
                             }
+                        }
+                    }
+                }
+                LaunchedEffect(connectionState) {
+                    if (connectionState == NodeState.Connected && !hasNavigated) {
+                        hasNavigated = true
+                        connectedDeviceAddress?.let {
+                            navController.navigate("detail/$it")
                         }
                     }
                 }

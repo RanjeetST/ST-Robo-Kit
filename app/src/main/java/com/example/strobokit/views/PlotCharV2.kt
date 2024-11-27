@@ -1,6 +1,8 @@
 package com.example.strobokit.views
 
+
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -34,7 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -51,15 +56,17 @@ import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.ST_Magenta
 import com.example.strobokit.ui.theme.SecondaryColor
+import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.viewModels.PlotViewModel
 import com.st.blue_sdk.features.acceleration.Acceleration
 import com.st.blue_sdk.features.extended.scene_description.SceneDescription
 import com.st.blue_sdk.features.gyroscope.Gyroscope
 import com.st.blue_sdk.features.magnetometer.Magnetometer
 import kotlin.math.ceil
+import com.example.strobokit.R
 
 @Composable
-fun PlotChartNew(
+fun PlotChartV2(
     viewModel: PlotViewModel,
     navController: NavController,
     deviceId: String
@@ -88,8 +95,8 @@ fun PlotChartNew(
         .steps(10)
         .axisStepSize(2.8.dp)
         .labelAndAxisLinePadding(5.dp)
-        .backgroundColor(Color.White)
-        .axisLineColor(Color.White)
+        .backgroundColor(PrimaryColor)
+        .axisLineColor(Color.Transparent)
         .build()
 
     val yMinValue1 by remember {
@@ -151,9 +158,9 @@ fun PlotChartNew(
             val stepSize = range / numberOfSteps
             (yMinValue1 + index * stepSize).toInt().toString()
         }
-        .axisLineColor(Color.White)
+        .axisLineColor(Color.Gray)
         .axisLabelColor(Color.Gray)
-        .backgroundColor(Color.White)
+        .backgroundColor(PrimaryColor)
         .axisLabelFontSize(12.sp)
         .build()
 
@@ -165,9 +172,9 @@ fun PlotChartNew(
             val stepSize = range / numberOfSteps
             (yMinValue2 + index * stepSize).toInt().toString()
         }
-        .axisLineColor(Color.White)
+        .axisLineColor(Color.Gray)
         .axisLabelColor(Color.Gray)
-        .backgroundColor(Color.White)
+        .backgroundColor(PrimaryColor)
         .axisLabelFontSize(12.sp)
         .build()
 
@@ -179,9 +186,9 @@ fun PlotChartNew(
             val stepSize = range / numberOfSteps
             (yMinValue3 + index * stepSize).toInt().toString()
         }
-        .axisLineColor(Color.White)
+        .axisLineColor(Color.Gray)
         .axisLabelColor(Color.Gray)
-        .backgroundColor(Color.White)
+        .backgroundColor(PrimaryColor)
         .axisLabelFontSize(12.sp)
         .build()
 
@@ -214,7 +221,7 @@ fun PlotChartNew(
                 )
             }
         ),
-        backgroundColor = ST_Magenta.copy(alpha = 0.3f),
+        backgroundColor = PrimaryColor,
         isZoomAllowed = false
     )
 
@@ -247,7 +254,7 @@ fun PlotChartNew(
                 )
             }
         ),
-        backgroundColor = SecondaryColor.copy(alpha = 0.3f),
+        backgroundColor = PrimaryColor,
         isZoomAllowed = false
     )
 
@@ -260,7 +267,7 @@ fun PlotChartNew(
                 ),
                 Line(
                     dataPoints = zLineData.takeLast(visibleRange.toInt()),
-                    lineStyle = LineStyle(color = PrimaryColor, width = 6f, lineType = LineType.Straight())
+                    lineStyle = LineStyle(color = TertiaryColor, width = 6f, lineType = LineType.Straight())
                 ),
                 Line(
                     dataPoints = maxLineData3.takeLast(visibleRange.toInt()),
@@ -280,7 +287,7 @@ fun PlotChartNew(
                 )
             }
         ),
-        backgroundColor = PrimaryColor.copy(alpha = 0.3f),
+        backgroundColor = PrimaryColor,
         isZoomAllowed = false
     )
 
@@ -341,73 +348,130 @@ fun PlotChartNew(
                 Spacer(modifier = Modifier.weight(1f))
             }
             androidx.compose.material3.Text(
-                text = "Plot Data",
+                text = "Monitor",
                 fontSize = 20.sp,
                 color = OnPrimary,
                 fontWeight = FontWeight.SemiBold
             )
         }
 
-        Box {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .clickable {
-                        isDropDownExpanded.value = true
+        Row {
+            Column(modifier = Modifier
+                .fillMaxWidth(0.6f)
+                .padding(5.dp),
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "Accelerometer", fontSize = 20.sp,color = PrimaryColor, fontWeight = FontWeight.Bold)
+                Image(painter = painterResource(id = R.drawable.mems), contentDescription = "MEMS")
+                if (selectedFeature.value != SceneDescription.NAME &&xLineData.isNotEmpty() && yLineData.isNotEmpty() && zLineData.isNotEmpty()) {
+                    Row(
+                        Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center) {
+                        Text(text = "X: $x ${featureUnits[selectedFeature.value]},", color = ST_Magenta, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(text = "Y: $y ${featureUnits[selectedFeature.value]},", color = SecondaryColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(text = "Z: $z ${featureUnits[selectedFeature.value]}", color = TertiaryColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
-                    .padding(12.dp)
-            ) {
-                Text(text = featureName[itemPosition.value], fontSize = 12.sp)
-                Icon(Icons.Filled.ArrowDropDown, contentDescription = "Back", tint = PrimaryColor)
-                IconButton(onClick = { isStart = !isStart }) {
-                    if(!isStart){
-                        Icon(
-                            Icons.Filled.PlayCircle,
-                            contentDescription = "play",
-                            tint = PrimaryColor
-                        )
-                    }else{
-                        Icon(
-                            Icons.Filled.StopCircle,
-                            contentDescription = "pause",
-                            tint = ST_Magenta
-                        )
-                    }
-
                 }
             }
-            DropdownMenu(
-                modifier = Modifier
-                    .background(OnPrimary),
-                expanded = isDropDownExpanded.value,
-                onDismissRequest = {
-                    isDropDownExpanded.value = false
-                }) {
-                featureName.forEachIndexed { index, username ->
-                    DropdownMenuItem(text = {
-                        Text(text = username)
-                    },
-                        onClick = {
-                            isDropDownExpanded.value = false
-                            itemPosition.value = index
-                            selectedFeature.value = username
-                        })
+            Box {
+//                Row(
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    modifier = Modifier
+//                        .clickable {
+//                            isDropDownExpanded.value = true
+//                        }
+//                        .padding(12.dp)
+//                ) {
+//                    Text(text = featureName[itemPosition.value], fontSize = 12.sp)
+//                    Icon(Icons.Filled.ArrowDropDown, contentDescription = "Back", tint = PrimaryColor)
+//                    IconButton(onClick = { isStart = !isStart }) {
+//                        if(!isStart){
+//                            Icon(
+//                                Icons.Filled.PlayCircle,
+//                                contentDescription = "play",
+//                                tint = PrimaryColor
+//                            )
+//                        }else{
+//                            Icon(
+//                                Icons.Filled.StopCircle,
+//                                contentDescription = "pause",
+//                                tint = ST_Magenta
+//                            )
+//                        }
+//                    }
+//                }
+//                DropdownMenu(
+//                    modifier = Modifier
+//                        .background(OnPrimary),
+//                    expanded = isDropDownExpanded.value,
+//                    onDismissRequest = {
+//                        isDropDownExpanded.value = false
+//                    }) {
+//                    featureName.forEachIndexed { index, username ->
+//                        DropdownMenuItem(text = {
+//                            Text(text = username)
+//                        },
+//                            onClick = {
+//                                isDropDownExpanded.value = false
+//                                itemPosition.value = index
+//                                selectedFeature.value = username
+//                            })
+//                    }
+//                }
+                Column{
+                    featureName.forEachIndexed { index, sensorName ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Surface(modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .clickable {
+                                    selectedFeature.value = sensorName
+                                    itemPosition.value = index
+                                },
+                                color = PrimaryColor,
+                                elevation = 2.dp) {
+                                if(sensorName == SceneDescription.NAME){
+                                    Text(text = "ToF", modifier = Modifier.padding(10.dp),color = OnPrimary,fontSize = 12.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                                }else{
+                                    Text(text = sensorName, modifier = Modifier.padding(10.dp),color = OnPrimary,fontSize = 12.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                            if(selectedFeature.value == sensorName){
+                                IconButton(onClick = { isStart = !isStart }) {
+                                    if(!isStart){
+                                        Icon(
+                                            Icons.Filled.PlayCircle,
+                                            contentDescription = "play",
+                                            tint = PrimaryColor
+                                        )
+                                    }else{
+                                        Icon(
+                                            Icons.Filled.StopCircle,
+                                            contentDescription = "pause",
+                                            tint = ST_Magenta
+                                        )
+                                    }
+                                }
+                            }else{
+                                IconButton(onClick = { /*TODO*/ }) {
+                                    
+                                }
+                            }
+                        }
+                    }
                 }
+
             }
         }
 
+
+
         if (selectedFeature.value != SceneDescription.NAME &&xLineData.isNotEmpty() && yLineData.isNotEmpty() && zLineData.isNotEmpty()) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp)) {
-                Text(text = "X: $x ${featureUnits[selectedFeature.value]},", color = ST_Magenta)
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(text = "Y: $y ${featureUnits[selectedFeature.value]},", color = SecondaryColor)
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(text = "Z: $z ${featureUnits[selectedFeature.value]}", color = PrimaryColor)
-            }
+
             Row(modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)

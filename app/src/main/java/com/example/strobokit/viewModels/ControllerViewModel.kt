@@ -43,7 +43,7 @@ class ControllerViewModel @Inject constructor(
     }
 
     private var lastAction = 'S'
-    private var lastSpeed = 0
+
 
     private var rssiJob: Job? = null
 
@@ -72,7 +72,7 @@ class ControllerViewModel @Inject constructor(
         rssiJob?.cancel()
     }
 
-    fun sendCommand(featureName: String, deviceId: String,action : controllerAction,angle : Int = 0, speed : Int = lastSpeed) {
+    fun sendCommand(featureName: String, deviceId: String,action : controllerAction,angle : Int = 0, speed : Int = 0) {
 
         viewModelScope.launch {
 
@@ -83,7 +83,6 @@ class ControllerViewModel @Inject constructor(
                     when(action){
                         controllerAction.Forward -> {
                             lastAction = 'F'
-                            lastSpeed = speed
                             blueManager.writeFeatureCommand(
                                 nodeId = deviceId,
                                 featureCommand = MoveCommandDifferentialDriveSimpleMove(
@@ -100,7 +99,6 @@ class ControllerViewModel @Inject constructor(
 
                         controllerAction.Backward -> {
                             lastAction = 'B'
-                            lastSpeed = speed
                             blueManager.writeFeatureCommand(
                                 nodeId = deviceId,
                                 featureCommand = MoveCommandDifferentialDriveSimpleMove(
@@ -153,7 +151,7 @@ class ControllerViewModel @Inject constructor(
                                 featureCommand = MoveCommandDifferentialDriveSimpleMove(
                                     feature = feature,
                                     action = 0x10u,
-                                    direction = 'F'.code.toUByte(),
+                                    direction = 'S'.code.toUByte(),
                                     speed = 0u,
                                     angle = 0,
                                     res = byteArrayOf(0)

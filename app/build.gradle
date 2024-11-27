@@ -57,6 +57,7 @@ dependencies {
     //network
     implementation libs.okhttp
     implementation libs.logging.interceptor
+    testImplementation libs.junit.junit
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugaring_version"
 
     // Compose

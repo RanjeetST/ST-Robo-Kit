@@ -7,19 +7,16 @@ import com.st.blue_sdk.BlueManager
 import com.st.blue_sdk.features.Feature
 import com.st.blue_sdk.features.battery.Battery
 import com.st.blue_sdk.features.battery.BatteryInfo
-import com.st.blue_sdk.features.extended.hs_datalog_config.model.Tag
+import com.st.blue_sdk.features.extended.navigation_control.NavigationControl
+import com.st.blue_sdk.features.extended.navigation_control.request.SetNavigationMode
 import com.st.blue_sdk.models.Node
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -49,7 +46,7 @@ class BleDeviceDetailViewModel @Inject constructor(
         }
 
     fun getFeatures(deviceId: String) {
-        features.update { blueManager.nodeFeatures(nodeId = deviceId) }
+//        features.update { blueManager.nodeFeatures(nodeId = deviceId) }
 
         if(batteryFeature == null){
             blueManager.nodeFeatures(nodeId = deviceId).find{
@@ -99,6 +96,46 @@ class BleDeviceDetailViewModel @Inject constructor(
 
         viewModelScope.launch {
             blueManager.disconnect(nodeId = deviceId)
+        }
+    }
+
+    enum class Commands{
+        FOLLOW_ME,
+        FREE_NAVIGATION,
+        REMOTE_CONTROL
+    }
+
+    fun sendCommand(command : Commands,deviceId : String){
+
+        viewModelScope.launch {
+            val commandId = when(command){
+                Commands.REMOTE_CONTROL -> {
+                    0x01u
+                }
+                Commands.FREE_NAVIGATION ->{
+                    0x02u
+                }
+                Commands.FOLLOW_ME -> {
+                    0x03u
+                }
+            }
+//            Log.d(TAG,"Feature not found command id = ${commandId.toUByte()}")
+            val feature = blueManager.nodeFeatures(deviceId).find { it.name == "Navigation Control" } ?: return@launch
+
+            if(feature is NavigationControl){
+                Log.d("navigation","${feature.name} + ${commandId.toUByte()}")
+                blueManager.writeFeatureCommand(
+                    nodeId = deviceId,
+                    featureCommand = SetNavigationMode(
+                        feature = feature,
+                        action = 16u,
+                        navigationMode = commandId.toUByte(),
+                        armed = 0u,
+                        res = 0L
+                    ),
+                    responseTimeout = 1L
+                )
+            }
         }
     }
 }

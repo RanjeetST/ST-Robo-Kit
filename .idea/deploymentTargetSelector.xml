@@ -11,13 +11,13 @@
       <SelectionState runConfigName="Controller">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="DirectionMotion">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="DirectionMotion2">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="ControllerPreview">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="SceneDescriptor">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

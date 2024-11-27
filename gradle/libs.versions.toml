@@ -30,6 +30,7 @@ roomRuntime = "2.6.1"
 sceneview = "2.2.1"
 stBlueSdk = "1.2.0"
 ycharts = "2.1.0"
+junitJunit = "4.12"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -79,6 +80,7 @@ ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 ycharts = { module = "co.yml:ycharts", version.ref = "ycharts" }
+junit-junit = { group = "junit", name = "junit", version.ref = "junitJunit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

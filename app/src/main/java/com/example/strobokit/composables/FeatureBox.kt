@@ -23,7 +23,7 @@ import com.example.strobokit.R
 import com.example.strobokit.ui.theme.OnPrimary
 
 @Composable
-fun FeatureBox(featureName: String){
+fun FeatureBox(featureName: String,iconSize: Int = 50,textSize:Int = 12,textAreaSize : Int = 70){
     var painter : Int = R.drawable.controller
 
     if(featureName == "Remote Control"){
@@ -31,7 +31,7 @@ fun FeatureBox(featureName: String){
     }else if(featureName == "Plot Data"){
         painter = R.drawable.baseline_auto_graph_24
     }else if(featureName == "Debug"){
-        painter = R.drawable.baseline_bug_report_24
+        painter = R.drawable.debug
     }else if(featureName == "Free navigation"){
         painter = R.drawable.baseline_assistant_navigation_24
     }else if(featureName == "Follow me"){
@@ -40,10 +40,19 @@ fun FeatureBox(featureName: String){
         painter = R.drawable.baseline_border_outer_24
     }else if(featureName == "Algorithm selection"){
         painter = R.drawable.baseline_border_outer_24
+    }else if(featureName == "Scene descriptor"){
+        painter = R.drawable.baseline_border_outer_24
+    }else if(featureName == "Home"){
+        painter = R.drawable.home
+    }else if(featureName == "Controller"){
+        painter = R.drawable.controller
+    }else if(featureName == "Monitor"){
+        painter = R.drawable.plot
     }
+
     Box(modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 25.dp)
+        .padding(horizontal = 20.dp)
         .background(Color.Transparent),
     ){
         Column(
@@ -55,16 +64,16 @@ fun FeatureBox(featureName: String){
             Icon(painter = painterResource(painter),
                 contentDescription = null,
                 tint = OnPrimary,
-                modifier = Modifier.size(50.dp)
+                modifier = Modifier.size(iconSize.dp)
             )
             Spacer(modifier = Modifier.padding(vertical = 5.dp))
             Text(
                 text = featureName,
                 color = OnPrimary,
-                fontSize = 12.sp,
+                fontSize = textSize.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .size(70.dp)
+                    .size(textAreaSize.dp)
                     .align(Alignment.CenterHorizontally) // This centers the text horizontally
             )
         }

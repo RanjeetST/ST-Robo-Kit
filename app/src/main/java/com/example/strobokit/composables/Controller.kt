@@ -1,6 +1,7 @@
 package com.example.strobokit.composables
 
 import android.app.Activity
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -80,11 +81,12 @@ import kotlin.math.roundToInt
 
 
 @Composable
-fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController){
+fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController,batteryPercentage : Int){
     ChangeOrientationToLandscape(context = LocalContext.current)
     val isDisarmed = remember { mutableStateOf(false) }
     val shake = remember { Animatable(0f) }
     var trigger by remember { mutableStateOf(0L) }
+
     LaunchedEffect(trigger) {
         if (trigger != 0L) {
             for (i in 0..10) {
@@ -96,6 +98,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
             shake.animateTo(0f)
         }
     }
+
     val gradientBrush = Brush.radialGradient(
         0.0f to TertiaryColor,
         1f to PrimaryColor,
@@ -117,7 +120,6 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
     val backHandlingEnabled by remember { mutableStateOf(true) }
 
     var isFeaturesFetched by remember { mutableStateOf(false) }
-    val batteryPercentage = 21
 
     if(bleDevice.value?.connectionStatus?.current == NodeState.Ready && !isFeaturesFetched){
         viewModel.getRssi(deviceId = nodeId)
@@ -219,24 +221,21 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally){
-                        if (batteryPercentage != null) {
-                            if(batteryPercentage > 20) {
-                                Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SuccessColor)
-                            }else{
-                                Icon(Icons.Filled.Battery2Bar, contentDescription = "BatterLow", tint = ErrorColor)
-                            }
-                        }else{
+                        Log.d("TAG", batteryPercentage.toString())
+                        if(batteryPercentage > 20) {
+                            Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SuccessColor)
+                        }else if(batteryPercentage == -1){
                             Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SecondaryColor)
+                        }else{
+                            Icon(Icons.Filled.Battery2Bar, contentDescription = "BatterLow", tint = ErrorColor)
                         }
 
-                        if (batteryPercentage != null) {
-                            if(batteryPercentage!! > 20) {
-                                androidx.compose.material3.Text(text = "OK", fontSize = 10.sp, color = OnPrimary)
-                            }else{
-                                androidx.compose.material3.Text(text = "LOW", fontSize = 10.sp, color = OnPrimary)
-                            }
+                        if(batteryPercentage > 20) {
+                            androidx.compose.material3.Text(text = "OK", fontSize = 10.sp, color = OnPrimary)
+                        }else if(batteryPercentage == -1){
+                            androidx.compose.material3.Text(text = "NA", fontSize = 10.sp, color = OnPrimary)
                         }else{
-                            androidx.compose.material3.Text(text = "NA", fontSize = 10.sp,color = OnPrimary)
+                            androidx.compose.material3.Text(text = "LOW", fontSize = 10.sp, color = OnPrimary)
                         }
                     }
 
