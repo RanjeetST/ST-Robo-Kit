@@ -1,7 +1,6 @@
 package com.example.strobokit
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -19,19 +18,12 @@ import androidx.navigation.navArgument
 import com.example.strobokit.composables.Controller
 import com.example.strobokit.ui.theme.STRoboKitTheme
 import com.example.strobokit.utilities.SessionManager
-import com.example.strobokit.views.AlgorithmSelection
-import com.example.strobokit.views.BleDeviceList
 import com.example.strobokit.views.BleDeviceListV2
 import com.example.strobokit.views.DebugConsole
-import com.example.strobokit.views.DeviceDetail
 import com.example.strobokit.views.DeviceDetailV2
-import com.example.strobokit.views.FeatureDetail
-import com.example.strobokit.views.HomeScreen
 import com.example.strobokit.views.HomeScreenV2
-import com.example.strobokit.views.PlotChartNew
 import com.example.strobokit.views.PlotChartV2
-import com.example.strobokit.views.SceneDescriptor
-import com.example.strobokit.views.SplashScreen
+
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -62,12 +54,6 @@ private fun MainScreen(){
                 modifier = Modifier.padding(innerPadding)) {
 
                 composable(
-                    route = "splash_screen"
-                ){
-                    SplashScreen(navController = navController)
-                }
-
-                composable(
                     route = "home"
                 ){
                     HomeScreenV2(navController = navController)
@@ -90,25 +76,6 @@ private fun MainScreen(){
                            deviceId = deviceId
                        )
                    }
-                }
-
-                composable(
-                    route = "feature/{deviceId}/{featureName}",
-                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType },
-                        navArgument("featureName") { type = NavType.StringType }
-                    )
-                ){
-                        backStackEntry ->
-                    backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
-                        backStackEntry.arguments?.getString("featureName")?.let { featureName ->
-                            FeatureDetail(
-                                viewModel = hiltViewModel(),
-                                navController = navController,
-                                deviceId = deviceId,
-                                featureName = featureName
-                            )
-                        }
-                    }
                 }
 
                 composable(
@@ -154,19 +121,6 @@ private fun MainScreen(){
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                         PlotChartV2(
-                            viewModel = hiltViewModel(),
-                            deviceId = deviceId,
-                            navController = navController
-                        )
-                    }
-                }
-
-                composable(
-                    route = "feature/{deviceId}/algorithms",
-                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType })
-                ) { backStackEntry ->
-                    backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
-                        AlgorithmSelection(
                             viewModel = hiltViewModel(),
                             deviceId = deviceId,
                             navController = navController

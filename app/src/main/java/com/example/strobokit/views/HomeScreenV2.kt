@@ -63,12 +63,6 @@ fun HomeScreenV2(navController: NavController){
         end = Offset.Infinite
     )
 
-    val buttonGradient = Brush.horizontalGradient(
-        0.0f to PrimaryColor,
-        1.0f to Magenta,
-        startX = 0.0f,
-        endX = 500.0f
-    )
     val painter = painterResource(id = R.drawable.idle_bot)
 
 

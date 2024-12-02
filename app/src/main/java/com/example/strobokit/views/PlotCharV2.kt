@@ -292,7 +292,6 @@ fun PlotChartV2(
     )
 
     val featureName = listOf(Acceleration.NAME,Gyroscope.NAME, Magnetometer.NAME,SceneDescription.NAME)
-    val isDropDownExpanded = remember { mutableStateOf(false) }
     val itemPosition = remember { mutableIntStateOf(0) }
     val selectedFeature = remember { mutableStateOf(featureName[itemPosition.intValue]) }
 

@@ -128,9 +128,6 @@ dependencies {
     //animation
     implementation libs.androidx.animation
 
-    //to render 3D model
-    implementation(libs.sceneview)
-
     //for plot charts
     implementation libs.ycharts
 

@@ -82,8 +82,6 @@ fun JoyStick(
     var lastOffsetSent by remember { mutableStateOf(0) }
 
 
-    var timerJob by remember { mutableStateOf<Job?>(null) }
-
     Box(
         modifier = Modifier
             .padding(6.dp)
@@ -219,7 +217,7 @@ fun calculateSpeed(position: Int,maxPosition : Int): Int {
 @Composable
 @Preview(showBackground = true, widthDp = 800, heightDp = 400)
 fun JoyStickPreview() {
-    val parentBackgroundColor = TertiaryColor
+    
     val gradientBrush = Brush.linearGradient(
         colors = listOf(PrimaryColor, Color.White),
         start = Offset(0f, 0f),
