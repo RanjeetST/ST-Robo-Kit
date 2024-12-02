@@ -21,11 +21,13 @@ import com.example.strobokit.ui.theme.STRoboKitTheme
 import com.example.strobokit.utilities.SessionManager
 import com.example.strobokit.views.AlgorithmSelection
 import com.example.strobokit.views.BleDeviceList
+import com.example.strobokit.views.BleDeviceListV2
 import com.example.strobokit.views.DebugConsole
 import com.example.strobokit.views.DeviceDetail
 import com.example.strobokit.views.DeviceDetailV2
 import com.example.strobokit.views.FeatureDetail
 import com.example.strobokit.views.HomeScreen
+import com.example.strobokit.views.HomeScreenV2
 import com.example.strobokit.views.PlotChartNew
 import com.example.strobokit.views.PlotChartV2
 import com.example.strobokit.views.SceneDescriptor
@@ -38,7 +40,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // Reset the splash screen flag on app start
         SessionManager.setSplashShown(false)
         setContent {
             MainScreen()
@@ -60,16 +61,22 @@ private fun MainScreen(){
                 startDestination = startDestination,
                 modifier = Modifier.padding(innerPadding)) {
 
-                composable(route = "splash_screen"){
+                composable(
+                    route = "splash_screen"
+                ){
                     SplashScreen(navController = navController)
                 }
 
-                composable(route = "home"){
-                    HomeScreen(navController = navController)
+                composable(
+                    route = "home"
+                ){
+                    HomeScreenV2(navController = navController)
                 }
 
-                composable(route="device_list"){
-                    BleDeviceList(viewModel = hiltViewModel(),navController = navController)
+                composable(
+                    route="device_list"
+                ){
+                    BleDeviceListV2(viewModel = hiltViewModel(),navController = navController)
                 }
 
                 composable(
@@ -106,7 +113,9 @@ private fun MainScreen(){
 
                 composable(
                     route = "feature/{deviceId}/debugConsole",
-                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType })
+                    arguments = listOf(
+                        navArgument("deviceId") { type = NavType.StringType }
+                    )
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                         DebugConsole(
@@ -119,14 +128,14 @@ private fun MainScreen(){
 
                 composable(
                     route = "feature/{deviceId}/controller/{batteryPercentage}",
-                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType },
+                    arguments = listOf(
+                        navArgument("deviceId") { type = NavType.StringType },
                         navArgument("batteryPercentage") { type = NavType.IntType }
                     )
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                         backStackEntry.arguments?.getInt("batteryPercentage")
                             ?.let { batteryPercentage ->
-//                                Log.d("main",batteryPercentage.toString())
                                 Controller(
                                     viewModel = hiltViewModel(),
                                     nodeId = deviceId,
@@ -139,7 +148,9 @@ private fun MainScreen(){
 
                 composable(
                     route = "feature/{deviceId}/plot",
-                    arguments = listOf(navArgument("deviceId") { type = NavType.StringType })
+                    arguments = listOf(
+                        navArgument("deviceId") { type = NavType.StringType }
+                    )
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                         PlotChartV2(

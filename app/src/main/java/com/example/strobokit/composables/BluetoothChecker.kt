@@ -19,11 +19,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
-import kotlinx.coroutines.CoroutineScope
 
 @SuppressLint("MissingPermission")
 @Composable
-fun BluetoothChecker() : Boolean{
+fun bluetoothChecker() : Boolean{
     val context = LocalContext.current
     val bluetoothManager = remember { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
     val bluetoothAdapter = remember { bluetoothManager.adapter }

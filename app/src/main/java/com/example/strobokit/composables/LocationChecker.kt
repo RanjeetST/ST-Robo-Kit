@@ -20,17 +20,13 @@ import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 
 @Composable
-fun LocationChecker() : Boolean {
+fun locationChecker() : Boolean {
     val context = LocalContext.current
     val locationManager = remember { context.getSystemService(Context.LOCATION_SERVICE) as LocationManager }
     var showDialog by remember { mutableStateOf(!isLocationEnabled(context)) }
 
     LaunchedEffect(isLocationEnabled(context)) {
-        if (isLocationEnabled(context)) {
-            showDialog = false
-        } else {
-            showDialog = true
-        }
+        showDialog = !isLocationEnabled(context)
     }
 
     if (showDialog) {

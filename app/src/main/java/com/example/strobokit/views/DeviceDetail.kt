@@ -248,24 +248,27 @@ fun DeviceDetail(
                         val itemNames =  listOf("Remote Control","Plot Data","Debug","Algorithm selection")
 //                        val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
 
-                        itemsIndexed(items = itemNames) { index, item ->
+                        itemsIndexed(items = itemNames) { _, item ->
 //                            Log.d("Device Detail",item)
                             if(item == "Switch" || item == "Plot Data" || item == "Remote Control" || item == "Debug" || item == "Algorithm selection"){
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            if (item == "Remote Control") {
-                                                val batteryValue = batteryPercentage ?: -1
-                                                navController.navigate("feature/${deviceId}/controller/${batteryValue}")
-                                            } else if (item == "Plot Data") {
-                                                navController.navigate("feature/${deviceId}/plot")
-                                            } else if (item == "Debug") {
-                                                navController.navigate("feature/${deviceId}/debugConsole")
-                                            } else if(item == "Algorithm selection") {
-                                                navController.navigate("feature/${deviceId}/algorithms")
-                                            } else if(item == "Scene descriptor"){
-                                                navController.navigate("scene")
+                                            when (item) {
+                                                "Remote Control" -> {
+                                                    val batteryValue = batteryPercentage ?: -1
+                                                    navController.navigate("feature/${deviceId}/controller/${batteryValue}")
+                                                }
+                                                "Plot Data" -> {
+                                                    navController.navigate("feature/${deviceId}/plot")
+                                                }
+                                                "Debug" -> {
+                                                    navController.navigate("feature/${deviceId}/debugConsole")
+                                                }
+                                                "Algorithm selection" -> {
+                                                    navController.navigate("feature/${deviceId}/algorithms")
+                                                }
                                             }
                                         }
                                 ) {
@@ -413,7 +416,7 @@ fun DeviceDetailPreview(){
                         val items = sampleFeatures.value.filter { it.isDataNotifyFeature }
                         val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
 
-                        itemsIndexed(items = itemNames) { index, item ->
+                        itemsIndexed(items = itemNames) { _, item ->
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()

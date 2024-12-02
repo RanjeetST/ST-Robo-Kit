@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.strobokit.ui.theme.ErrorColor
+import com.example.strobokit.R
 import com.example.strobokit.ui.theme.GreyColor
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
@@ -120,7 +122,7 @@ fun DebugConsole(
                 Spacer(modifier = Modifier.weight(1f))
             }
             androidx.compose.material3.Text(
-                text = "Debug Console",
+                text = stringResource(id = R.string.debug_console),
                 fontSize = 20.sp,
                 color = OnPrimary,
                 fontWeight = FontWeight.SemiBold
@@ -131,7 +133,7 @@ fun DebugConsole(
                 .fillMaxWidth()
                 .padding(6.dp),
             value = queryState,
-            label = { Text(text = "Send Debug Message")},
+            label = { Text(text = stringResource(id = R.string.send_debug_message))},
             onValueChange = {queryState = it},
             trailingIcon = {
                 IconButton(onClick = {
@@ -162,7 +164,7 @@ fun DebugConsole(
 @Preview
 fun DebugConsolePreview(){
     var queryState by rememberSaveable { mutableStateOf(value = "") }
-    val scrollState = rememberScrollState()
+    rememberScrollState()
 
     Column(
         modifier = Modifier
@@ -190,7 +192,7 @@ fun DebugConsolePreview(){
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     androidx.compose.material3.Text(
-                        text = "Debug Console",
+                        text = stringResource(id = R.string.debug_console),
                         fontSize = 20.sp,
                         color = OnPrimary,
                         fontWeight = FontWeight.SemiBold
@@ -203,7 +205,7 @@ fun DebugConsolePreview(){
                 .fillMaxWidth()
                 .padding(6.dp),
             value = queryState,
-            label = { Text(text = "Send Debug Message")},
+            label = { Text(text = stringResource(id = R.string.send_debug_message))},
             onValueChange = {queryState = it},
             trailingIcon = {
                 IconButton(onClick = { /*TODO*/ }) {
@@ -220,7 +222,7 @@ fun DebugConsolePreview(){
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(6.dp),
-            text = "HELLo"
+            text = "HELLO"
         )
     }
 }

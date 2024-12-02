@@ -24,7 +24,7 @@ class DebugConsoleViewModel @Inject constructor(
 
     fun sendDebugMessage(nodeId : String , msg : String){
         viewModelScope.launch{
-            _debugMessages.value = _debugMessages.value + DebugConsoleMsg.DebugConsoleCommand(
+            _debugMessages.value += DebugConsoleMsg.DebugConsoleCommand(
                 command = msg, time = LocalDateTime.now().format(dateTimeFormatter)
             )
 

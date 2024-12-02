@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -42,15 +44,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.strobokit.R
 import com.example.strobokit.composables.bluetoothChecker
 import com.example.strobokit.composables.locationChecker
 import com.example.strobokit.ui.theme.OnPrimary
@@ -63,7 +69,7 @@ import com.st.blue_sdk.models.NodeState
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @SuppressLint("MissingPermission")
 @Composable
-fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavController) {
+fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavController) {
 
     var doNotShowRationale by rememberSaveable { mutableStateOf(false) }
     val connectionState by viewModel.connectionState.collectAsState()
@@ -74,12 +80,12 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
     var bluetoothManager by remember { mutableStateOf<BluetoothManager?>(null) }
     var bluetoothAdapter by remember { mutableStateOf<BluetoothAdapter?>(null) }
 
-    // LaunchedEffect to update the variables whenever the page renders
+    val painter = painterResource(id = R.drawable.new_car)
+
     LaunchedEffect(Unit) {
         bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager?.adapter
     }
-
 
     val pullRefreshState = rememberPullRefreshState(refreshing = viewModel.isRefreshing, onRefresh = {
         if(bluetoothAdapter?.isEnabled == true){
@@ -110,16 +116,6 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
         }
     )
 
-    val backgroundGradient = Brush.linearGradient(
-        colorStops = arrayOf(
-            0.0f to PrimaryColor.copy(alpha = 0.9f),
-            0.95f to PrimaryColor.copy(alpha = 0.7f),
-            1f to PrimaryColor.copy(alpha = 0.6f)
-        ),
-        start = Offset.Zero,
-        end = Offset.Infinite
-    )
-
     if (permissionsState.allPermissionsGranted) {
         locationChecker()
         bluetoothChecker()
@@ -135,8 +131,7 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.LightGray)
-                .background(backgroundGradient)
+                .background(Color(0xFFF7F8FA))
         ) {
             TopAppBar(
                 title = {
@@ -145,11 +140,11 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                             .fillMaxWidth()
                             .wrapContentSize(align = Alignment.Center)
                     ) {
-                        androidx.compose.material.Text("Devices")
+                        androidx.compose.material.Text(stringResource(id = R.string.pair_your_robot))
                     }
                 },
-                backgroundColor = PrimaryColor,
-                contentColor = Color.White
+                backgroundColor = OnPrimary,
+                contentColor = PrimaryColor
             )
 
             Box(
@@ -174,20 +169,22 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                                         .size(18.dp)
                                         .align(Alignment.CenterVertically),
                                     strokeWidth = 2.dp,
-                                    color = OnPrimary
+                                    color = PrimaryColor
                                 )
                             }
+
                             Spacer(modifier = Modifier.width(5.dp))
+
                             if(connectionState == NodeState.Disconnected){
                                 if(isScanning)
                                 {
-                                    Text(text = "Scanning Devices", fontSize = 15.sp, color = OnPrimary)
+                                    Text(text = stringResource(id = R.string.looking_for_robots), fontSize = 15.sp, color = PrimaryColor)
                                 }else{
-                                    Text(text = "Scanning Stopped. Pull to Re-Scan", fontSize = 15.sp, color = OnPrimary)
+                                    Text(text = stringResource(id = R.string.scanning_stopped), fontSize = 15.sp, color = PrimaryColor)
                                 }
 
                             }else{
-                                Text(text = "$connectionState", fontSize = 15.sp, color = OnPrimary)
+                                Text(text = "$connectionState", fontSize = 15.sp, color = PrimaryColor)
                             }
                         }
                         Spacer(modifier = Modifier.height(15.dp))
@@ -196,21 +193,36 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                     itemsIndexed(items = bleDevices.value) { _, item ->
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
                                 .padding(4.dp)
+                                .fillMaxWidth()
                                 .background(
-                                    color = Color.White.copy(alpha = 0.2f),
+                                    color = Color.White,
                                     shape = RoundedCornerShape(8.dp)
                                 )
                                 .clickable {
-                                    if (bluetoothAdapter?.isEnabled == true) {
+                                    if (bluetoothAdapter?.isEnabled == true && isScanning) {
                                         viewModel.connect(item.device.address)
                                         connectedDeviceAddress = item.device.address
+                                    } else if (bluetoothAdapter?.isEnabled == false) {
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                "Bluetooth is turned off",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
                                     } else {
                                         // Handle the case when Bluetooth is turned off
-                                        Toast.makeText(context, "Bluetooth is turned off", Toast.LENGTH_SHORT).show()
+                                        Toast
+                                            .makeText(
+                                                context,
+                                                "Re-Scan to connect",
+                                                Toast.LENGTH_SHORT
+                                            )
+                                            .show()
                                     }
                                 }
+//                                .padding(4.dp)
                         ) {
                             Row(
                                 modifier = Modifier
@@ -218,32 +230,66 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                                     .padding(4.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Column(modifier = Modifier.fillMaxWidth()) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column {
+                                    Image(painter = painter, contentDescription = "car", contentScale = ContentScale.Crop, modifier = Modifier.size(40.dp))
+                                    Text(
+                                        text = "${item.rssi?.rssi.toString()} dBm",
+                                        color = PrimaryColor,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.fillMaxWidth(0.8f)
+                                , verticalArrangement = Arrangement.SpaceBetween) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
                                         Text(
                                             modifier = Modifier.padding(4.dp),
                                             text = item.device.name ?: "Unknown Device",
-                                            color = OnPrimary
+                                            color = PrimaryColor
                                         )
                                     }
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         Text(
                                             modifier = Modifier.padding(4.dp),
                                             text = item.device.address ?: "N.A",
-                                            color = OnPrimary,
-                                            fontSize = 10.sp
-                                        )
-                                        Text(
-                                            modifier = Modifier.padding(4.dp),
-                                            text = "RSSI : ${item.rssi?.rssi.toString()} dBm",
-                                            color = OnPrimary,
+                                            color = PrimaryColor,
                                             fontSize = 10.sp
                                         )
                                     }
+                                }
 
+                                Surface(modifier = Modifier
+                                    .clickable {
+                                        if (bluetoothAdapter?.isEnabled == true && isScanning) {
+                                            viewModel.connect(item.device.address)
+                                            connectedDeviceAddress = item.device.address
+                                        } else if (bluetoothAdapter?.isEnabled == false) {
+                                            Toast
+                                                .makeText(
+                                                    context,
+                                                    "Bluetooth is turned off",
+                                                    Toast.LENGTH_SHORT
+                                                )
+                                                .show()
+                                        } else {
+                                            // Handle the case when Bluetooth is turned off
+                                            Toast
+                                                .makeText(
+                                                    context,
+                                                    "Re-Scan to connect",
+                                                    Toast.LENGTH_SHORT
+                                                )
+                                                .show()
+                                        }
+                                    }
+                                    .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp)),
+                                    color = PrimaryColor
+                                ) {
+                                    Text(stringResource(id = R.string.pair),color = OnPrimary, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(horizontal = 10.dp,vertical = 8.dp), textAlign = TextAlign.Center)
                                 }
                             }
                         }
@@ -271,18 +317,17 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                 modifier = Modifier
                     .fillMaxSize()
             ) {
-                Text("Feature not available")
+                Text(stringResource(id = R.string.feature_not_available))
             }
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.LightGray)
-                    .background(backgroundGradient),
+                    .background(Color.White),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text("Please grant the permissions", color = Color.White)
+                Text(stringResource(id = R.string.please_grant_permission), color = PrimaryColor)
 
                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -297,7 +342,7 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                             permissionsState.launchMultiplePermissionRequest()
                         }
                     ) {
-                        Text("Yes")
+                        Text(stringResource(id = R.string.yes))
                     }
 
                     Spacer(Modifier.width(4.dp))
@@ -310,176 +355,9 @@ fun BleDeviceList(viewModel: BleDeviceListViewModel, navController: NavControlle
                         modifier = Modifier.weight(0.5f),
                         onClick = { doNotShowRationale = true }
                     ) {
-                        Text("No")
+                        Text(stringResource(id = R.string.no))
                     }
                 }
-            }
-        }
-    }
-}
-
-
-//***************** SAMPLE DATA AND PREVIEW FOR ABOVE ******************
-
-data class BleDevice(
-    val name: String,
-    val address: String
-)
-
-val devices = listOf(
-    BleDevice(name = "Device 1", address = "00:11:22:33:44:55"),
-    BleDevice(name = "Device 2", address = "66:77:88:99:AA:BB"),
-    BleDevice(name = "Device 3", address = "CC:DD:EE:FF:00:11"),
-    BleDevice(name = "Device 4", address = "22:33:44:55:66:77"),
-    BleDevice(name = "Device 5", address = "88:99:AA:BB:CC:DD")
-)
-
-@Preview
-@Composable
-fun BleDeviceListPreview(){
-
-    val backgroundGradient = Brush.linearGradient(
-        colorStops = arrayOf(
-            0.0f to PrimaryColor.copy(alpha = 0.9f),
-            0.95f to PrimaryColor.copy(alpha = 0.7f),
-            1f to PrimaryColor.copy(alpha = 0.6f)
-        ),
-        start = Offset.Zero,
-        end = Offset.Infinite
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.LightGray)
-            .background(backgroundGradient)
-    ) {
-        TopAppBar(
-            title = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentSize(align = Alignment.Center)
-                ) {
-                    androidx.compose.material.Text("Devices")
-                }
-            },
-            backgroundColor = PrimaryColor,
-            contentColor = Color.White
-        )
-
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-            Row {
-                CircularProgressIndicator(modifier = Modifier
-                    .size(18.dp)
-                    .align(Alignment.CenterVertically),
-                    strokeWidth = 2.dp,
-                    color = OnPrimary)
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(text = "Scanning Devices", fontSize = 15.sp, color = OnPrimary)
-            }
-
-            Spacer(modifier = Modifier.height(15.dp))
-
-            LazyColumn(modifier = Modifier
-                .fillMaxSize()
-                .weight(1f)
-            ) {
-                itemsIndexed(items = devices){ _, item->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                            .background(
-                                color = Color.White.copy(alpha = 0.2f),
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .clickable { }
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ){
-                            Column(modifier = Modifier.fillMaxWidth()){
-                                Row(verticalAlignment = Alignment.CenterVertically){
-                                    Text(
-                                        modifier = Modifier.padding(4.dp),
-                                        text = item.name,
-                                        color = OnPrimary
-                                    )
-                                }
-                                Text(
-                                    modifier = Modifier.padding(4.dp),
-                                    text = item.address,
-                                    color = OnPrimary,
-                                    fontSize = 10.sp
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-}
-
-@Composable
-@Preview
-fun PermissionBoxPreview(){
-    val backgroundGradient = Brush.linearGradient(
-        colorStops = arrayOf(
-            0.0f to PrimaryColor.copy(alpha = 0.9f),
-            0.95f to PrimaryColor.copy(alpha = 0.7f),
-            1f to PrimaryColor.copy(alpha = 0.6f)
-        ),
-        start = Offset.Zero,
-        end = Offset.Infinite
-    )
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.LightGray)
-            .background(backgroundGradient)
-        ,horizontalAlignment = Alignment.CenterHorizontally
-        ,
-
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Please grant the permissions",color = OnPrimary)
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(0.8f)) {
-            Button(
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = PrimaryColor,
-                    contentColor = OnPrimary
-                ),
-                modifier = Modifier.weight(0.5f),
-                onClick = {}
-            ) {
-                Text("Yes")
-            }
-
-            Spacer(Modifier.width(4.dp))
-
-            Button(
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = PrimaryColor,
-                    contentColor = OnPrimary
-                ),
-                modifier = Modifier.weight(0.5f),
-                onClick = { }
-            ) {
-                Text("No")
             }
         }
     }

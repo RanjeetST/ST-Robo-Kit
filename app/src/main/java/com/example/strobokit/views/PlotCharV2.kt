@@ -21,15 +21,14 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.StopCircle
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,6 +52,7 @@ import co.yml.charts.ui.linechart.model.LineChartData
 import co.yml.charts.ui.linechart.model.LinePlotData
 import co.yml.charts.ui.linechart.model.LineStyle
 import co.yml.charts.ui.linechart.model.LineType
+import com.example.strobokit.R
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.ST_Magenta
@@ -63,7 +64,6 @@ import com.st.blue_sdk.features.extended.scene_description.SceneDescription
 import com.st.blue_sdk.features.gyroscope.Gyroscope
 import com.st.blue_sdk.features.magnetometer.Magnetometer
 import kotlin.math.ceil
-import com.example.strobokit.R
 
 @Composable
 fun PlotChartV2(
@@ -87,8 +87,8 @@ fun PlotChartV2(
 
     var isStart by remember {mutableStateOf(true)}
 
-    var xValue by remember { mutableStateOf(0f) }
-    var xAxisMinValue by remember { mutableStateOf(0f) }
+    var xValue by remember { mutableFloatStateOf(0f) }
+    var xAxisMinValue by remember { mutableFloatStateOf(0f) }
     val visibleRange = 105f
 
     val xAxisData = AxisData.Builder()
@@ -293,8 +293,8 @@ fun PlotChartV2(
 
     val featureName = listOf(Acceleration.NAME,Gyroscope.NAME, Magnetometer.NAME,SceneDescription.NAME)
     val isDropDownExpanded = remember { mutableStateOf(false) }
-    val itemPosition = remember { mutableStateOf(0) }
-    val selectedFeature = remember { mutableStateOf(featureName[itemPosition.value]) }
+    val itemPosition = remember { mutableIntStateOf(0) }
+    val selectedFeature = remember { mutableStateOf(featureName[itemPosition.intValue]) }
 
     val featureUnits = mapOf("Gyroscope" to "dps", "Magnetometer" to "mGa", "Accelerometer" to "mg")
 
@@ -335,7 +335,7 @@ fun PlotChartV2(
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                androidx.compose.material.IconButton(onClick = {
+                IconButton(onClick = {
                     viewModel.disconnectFeature(deviceId, selectedFeature.value)
                     navController.popBackStack()
                 }) {
@@ -348,7 +348,7 @@ fun PlotChartV2(
                 Spacer(modifier = Modifier.weight(1f))
             }
             androidx.compose.material3.Text(
-                text = "Monitor",
+                text = stringResource(id = R.string.monitor),
                 fontSize = 20.sp,
                 color = OnPrimary,
                 fontWeight = FontWeight.SemiBold
@@ -360,7 +360,7 @@ fun PlotChartV2(
                 .fillMaxWidth(0.6f)
                 .padding(5.dp),
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Accelerometer", fontSize = 20.sp,color = PrimaryColor, fontWeight = FontWeight.Bold)
+                Text(text = selectedFeature.value, fontSize = 20.sp,color = PrimaryColor, fontWeight = FontWeight.Bold)
                 Image(painter = painterResource(id = R.drawable.mems), contentDescription = "MEMS")
                 if (selectedFeature.value != SceneDescription.NAME &&xLineData.isNotEmpty() && yLineData.isNotEmpty() && zLineData.isNotEmpty()) {
                     Row(
@@ -376,51 +376,6 @@ fun PlotChartV2(
                 }
             }
             Box {
-//                Row(
-//                    horizontalArrangement = Arrangement.SpaceBetween,
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    modifier = Modifier
-//                        .clickable {
-//                            isDropDownExpanded.value = true
-//                        }
-//                        .padding(12.dp)
-//                ) {
-//                    Text(text = featureName[itemPosition.value], fontSize = 12.sp)
-//                    Icon(Icons.Filled.ArrowDropDown, contentDescription = "Back", tint = PrimaryColor)
-//                    IconButton(onClick = { isStart = !isStart }) {
-//                        if(!isStart){
-//                            Icon(
-//                                Icons.Filled.PlayCircle,
-//                                contentDescription = "play",
-//                                tint = PrimaryColor
-//                            )
-//                        }else{
-//                            Icon(
-//                                Icons.Filled.StopCircle,
-//                                contentDescription = "pause",
-//                                tint = ST_Magenta
-//                            )
-//                        }
-//                    }
-//                }
-//                DropdownMenu(
-//                    modifier = Modifier
-//                        .background(OnPrimary),
-//                    expanded = isDropDownExpanded.value,
-//                    onDismissRequest = {
-//                        isDropDownExpanded.value = false
-//                    }) {
-//                    featureName.forEachIndexed { index, username ->
-//                        DropdownMenuItem(text = {
-//                            Text(text = username)
-//                        },
-//                            onClick = {
-//                                isDropDownExpanded.value = false
-//                                itemPosition.value = index
-//                                selectedFeature.value = username
-//                            })
-//                    }
-//                }
                 Column{
                     featureName.forEachIndexed { index, sensorName ->
                         Row(
@@ -430,12 +385,12 @@ fun PlotChartV2(
                                 .fillMaxWidth(0.7f)
                                 .clickable {
                                     selectedFeature.value = sensorName
-                                    itemPosition.value = index
+                                    itemPosition.intValue = index
                                 },
                                 color = PrimaryColor,
                                 elevation = 2.dp) {
                                 if(sensorName == SceneDescription.NAME){
-                                    Text(text = "ToF", modifier = Modifier.padding(10.dp),color = OnPrimary,fontSize = 12.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                                    Text(text = stringResource(id = R.string.ToF), modifier = Modifier.padding(10.dp),color = OnPrimary,fontSize = 12.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                                 }else{
                                     Text(text = sensorName, modifier = Modifier.padding(10.dp),color = OnPrimary,fontSize = 12.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                                 }
@@ -456,9 +411,9 @@ fun PlotChartV2(
                                         )
                                     }
                                 }
-                            }else{
+                            }else {
                                 IconButton(onClick = { /*TODO*/ }) {
-                                    
+
                                 }
                             }
                         }

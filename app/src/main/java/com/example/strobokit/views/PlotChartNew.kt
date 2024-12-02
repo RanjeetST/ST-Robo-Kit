@@ -27,6 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -80,8 +82,8 @@ fun PlotChartNew(
 
     var isStart by remember {mutableStateOf(true)}
 
-    var xValue by remember { mutableStateOf(0f) }
-    var xAxisMinValue by remember { mutableStateOf(0f) }
+    var xValue by remember { mutableFloatStateOf(0f) }
+    var xAxisMinValue by remember { mutableFloatStateOf(0f) }
     val visibleRange = 105f
 
     val xAxisData = AxisData.Builder()
@@ -286,8 +288,8 @@ fun PlotChartNew(
 
     val featureName = listOf(Acceleration.NAME,Gyroscope.NAME, Magnetometer.NAME,SceneDescription.NAME)
     val isDropDownExpanded = remember { mutableStateOf(false) }
-    val itemPosition = remember { mutableStateOf(0) }
-    val selectedFeature = remember { mutableStateOf(featureName[itemPosition.value]) }
+    val itemPosition = remember { mutableIntStateOf(0) }
+    val selectedFeature = remember { mutableStateOf(featureName[itemPosition.intValue]) }
 
     val featureUnits = mapOf("Gyroscope" to "dps", "Magnetometer" to "mGa", "Accelerometer" to "mg")
 
@@ -328,7 +330,7 @@ fun PlotChartNew(
                     .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                androidx.compose.material.IconButton(onClick = {
+                IconButton(onClick = {
                     viewModel.disconnectFeature(deviceId, selectedFeature.value)
                     navController.popBackStack()
                 }) {
@@ -358,7 +360,7 @@ fun PlotChartNew(
                     }
                     .padding(12.dp)
             ) {
-                Text(text = featureName[itemPosition.value], fontSize = 12.sp)
+                Text(text = featureName[itemPosition.intValue], fontSize = 12.sp)
                 Icon(Icons.Filled.ArrowDropDown, contentDescription = "Back", tint = PrimaryColor)
                 IconButton(onClick = { isStart = !isStart }) {
                     if(!isStart){
@@ -390,7 +392,7 @@ fun PlotChartNew(
                     },
                         onClick = {
                             isDropDownExpanded.value = false
-                            itemPosition.value = index
+                            itemPosition.intValue = index
                             selectedFeature.value = username
                         })
                 }

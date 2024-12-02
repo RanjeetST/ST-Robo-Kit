@@ -37,7 +37,7 @@ class BleDeviceListViewModel @Inject constructor(
     var isRefreshing by mutableStateOf(false)
         private set
 
-    private val _connectionState = MutableStateFlow<NodeState>(NodeState.Disconnected)
+    private val _connectionState = MutableStateFlow(NodeState.Disconnected)
     val connectionState: StateFlow<NodeState> = _connectionState.asStateFlow()
 
     fun onRefresh() {

@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -64,7 +63,7 @@ fun AlgorithmSelection(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 androidx.compose.material.IconButton(onClick = {  navController.popBackStack()}) {
-                    androidx.compose.material.Icon(
+                    Icon(
                         Icons.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = OnPrimary
@@ -119,12 +118,16 @@ fun AlgorithmSelection(
                     ) {
                         var painter : Int = R.drawable.controller
 
-                        if(commandText == "Follow Me"){
-                            painter = R.drawable.baseline_directions_walk_24
-                        }else if(commandText == "Free Navigation"){
-                            painter = R.drawable.baseline_assistant_navigation_24
-                        }else if(commandText == "Remote Control"){
-                            painter = R.drawable.baseline_border_outer_24
+                        when (commandText) {
+                            "Follow Me" -> {
+                                painter = R.drawable.baseline_directions_walk_24
+                            }
+                            "Free Navigation" -> {
+                                painter = R.drawable.baseline_assistant_navigation_24
+                            }
+                            "Remote Control" -> {
+                                painter = R.drawable.baseline_border_outer_24
+                            }
                         }
                         Column(modifier = Modifier
                             .fillMaxSize()
@@ -208,7 +211,7 @@ fun AlgorithmSelectionPreview(){
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 androidx.compose.material.IconButton(onClick = { }) {
-                    androidx.compose.material.Icon(
+                    Icon(
                         Icons.Filled.ArrowBack,
                         contentDescription = "Back",
                         tint = OnPrimary
@@ -263,12 +266,16 @@ fun AlgorithmSelectionPreview(){
                     ) {
                         var painter : Int = R.drawable.controller
 
-                        if(commandText == "Follow Me"){
-                            painter = R.drawable.baseline_directions_walk_24
-                        }else if(commandText == "Free Navigation"){
-                            painter = R.drawable.baseline_assistant_navigation_24
-                        }else if(commandText == "Remote Control"){
-                            painter = R.drawable.baseline_border_outer_24
+                        when (commandText) {
+                            "Follow Me" -> {
+                                painter = R.drawable.baseline_directions_walk_24
+                            }
+                            "Free Navigation" -> {
+                                painter = R.drawable.baseline_assistant_navigation_24
+                            }
+                            "Remote Control" -> {
+                                painter = R.drawable.baseline_border_outer_24
+                            }
                         }
                         Column(modifier = Modifier
                             .fillMaxSize()

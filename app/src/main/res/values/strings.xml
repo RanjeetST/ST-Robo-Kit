@@ -2,4 +2,42 @@
     <string name="app_name">ST Robo Kit</string>
     <string name="st_feature_featureNameLabel">Name: %1$s</string>
     <string name="st_feature_updatesLabel">Updates:</string>
+
+<!--    dashboard screen-->
+    <string name="dialog_option_startDriving">Start driving</string>
+    <string name="dialog_option_homePage">Visit home page</string>
+    <string name="dialog_text">Your car is now paired with your smartphone. When ready press “start driving”.</string>
+    <string name="dialog_header">Car Paired</string>
+    <string name="start_free_navigation">Start Free Navigation</string>
+    <string name="start_remote_control">Start Remote Control</string>
+    <string name="start_follow_me">Start Follow-me</string>
+    <string name="ok">OK</string>
+    <string name="low">LOW</string>
+    <string name="na">NA</string>
+    <string name="connected">Connected</string>
+
+<!--    home screen-->
+    <string name="pair_your_robot">Pair your robot</string>
+
+<!--    device list screen-->
+    <string name="looking_for_robots">Looking for robots...</string>
+    <string name="scanning_stopped">Scanning Stopped. Pull to Re-Scan</string>
+    <string name="pair">Pair</string>
+    <string name="feature_not_available">Feature not available</string>
+    <string name="please_grant_permission">Please grant the permissions</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+<!--    controller-->
+    <string name="throttle">Throttle</string>
+    <string name="direction">Direction</string>
+
+<!--    Plot chart-->
+    <string name="monitor">Monitor</string>
+    <string name="ToF">ToF</string>
+
+<!--    debug console-->
+    <string name="debug_console">Debug Console</string>
+    <string name="send_debug_message">"Send Debug Message"</string>
+
 </resources>

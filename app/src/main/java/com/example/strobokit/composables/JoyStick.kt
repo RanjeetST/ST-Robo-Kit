@@ -20,10 +20,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.viewModels.ControllerViewModel
@@ -39,41 +40,42 @@ import kotlinx.coroutines.Job
 
 
 @Composable
-fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : String,isDisarmed : MutableState<Boolean>) {
-    val parentBackgroundColor = TertiaryColor
-    var gradientBrush = Brush.linearGradient(
-        colors = listOf(PrimaryColor, Color.White),
-        start = Offset(0f, 0f),
-        end = Offset(900f, 900f)
-    )
-    var buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
+fun JoyStick(
+    onHandleMoved: ()-> Unit,
+    viewModel: ControllerViewModel,
+    nodeId: String,
+    isDisarmed: MutableState<String>
+) {
+
+    val gradientBrush =  TertiaryColor.copy(alpha = 0.8f).let {
         Color(
-            red = (it.red * 0.8f).toFloat(),
-            green = (it.green * 0.8f).toFloat(),
-            blue = (it.blue * 0.8f).toFloat(),
-            alpha = 0.4f // Adjust transparency here
+            red = (it.red * 0.8f),
+            green = (it.green * 0.8f),
+            blue = (it.blue * 0.8f),
+            alpha = 0.4f
         )
     }
+    val buttonColor = OnPrimary
 
-    if(!isDisarmed.value){
-        gradientBrush = Brush.linearGradient(
-            colors = listOf(
-                PrimaryColor.copy(alpha = 0.5f), // Reduced opacity for PrimaryColor
-                Color.White.copy(alpha = 0.5f)   // Reduced opacity for White
-            ),
-            start = Offset(0f, 0f),
-            end = Offset(900f, 900f)
-        )
-
-        buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
-            Color(
-                red = (it.red * 0.8f).toFloat(),
-                green = (it.green * 0.8f).toFloat(),
-                blue = (it.blue * 0.8f).toFloat(),
-                alpha = 0.2f // Reduced transparency to make it more faded
-            )
-        }
-    }
+//    if(!isDisarmed.value){
+//        gradientBrush = Brush.linearGradient(
+//            colors = listOf(
+//                PrimaryColor.copy(alpha = 0.5f), // Reduced opacity for PrimaryColor
+//                Color.White.copy(alpha = 0.5f)   // Reduced opacity for White
+//            ),
+//            start = Offset(0f, 0f),
+//            end = Offset(900f, 900f)
+//        )
+//
+//        buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
+//            Color(
+//                red = (it.red * 0.8f).toFloat(),
+//                green = (it.green * 0.8f).toFloat(),
+//                blue = (it.blue * 0.8f).toFloat(),
+//                alpha = 0.2f // Reduced transparency to make it more faded
+//            )
+//        }
+//    }
     var joystickCenter by remember { mutableStateOf(Offset.Zero) }
     var handlePosition by remember { mutableStateOf(Offset.Zero) }
     var lastCommand by remember { mutableStateOf("") }
@@ -85,7 +87,9 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
     Box(
         modifier = Modifier
             .padding(6.dp)
-            .clip(CircleShape),
+            .clip(CircleShape)
+            .alpha(if(isDisarmed.value == "Drive") 1f else if(isDisarmed.value == "Lock") 0.6f else 0f)
+        ,
         contentAlignment = Alignment.Center
     ) {
         Canvas(
@@ -94,13 +98,13 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragEnd = {
-                            if(isDisarmed.value)
+                            if(isDisarmed.value == "Drive")
                             {
                                 Log.d("JOYSTICK", "Stop Called")
                                 viewModel.sendCommand(
                                     featureName = "Navigation Control",
                                     nodeId,
-                                    controllerAction.Stop,
+                                    ControllerAction.Stop,
                                     angle = 0
                                 )
                             }
@@ -115,7 +119,7 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
                             y = (handlePosition.y + dragAmount.y).coerceIn(-120f, 120f)
                         )
 
-                        if (isDisarmed.value) {
+                        if (isDisarmed.value == "Drive") {
                             val offsetDifference = (handlePosition.y - lastOffsetSent).toInt()
                             if (offsetDifference >= 40 || offsetDifference <= -40 || handlePosition.y == 0f) {
                                 when {
@@ -126,7 +130,7 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
                                         viewModel.sendCommand(
                                             featureName = "Navigation Control",
                                             deviceId = nodeId,
-                                            action = controllerAction.Forward,
+                                            action = ControllerAction.Forward,
                                             speed = speed
                                         )
                                         lastCommand = "Forward"
@@ -138,7 +142,7 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
                                         viewModel.sendCommand(
                                             featureName = "Navigation Control",
                                             deviceId = nodeId,
-                                            action = controllerAction.Backward,
+                                            action = ControllerAction.Backward,
                                             speed = speed
                                         )
                                         lastCommand = "Backward"
@@ -148,7 +152,7 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
                                         viewModel.sendCommand(
                                             featureName = "Navigation Control",
                                             deviceId = nodeId,
-                                            action = controllerAction.Stop,
+                                            action = ControllerAction.Stop,
                                             speed = 0,
                                             angle = 0
                                         )
@@ -167,9 +171,9 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
 
             // Draw the outer circle
             drawCircle(
-                brush = gradientBrush,
+                color = gradientBrush,
                 radius = size.minDimension / 2,
-                style = Stroke(width = 2.dp.toPx())
+                
             )
 
             // Draw the handle
@@ -192,13 +196,14 @@ fun JoyStick(onHandleMoved: ()-> Unit,viewModel: ControllerViewModel,nodeId : St
                 modifier = Modifier.fillMaxSize()
             ) {
 
-                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Move Up")
+                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Move Up", tint = OnPrimary)
 
 
                 Spacer(modifier = Modifier.weight(1f))
 
 
-                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Move Down")
+                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Move Down",tint = OnPrimary
+                    )
 
             }
         }
@@ -222,10 +227,10 @@ fun JoyStickPreview() {
     )
     val buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
         Color(
-            red = (it.red * 0.8f).toFloat(),
-            green = (it.green * 0.8f).toFloat(),
-            blue = (it.blue * 0.8f).toFloat(),
-            alpha = 0.3f // Adjust transparency here
+            red = (it.red * 0.8f),
+            green = (it.green * 0.8f),
+            blue = (it.blue * 0.8f),
+            alpha = 0.3f
         )
     }
     var joystickCenter by remember { mutableStateOf(Offset.Zero) }

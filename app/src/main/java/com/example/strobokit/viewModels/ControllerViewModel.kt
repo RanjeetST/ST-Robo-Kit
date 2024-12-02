@@ -1,34 +1,20 @@
 package com.example.strobokit.viewModels
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.strobokit.composables.controllerAction
+import com.example.strobokit.composables.ControllerAction
+import com.example.strobokit.viewModels.BleDeviceDetailViewModel.Commands
 import com.st.blue_sdk.BlueManager
-import com.st.blue_sdk.features.Feature
-import com.st.blue_sdk.features.battery.Battery
-import com.st.blue_sdk.features.battery.BatteryInfo
 import com.st.blue_sdk.features.extended.navigation_control.NavigationControl
 import com.st.blue_sdk.features.extended.navigation_control.request.MoveCommandDifferentialDriveSimpleMove
-import com.st.blue_sdk.features.switchfeature.SwitchFeature
-import com.st.blue_sdk.features.switchfeature.SwitchStatusType
-import com.st.blue_sdk.features.switchfeature.request.SwitchOn
+import com.st.blue_sdk.features.extended.navigation_control.request.SetNavigationMode
 import com.st.blue_sdk.models.Node
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -43,6 +29,7 @@ class ControllerViewModel @Inject constructor(
     }
 
     private var lastAction = 'S'
+    private var lastSpeed = 0
 
 
     private var rssiJob: Job? = null
@@ -72,24 +59,26 @@ class ControllerViewModel @Inject constructor(
         rssiJob?.cancel()
     }
 
-    fun sendCommand(featureName: String, deviceId: String,action : controllerAction,angle : Int = 0, speed : Int = 0) {
+    fun sendCommand(featureName: String, deviceId: String, action : ControllerAction, angle : Int = 0, speed : Int = 0) {
 
         viewModelScope.launch {
 
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
 
             if(feature is NavigationControl){
-                Log.d(TAG,"$action + $speed")
+                Log.d("RemoteControl","$action + $speed")
+                Log.d("RemoteControl","$lastSpeed")
                     when(action){
-                        controllerAction.Forward -> {
+                        ControllerAction.Forward -> {
                             lastAction = 'F'
+                            lastSpeed = speed
                             blueManager.writeFeatureCommand(
                                 nodeId = deviceId,
                                 featureCommand = MoveCommandDifferentialDriveSimpleMove(
                                     feature = feature,
                                     action = 0x10u,
                                     direction = 'F'.code.toUByte(),
-                                    speed = speed.toUByte(),
+                                    speed = lastSpeed.toUByte(),
                                     angle = angle.toByte(),
                                     res = byteArrayOf(0)
                                 ),//[linear motion , Directional motion , angle]
@@ -97,7 +86,8 @@ class ControllerViewModel @Inject constructor(
                             )
                         }
 
-                        controllerAction.Backward -> {
+                        ControllerAction.Backward -> {
+                            lastSpeed = speed
                             lastAction = 'B'
                             blueManager.writeFeatureCommand(
                                 nodeId = deviceId,
@@ -105,7 +95,7 @@ class ControllerViewModel @Inject constructor(
                                     feature = feature,
                                     action = 0x10u,
                                     direction = 'B'.code.toUByte(),
-                                    speed = speed.toUByte(),
+                                    speed = lastSpeed.toUByte(),
                                     angle = angle.toByte(),
                                     res = byteArrayOf(0)
 //                                    byteArrayOf('B'.code.toByte(),'R'.code.toByte(),(angle/10).toByte())
@@ -113,39 +103,69 @@ class ControllerViewModel @Inject constructor(
                                 responseTimeout = 1L
                             )
                         }
-                        controllerAction.Right -> {
+                        ControllerAction.Right -> {
                             blueManager.writeFeatureCommand(
                                 nodeId = deviceId,
                                 featureCommand = MoveCommandDifferentialDriveSimpleMove(
                                     feature = feature,
                                     action = 0x10u,
                                     direction = 'R'.code.toUByte(),
-                                    speed = speed.toUByte(),
+                                    speed = lastSpeed.toUByte(),
                                     angle = angle.toByte(),
                                     res = byteArrayOf(0)
 //                                    byteArrayOf(lastAction.code.toByte(),'R'.code.toByte(),(angle/10).toByte())
                                 ),
                                 responseTimeout = 1L
                             )
+                            delay(2000)
+                            lastAction = 'F'
+                            blueManager.writeFeatureCommand(
+                                nodeId = deviceId,
+                                featureCommand = MoveCommandDifferentialDriveSimpleMove(
+                                    feature = feature,
+                                    action = 0x10u,
+                                    direction = 'F'.code.toUByte(),
+                                    speed = lastSpeed.toUByte(),
+                                    angle = angle.toByte(),
+                                    res = byteArrayOf(0)
+                                ),//[linear motion , Directional motion , angle]
+                                responseTimeout = 1L
+                            )
                         }
-                        controllerAction.Left -> {
+                        ControllerAction.Left -> {
                             blueManager.writeFeatureCommand(
                                 nodeId = deviceId,
                                 featureCommand = MoveCommandDifferentialDriveSimpleMove(
                                     feature = feature,
                                     action = 0x10u,
                                     direction = 'L'.code.toUByte(),
-                                    speed = speed.toUByte(),
+                                    speed = lastSpeed.toUByte(),
                                     angle = (360 - angle).toByte(),
                                     res = byteArrayOf(0)
 //                                    byteArrayOf(lastAction.code.toByte(),'L'.code.toByte(),((360 - angle)/10).toByte())
                                 ),
                                 responseTimeout = 1L
                             )
+                            delay(2000)
+                            lastAction = 'F'
+                            blueManager.writeFeatureCommand(
+                                nodeId = deviceId,
+                                featureCommand = MoveCommandDifferentialDriveSimpleMove(
+                                    feature = feature,
+                                    action = 0x10u,
+                                    direction = 'F'.code.toUByte(),
+                                    speed = lastSpeed.toUByte(),
+                                    angle = angle.toByte(),
+                                    res = byteArrayOf(0)
+                                ),//[linear motion , Directional motion , angle]
+                                responseTimeout = 1L
+                            )
+
                         }
 
-                        controllerAction.Stop -> {
+                        ControllerAction.Stop -> {
                             lastAction = 'S'
+                            lastSpeed = speed
                             blueManager.writeFeatureCommand(
                                 nodeId = deviceId,
                                 featureCommand = MoveCommandDifferentialDriveSimpleMove(
@@ -160,6 +180,40 @@ class ControllerViewModel @Inject constructor(
                             )
                         }
                     }
+            }
+        }
+    }
+
+    fun sendNavigationCommand(command : Commands, deviceId : String){
+
+        viewModelScope.launch {
+            val commandId = when(command){
+                Commands.REMOTE_CONTROL -> {
+                    0x01u
+                }
+                Commands.FREE_NAVIGATION ->{
+                    0x02u
+                }
+                Commands.FOLLOW_ME -> {
+                    0x03u
+                }
+            }
+//            Log.d(TAG,"Feature not found command id = ${commandId.toUByte()}")
+            val feature = blueManager.nodeFeatures(deviceId).find { it.name == "Navigation Control" } ?: return@launch
+
+            if(feature is NavigationControl){
+                Log.d("navigation","${feature.name} + ${commandId.toUByte()}")
+                blueManager.writeFeatureCommand(
+                    nodeId = deviceId,
+                    featureCommand = SetNavigationMode(
+                        feature = feature,
+                        action = 16u,
+                        navigationMode = commandId.toUByte(),
+                        armed = 0u,
+                        res = 0L
+                    ),
+                    responseTimeout = 1L
+                )
             }
         }
     }

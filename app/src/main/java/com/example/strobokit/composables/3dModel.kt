@@ -1,13 +1,12 @@
 package com.example.strobokit.composables
 
 
-import androidx.compose.foundation.gestures.detectTapGestures
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import io.github.sceneview.Scene
@@ -21,6 +20,7 @@ import io.github.sceneview.rememberMainLightNode
 import io.github.sceneview.rememberModelLoader
 import io.github.sceneview.rememberNode
 
+@SuppressLint("ReturnFromAwaitPointerEventScope")
 @Composable
 fun CarModel(){
     Box(modifier = Modifier
@@ -37,7 +37,7 @@ fun CarModel(){
     ) {
         val engine = rememberEngine()
         val modelLoader = rememberModelLoader(engine)
-        val environmentLoader = rememberEnvironmentLoader(engine)
+        rememberEnvironmentLoader(engine)
 
         val cameraNode = rememberCameraNode(engine).apply {
             position = Position(z = 4.0f)

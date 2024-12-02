@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -36,22 +37,25 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.strobokit.R
-import com.example.strobokit.composables.CarModel
 import com.example.strobokit.composables.FeatureBox
 import com.example.strobokit.ui.theme.ErrorColor
 import com.example.strobokit.ui.theme.OnPrimary
@@ -95,6 +99,8 @@ fun DeviceDetailV2(
 
     val backHandlingEnabled by remember { mutableStateOf(true) }
 
+    val showDialog = rememberSaveable { mutableStateOf(true) }
+
     BackHandler(enabled = backHandlingEnabled) {
         viewModel.disconnect(deviceId = deviceId)
         navController.popBackStack()
@@ -107,9 +113,8 @@ fun DeviceDetailV2(
     }
 
     val scrollState = rememberScrollState()
-    var showDialog by remember { mutableStateOf(false) }
 
-    val backgroundGradient = Brush.verticalGradient(
+    Brush.verticalGradient(
         colorStops = arrayOf(
             0.0f to PrimaryColor,
             1f to PrimaryColor.copy(alpha = 0.6f)
@@ -118,6 +123,7 @@ fun DeviceDetailV2(
         endY = 1500.0f
     )
     val painter = painterResource(id = R.drawable.new_car)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -170,7 +176,7 @@ fun DeviceDetailV2(
                         verticalAlignment = Alignment.CenterVertically
                     ){
                         if(bleDevice.value?.connectionStatus?.current == NodeState.Ready){
-                            Text(text = "Connected",fontSize = 15.sp,color = Color.Black)
+                            Text(text = stringResource(id = R.string.connected),fontSize = 15.sp,color = Color.Black)
                         }else{
                             Text(text = "${bleDevice.value?.connectionStatus?.current}",fontSize = 15.sp,color = Color.Black)
                         }
@@ -232,12 +238,12 @@ fun DeviceDetailV2(
 
                         if (batteryPercentage != null) {
                             if(batteryPercentage > 20) {
-                                Text(text = "OK", color = PrimaryColor, fontSize = 10.sp)
+                                Text(text = stringResource(id = R.string.ok), color = PrimaryColor, fontSize = 10.sp)
                             }else{
-                                Text(text = "LOW",color = PrimaryColor, fontSize = 10.sp)
+                                Text(text = stringResource(id = R.string.low),color = PrimaryColor, fontSize = 10.sp)
                             }
                         }else{
-                            Text(text = "NA",color = PrimaryColor, fontSize = 10.sp)
+                            Text(text = stringResource(id = R.string.na),color = PrimaryColor, fontSize = 10.sp)
                         }
 
                     }
@@ -267,7 +273,7 @@ fun DeviceDetailV2(
                         .fillMaxWidth(0.8f),
                         color = PrimaryColor
                     ) {
-                        Text("Start Free Navigation",color = OnPrimary, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
+                        Text(stringResource(id = R.string.start_free_navigation),color = OnPrimary, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
                     }
                     Surface(modifier = Modifier
                         .clickable {
@@ -280,7 +286,7 @@ fun DeviceDetailV2(
                         .fillMaxWidth(0.8f),
                         color = PrimaryColor
                     ) {
-                        Text("Start Follow-me",color = OnPrimary, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
+                        Text(stringResource(id = R.string.start_follow_me),color = OnPrimary, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
                     }
                     Surface(modifier = Modifier
                         .clickable {
@@ -293,7 +299,7 @@ fun DeviceDetailV2(
                         .fillMaxWidth(0.8f),
                         color = PrimaryColor
                     ) {
-                        Text("Start Remote Control",color = OnPrimary, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
+                        Text(stringResource(id = R.string.start_remote_control),color = OnPrimary, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
                     }
                 }
             }
@@ -323,31 +329,35 @@ fun DeviceDetailV2(
                                 state = scrollState,
                                 orientation = Orientation.Horizontal
                             ),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         val items = features.value
                         items.map { item->
                             Log.d("FEATURES",item.name)
                         }
-//                        val itemNames =  listOf("Remote Control","Plot Data","Switch") + items.map { it.name }
-//                        val itemNames =  listOf("Remote Control","Plot Data","Debug","Free navigation","Follow me","Edge detection")
-                        val itemNames =  listOf("Home","Controller","Monitor","Debug")
-//                        val itemNames = listOf("Remote Control", "Follow Me", "Plot Data") + items.map { it.name }
 
-                        itemsIndexed(items = itemNames) { index, item ->
-//                            Log.d("Device Detail",item)
+                        val itemNames =  listOf("Home","Controller","Monitor","Debug")
+
+                        itemsIndexed(items = itemNames) { _, item ->
                             if(item == "Home" || item == "Controller" || item == "Monitor" || item == "Debug"){
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            if (item == "Controller") {
-                                                val batteryValue = batteryPercentage ?: -1
-                                                navController.navigate("feature/${deviceId}/controller/${batteryValue}")
-                                            } else if (item == "Monitor") {
-                                                navController.navigate("feature/${deviceId}/plot")
-                                            } else if (item == "Debug") {
-                                                navController.navigate("feature/${deviceId}/debugConsole")
+                                            when (item) {
+                                                "Controller" -> {
+                                                    val batteryValue = batteryPercentage ?: -1
+                                                    navController.navigate("feature/${deviceId}/controller/${batteryValue}")
+                                                }
+
+                                                "Monitor" -> {
+                                                    navController.navigate("feature/${deviceId}/plot")
+                                                }
+
+                                                "Debug" -> {
+                                                    navController.navigate("feature/${deviceId}/debugConsole")
+                                                }
                                             }
                                         }
                                 ) {
@@ -356,6 +366,77 @@ fun DeviceDetailV2(
                             }
 
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDialog.value) {
+        Dialog(onDismissRequest = { showDialog.value = false }) {
+            val dialogPainter = painterResource(id = R.drawable.bot_connected)
+
+            Box(modifier = Modifier
+                .width(337.dp)
+                .height(449.dp)
+                .padding(horizontal = 13.dp, vertical = 28.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(OnPrimary)
+            ){
+                Column(horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                        .padding(horizontal = 15.dp)
+
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.dialog_header), style = TextStyle(
+                            fontSize = 16.sp,
+                            lineHeight = 22.4.sp,
+                            fontWeight = FontWeight(700),
+                            color = PrimaryColor,
+                            textAlign = TextAlign.Center,
+                        )
+                    )
+
+                    Text(
+                        text = stringResource(id = R.string.dialog_text),
+                        style = TextStyle(
+                            fontSize = 14.sp,
+                            lineHeight = 19.6.sp,
+                            fontWeight = FontWeight(400),
+                            color = PrimaryColor,
+                            textAlign = TextAlign.Center,
+                        )
+                    )
+
+                    Image(painter = dialogPainter, contentDescription = "carImage",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+
+                    Surface(modifier = Modifier
+                        .clickable { showDialog.value = false }
+                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
+                        .fillMaxWidth(0.8f),
+                        color = OnPrimary
+                    ) {
+                        Text(stringResource(id = R.string.dialog_option_homePage),color = Color(0xFF0047B2), fontSize = 15.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
+                    }
+
+                    Surface(modifier = Modifier
+                        .clickable {
+                            showDialog.value = false
+                            val batteryValue = batteryPercentage ?: -1
+                            navController.navigate("feature/${deviceId}/controller/${batteryValue}")
+                        }
+                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
+                        .fillMaxWidth(0.8f),
+                        color = PrimaryColor
+                    ) {
+                        Text(stringResource(id = R.string.dialog_option_startDriving),color = OnPrimary, fontSize = 15.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
                     }
                 }
             }

@@ -1,7 +1,6 @@
 package com.example.strobokit.viewModels
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.st.blue_sdk.BlueManager
@@ -38,7 +37,7 @@ class AlgorithmSelectionViewModel @Inject constructor(
                     0x03u
                 }
             }
-//            Log.d(TAG,"Feature not found command id = ${commandId.toUByte()}")
+
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == "Navigation Control" } ?: return@launch
 
             if(feature is NavigationControl){

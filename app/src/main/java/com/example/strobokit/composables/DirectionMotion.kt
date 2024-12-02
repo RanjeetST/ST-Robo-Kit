@@ -12,12 +12,15 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -26,15 +29,14 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.viewModels.ControllerViewModel
-import com.st.blue_sdk.features.switchfeature.SwitchStatusType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.atan2
@@ -44,10 +46,14 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 @Composable
-fun DirectionMotion(onHandleMoved : ()->Unit,viewModel: ControllerViewModel,nodeId : String , isDisarmed : MutableState<Boolean>) {
-    var angle by remember { mutableStateOf(0f) } // Start from the top
+fun DirectionMotion(
+    onHandleMoved: ()->Unit,
+    viewModel: ControllerViewModel,
+    nodeId: String, isDisarmed: MutableState<String>
+) {
+    var angle by remember { mutableFloatStateOf(0f) } // Start from the top
     var isDragging by remember { mutableStateOf(false) }
-    var lastSentAngle by remember { mutableStateOf(-1) } // Track the last sent angle
+    var lastSentAngle by remember { mutableIntStateOf(-1) } // Track the last sent angle
     var shouldSendCommand by remember { mutableStateOf(false) } // Control when to send the command
     val coroutineScope = rememberCoroutineScope()
 
@@ -58,52 +64,34 @@ fun DirectionMotion(onHandleMoved : ()->Unit,viewModel: ControllerViewModel,node
     val circleY = (ringRadius * sin(angleRad - Math.PI / 2)).toFloat() // Adjust for 0 degrees at the top
 
     val parentBackgroundColor = TertiaryColor
-    val knobColor = PrimaryColor
-    var hoverAreaColor = parentBackgroundColor.copy(alpha = 0.8f).let {
+    val knobColor = OnPrimary
+    val hoverAreaColor = parentBackgroundColor.copy(alpha = 0.8f).let {
         Color(
-            red = (it.red * 0.8f).toFloat(),
-            green = (it.green * 0.8f).toFloat(),
-            blue = (it.blue * 0.8f).toFloat(),
+            red = (it.red * 0.8f),
+            green = (it.green * 0.8f),
+            blue = (it.blue * 0.8f),
             alpha = 0.4f // Adjust transparency here
         )
     }
-    var gradientBrush = Brush.linearGradient(
+    val gradientBrush = Brush.linearGradient(
         colors = listOf(PrimaryColor, Color.White),
-        start = androidx.compose.ui.geometry.Offset(0f, 0f),
-        end = androidx.compose.ui.geometry.Offset(900f, 900f)
+        start = Offset(0f, 0f),
+        end = Offset(900f, 900f)
     )
 
-    if(!isDisarmed.value){
-        gradientBrush = Brush.linearGradient(
-            colors = listOf(
-                PrimaryColor.copy(alpha = 0.5f), // Reduced opacity for PrimaryColor
-                Color.White.copy(alpha = 0.5f)   // Reduced opacity for White
-            ),
-            start = androidx.compose.ui.geometry.Offset(0f, 0f),
-            end = androidx.compose.ui.geometry.Offset(900f, 900f)
-        )
-        hoverAreaColor = parentBackgroundColor.copy(alpha = 0.8f).let {
-            Color(
-                red = (it.red * 0.8f).toFloat(),
-                green = (it.green * 0.8f).toFloat(),
-                blue = (it.blue * 0.8f).toFloat(),
-                alpha = 0.2f // Adjust transparency here
-            )
-        }
-    }
-
-    val buttonColor = knobColor.copy(alpha = 0.8f).let {
+    val buttonColor = knobColor.copy(alpha = 0.6f).let {
         Color(
-            red = (it.red * 0.8f).toFloat(),
-            green = (it.green * 0.8f).toFloat(),
-            blue = (it.blue * 0.8f).toFloat(),
-            alpha = 0.4f // Adjust transparency here
+            red = (it.red * 0.8f),
+            green = (it.green * 0.8f),
+            blue = (it.blue * 0.8f),
+            alpha = 0.4f
         )
     }
 
     Box(
         modifier = Modifier
             .clip(CircleShape)
+            .alpha(if(isDisarmed.value == "Drive") 1f else if(isDisarmed.value == "Lock") 0.6f else 0f)
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { offset ->
@@ -133,7 +121,7 @@ fun DirectionMotion(onHandleMoved : ()->Unit,viewModel: ControllerViewModel,node
                             coroutineScope.launch {
                                 delay(1000)
                                 shouldSendCommand = true
-                                if (isDisarmed.value && shouldSendCommand) {
+                                if (isDisarmed.value == "Drive" && shouldSendCommand) {
                                     val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
                                     if (angleInteger != lastSentAngle) {
                                         if (angleInteger in 1..180) {
@@ -141,7 +129,7 @@ fun DirectionMotion(onHandleMoved : ()->Unit,viewModel: ControllerViewModel,node
                                             viewModel.sendCommand(
                                                 featureName = "Navigation Control",
                                                 deviceId = nodeId,
-                                                action = controllerAction.Right,
+                                                action = ControllerAction.Right,
                                                 angle = angleInteger
                                             )
                                         } else if (angleInteger in 181..359) {
@@ -149,7 +137,7 @@ fun DirectionMotion(onHandleMoved : ()->Unit,viewModel: ControllerViewModel,node
                                             viewModel.sendCommand(
                                                 featureName = "Navigation Control",
                                                 deviceId = nodeId,
-                                                action = controllerAction.Left,
+                                                action = ControllerAction.Left,
                                                 angle = angleInteger
                                             )
                                         }

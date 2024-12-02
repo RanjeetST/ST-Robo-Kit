@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -76,63 +75,6 @@ fun FeatureBox(featureName: String,iconSize: Int = 50,textSize:Int = 12,textArea
                     .size(textAreaSize.dp)
                     .align(Alignment.CenterHorizontally) // This centers the text horizontally
             )
-        }
-    }
-}
-
-
-/* OLD Version */
-//@Composable
-//fun FeatureBox(featureName: String){
-//    Surface(modifier = Modifier
-//        .fillMaxWidth()
-//        .padding(4.dp),
-//        shape = RoundedCornerShape(14.dp),
-//        shadowElevation = 10.dp,
-//        color = TertiaryColor,
-//    ){
-//        Column(
-//            modifier= Modifier.fillMaxWidth()
-//                .padding(10.dp)
-//            ,
-//            horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-//            Icon(painter = painterResource(R.drawable.controller),
-//                contentDescription = null,
-//                tint = OnPrimary,
-//                modifier = Modifier.size(50.dp)
-//            )
-//            Spacer(modifier = Modifier.padding(vertical = 10.dp))
-//            Text(text = featureName, fontSize = 15.sp, color = OnPrimary)
-//        }
-//    }
-//}
-
-@Composable
-@Preview(showBackground = true)
-fun FeatureBox(){
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .padding(4.dp)
-        .background(Color.Transparent),
-    ){
-        Column(
-            modifier= Modifier
-                .padding(10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(painter = painterResource(R.drawable.controller),
-                contentDescription = null,
-                tint = OnPrimary,
-                modifier = Modifier.size(50.dp)
-            )
-            Spacer(modifier = Modifier.padding(vertical = 10.dp))
-            Text(text = "Debug Console",
-                fontSize = 15.sp,
-                color = OnPrimary,
-                softWrap = true,
-                maxLines = 2,
-                textAlign = TextAlign.Center)
         }
     }
 }
