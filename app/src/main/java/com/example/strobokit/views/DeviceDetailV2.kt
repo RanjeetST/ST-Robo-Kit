@@ -432,7 +432,7 @@ fun DeviceDetailV2(
                             val batteryValue = batteryPercentage ?: -1
                             navController.navigate("feature/${deviceId}/controller/${batteryValue}")
                         }
-                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 4.dp))
+                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
                         .fillMaxWidth(0.8f),
                         color = PrimaryColor
                     ) {
