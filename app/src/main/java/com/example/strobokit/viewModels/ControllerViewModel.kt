@@ -81,7 +81,7 @@ class ControllerViewModel @Inject constructor(
                                     speed = lastSpeed.toUByte(),
                                     angle = angle.toByte(),
                                     res = byteArrayOf(0)
-                                ),//[linear motion , Directional motion , angle]
+                                ),
                                 responseTimeout = 1L
                             )
                         }
@@ -98,7 +98,6 @@ class ControllerViewModel @Inject constructor(
                                     speed = lastSpeed.toUByte(),
                                     angle = angle.toByte(),
                                     res = byteArrayOf(0)
-//                                    byteArrayOf('B'.code.toByte(),'R'.code.toByte(),(angle/10).toByte())
                                 ),
                                 responseTimeout = 1L
                             )
@@ -113,24 +112,10 @@ class ControllerViewModel @Inject constructor(
                                     speed = lastSpeed.toUByte(),
                                     angle = angle.toByte(),
                                     res = byteArrayOf(0)
-//                                    byteArrayOf(lastAction.code.toByte(),'R'.code.toByte(),(angle/10).toByte())
                                 ),
                                 responseTimeout = 1L
                             )
-                            delay(2000)
-                            lastAction = 'F'
-                            blueManager.writeFeatureCommand(
-                                nodeId = deviceId,
-                                featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                    feature = feature,
-                                    action = 0x10u,
-                                    direction = 'F'.code.toUByte(),
-                                    speed = lastSpeed.toUByte(),
-                                    angle = angle.toByte(),
-                                    res = byteArrayOf(0)
-                                ),//[linear motion , Directional motion , angle]
-                                responseTimeout = 1L
-                            )
+
                         }
                         ControllerAction.Left -> {
                             blueManager.writeFeatureCommand(
@@ -142,25 +127,9 @@ class ControllerViewModel @Inject constructor(
                                     speed = lastSpeed.toUByte(),
                                     angle = (360 - angle).toByte(),
                                     res = byteArrayOf(0)
-//                                    byteArrayOf(lastAction.code.toByte(),'L'.code.toByte(),((360 - angle)/10).toByte())
                                 ),
                                 responseTimeout = 1L
                             )
-                            delay(2000)
-                            lastAction = 'F'
-                            blueManager.writeFeatureCommand(
-                                nodeId = deviceId,
-                                featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                    feature = feature,
-                                    action = 0x10u,
-                                    direction = 'F'.code.toUByte(),
-                                    speed = lastSpeed.toUByte(),
-                                    angle = angle.toByte(),
-                                    res = byteArrayOf(0)
-                                ),//[linear motion , Directional motion , angle]
-                                responseTimeout = 1L
-                            )
-
                         }
 
                         ControllerAction.Stop -> {
@@ -198,8 +167,7 @@ class ControllerViewModel @Inject constructor(
                     0x03u
                 }
             }
-//            Log.d(TAG,"Feature not found command id = ${commandId.toUByte()}")
-            val feature = blueManager.nodeFeatures(deviceId).find { it.name == "Navigation Control" } ?: return@launch
+            val feature = blueManager.nodeFeatures(deviceId).find { it.name == NavigationControl.NAME } ?: return@launch
 
             if(feature is NavigationControl){
                 Log.d("navigation","${feature.name} + ${commandId.toUByte()}")

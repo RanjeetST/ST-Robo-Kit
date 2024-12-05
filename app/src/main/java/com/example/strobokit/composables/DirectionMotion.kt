@@ -98,7 +98,7 @@ fun DirectionMotion(
                         val x = offset.x - (size.width / 2 + circleX)
                         val y = offset.y - (size.height / 2 + circleY)
                         isDragging =
-                            hypot(x, y) <= 100.dp.toPx() // Check if touch is within the circle
+                            hypot(x, y) <= 100.dp.toPx()
                     },
                     onDragEnd = {
                         isDragging = false
@@ -119,7 +119,7 @@ fun DirectionMotion(
                             angle = newAngle
                             shouldSendCommand = false
                             coroutineScope.launch {
-                                delay(1000)
+                                delay(500)
                                 shouldSendCommand = true
                                 if (isDisarmed.value == "Drive" && shouldSendCommand) {
                                     val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()

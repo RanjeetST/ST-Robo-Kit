@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ST Robo Kit</string>
+    <string name="app_name">ST Robotics</string>
     <string name="st_feature_featureNameLabel">Name: %1$s</string>
     <string name="st_feature_updatesLabel">Updates:</string>
 
@@ -27,6 +27,9 @@
     <string name="please_grant_permission">Please grant the permissions</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="start_driving">Start Driving</string>
+    <string name="detected_robots">Detected robots</string>
+
 
 <!--    controller-->
     <string name="throttle">Throttle</string>
@@ -35,9 +38,13 @@
 <!--    Plot chart-->
     <string name="monitor">Monitor</string>
     <string name="ToF">ToF</string>
+    <string name="ToFData">ToF Data (8x8 Matrix)</string>
 
 <!--    debug console-->
     <string name="debug_console">Debug Console</string>
     <string name="send_debug_message">"Send Debug Message"</string>
 
+<!--    build-->
+    <string name="version_code">1</string>
+    <string name="version_name">1.0</string>
 </resources>

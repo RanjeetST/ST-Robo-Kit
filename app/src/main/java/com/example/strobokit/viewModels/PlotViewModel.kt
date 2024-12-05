@@ -20,7 +20,7 @@ class PlotViewModel @Inject constructor(
     private val blueManager: BlueManager
 ) : ViewModel() {
     companion object {
-        private val TAG = FeatureDetailViewModel::class.simpleName
+        private val TAG = PlotViewModel::class.simpleName
     }
 
     val featureUpdates: State<FeatureUpdate<*>?>

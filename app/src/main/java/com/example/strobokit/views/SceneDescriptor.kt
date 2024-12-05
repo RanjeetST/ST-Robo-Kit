@@ -17,21 +17,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.strobokit.ui.theme.OnPrimary
 import kotlin.random.Random
+import com.example.strobokit.R
 
 @Preview(showBackground = true)
 @Composable
 fun SceneDescriptor(){
-
-    // Create an 8x8 array
+    
     val sampleArray = Array(8) { IntArray(8) }
 
-    // Fill the array with random values ranging from 0 to 6000
     for (i in sampleArray.indices) {
         for (j in sampleArray[i].indices) {
             sampleArray[i][j] = Random.nextInt(0, 6000)
@@ -49,8 +49,7 @@ fun SceneDescriptor(){
             .padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text ="ToF Data (8x8 Matrix)",color = Color.Black)
-//            Text(text = "The screen descriptor feature utilizing an 8x8 matrix to display Time-of-Flight (ToF) data is an efficient way to visualize distance measurements.", letterSpacing = 2.sp, lineHeight = 20.sp,color = Color.Black)
+            Text(stringResource(id = R.string.ToFData),color = Color.Black)
         }
 
         Column(modifier = Modifier

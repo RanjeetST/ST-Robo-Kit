@@ -1,15 +1,16 @@
 package com.example.strobokit.views
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,17 +18,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,16 +45,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import com.example.strobokit.R
-import com.example.strobokit.composables.FeatureBox
-import com.example.strobokit.ui.theme.Magenta
+import com.example.strobokit.composables.WebViewScreen
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
-
+import com.example.strobokit.ui.theme.TertiaryColor
+import com.example.strobokit.BuildConfig
 
 @SuppressLint("ServiceCast")
 @Composable
@@ -64,6 +73,7 @@ fun HomeScreenV2(navController: NavController){
     )
 
     val painter = painterResource(id = R.drawable.idle_bot)
+    val showDialog = rememberSaveable { mutableStateOf(false) }
 
 
     Column(
@@ -81,6 +91,13 @@ fun HomeScreenV2(navController: NavController){
                     Image(painter = painterResource(id = R.drawable.st_logo_clear), contentDescription = "ST_LOGO", modifier = Modifier
                         .size(30.dp)
                         .align(Alignment.Center))
+
+                    Row {
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(onClick = {showDialog.value = true}) {
+                            Icon(painter = painterResource(id = R.drawable.baseline_info_outline_24), contentDescription = "Info", tint = PrimaryColor)
+                        }
+                    }
                 }
             },
             backgroundColor = Color.White,
@@ -132,7 +149,7 @@ fun HomeScreenV2(navController: NavController){
                         .fillMaxWidth(0.8f),
                         color = PrimaryColor
                     ) {
-                        androidx.compose.material3.Text(stringResource(id = R.string.pair_your_robot),color = OnPrimary, fontSize = 15.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
+                        Text(stringResource(id = R.string.pair_your_robot),color = OnPrimary, fontSize = 15.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
                     }
 
             }
@@ -195,14 +212,14 @@ fun HomeScreenV2(navController: NavController){
                                         .fillMaxHeight()
                                     ,
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.SpaceBetween
+                                    verticalArrangement = Arrangement.SpaceEvenly
                                 ) {
                                     Icon(painter = painterResource(iconImage),
                                         contentDescription = null,
                                         tint = if (item == "Home") OnPrimary else OnPrimary.copy(alpha = 0.4f),
                                         modifier = Modifier.size(25.dp)
                                     )
-                                    
+
                                     Spacer(modifier = Modifier.height(5.dp))
 
                                     Text(
@@ -211,13 +228,275 @@ fun HomeScreenV2(navController: NavController){
                                         fontSize = 10.sp,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
-                                            .size(45.dp)
                                             .align(Alignment.CenterHorizontally) // This centers the text horizontally
                                     )
                                 }
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+    if(showDialog.value) {
+        InformationDialog(showDialog = showDialog)
+    }
+}
+
+@Composable
+fun InformationDialog(showDialog : MutableState<Boolean>){
+    val showHelpDialog = rememberSaveable { mutableStateOf(false) }
+    val showWebPage = rememberSaveable { mutableStateOf(WebPageStatus.OFF) }
+    val versionCode = BuildConfig.VERSION_CODE
+    val versionName = BuildConfig.VERSION_NAME
+    Dialog(onDismissRequest = { showDialog.value = false }){
+        Box(
+            modifier = Modifier
+                .width(300.dp)
+                .height(500.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(OnPrimary)
+                .border(
+                    width = 2.dp,
+                    color = TertiaryColor,
+                    shape = RoundedCornerShape(8.dp)
+                ),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.8f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceAround
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ){
+                    Text(
+                        text = stringResource(id = R.string.app_name),
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = PrimaryColor,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        IconButton(modifier = Modifier.fillMaxWidth(0.25f), onClick = { showDialog.value = false }) {
+                            Icon(
+                                modifier = Modifier.size(25.dp),
+                                painter = painterResource(id = R.drawable.baseline_close_24),
+                                contentDescription = "close"
+                            )
+                        }
+                    }
+                }
+
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "App Version: $versionName", color = TertiaryColor, fontSize = 18.sp)
+                }
+
+                Image(
+                    painter = painterResource(id = R.drawable.robokit_icon_foreground),
+                    contentDescription = "app icon",
+                    modifier = Modifier.size(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+
+                Column {
+                    Surface(modifier = Modifier
+                        .clickable {
+                            showWebPage.value = WebPageStatus.PRIVACY_POLICY
+                        }
+                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
+                        .fillMaxWidth(0.8f),
+                        color = PrimaryColor
+                    ) {
+                        Text(
+                            text = "Privacy Policy",
+                            color = OnPrimary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Surface(modifier = Modifier
+                        .clickable {
+                            showHelpDialog.value = true
+                        }
+                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
+                        .fillMaxWidth(0.8f),
+                        color = PrimaryColor
+                    ) {
+                        Text(
+                            text = "Help",
+                            color = OnPrimary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+            }
+        }
+    }
+    if (showWebPage.value != WebPageStatus.OFF) {
+        var url: String = ""
+
+        url = if (showWebPage.value == WebPageStatus.EXERCISE_RIGHTS) {
+            "https://privacyportal-de.onetrust.com/webform/93c12e3c-4cab-41dc-a8c1-b92021bcfa14/2b87200d-4023-4588-9df7-ab0cdea1a67e"
+        } else {
+            "https://www.st.com/content/st_com/en/common/privacy-portal.html"
+        }
+        Dialog(onDismissRequest = { showWebPage.value = WebPageStatus.OFF }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .padding(16.dp)
+            ) {
+                WebViewScreen(url = url)
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TertiaryColor
+                    ),
+                    onClick = { showWebPage.value = WebPageStatus.OFF },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Text(text = "Done", color = PrimaryColor)
+                }
+            }
+        }
+    }
+    if(showHelpDialog.value){
+        HelpDialog(showHelpDialog)
+    }
+}
+
+enum class WebPageStatus {
+    OFF ,
+    PRIVACY_POLICY,
+    EXERCISE_RIGHTS
+}
+
+@Composable
+fun HelpDialog(showDialog: MutableState<Boolean>){
+
+    val showWebPage = rememberSaveable { mutableStateOf(WebPageStatus.OFF) }
+
+    Dialog(onDismissRequest = { showDialog.value = false }){
+        Box(
+            modifier = Modifier
+                .width(200.dp)
+                .height(250.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(OnPrimary)
+                .border(
+                    width = 2.dp,
+                    color = TertiaryColor,
+                    shape = RoundedCornerShape(8.dp)
+                ),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.9f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Column(modifier = Modifier.fillMaxHeight(0.2f), verticalArrangement = Arrangement.Center) {
+                    Text(text = "Select Option", color = PrimaryColor, fontWeight = FontWeight.SemiBold)
+                }
+
+                Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceEvenly) {
+                    Surface(modifier = Modifier
+                        .clickable {
+                            showWebPage.value = WebPageStatus.PRIVACY_POLICY
+                        }
+                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
+                        .fillMaxWidth(0.8f),
+                        color = PrimaryColor
+                    ) {
+                        Text(
+                            text = "Privacy Policy",
+                            color = OnPrimary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    Surface(modifier = Modifier
+                        .clickable {
+                            showWebPage.value = WebPageStatus.EXERCISE_RIGHTS
+                        }
+                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
+                        .fillMaxWidth(0.8f),
+                        color = PrimaryColor
+                    ) {
+                        Text(
+                            text = "Exercise Rights",
+                            color = OnPrimary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    Surface(modifier = Modifier
+                        .clickable {
+                            showDialog.value = false
+                        }
+                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
+                        .fillMaxWidth(0.8f),
+                        color = PrimaryColor
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            color = OnPrimary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+            }
+        }
+    }
+
+    if (showWebPage.value != WebPageStatus.OFF) {
+        var url: String
+
+        url = if (showWebPage.value == WebPageStatus.EXERCISE_RIGHTS) {
+            "https://privacyportal-de.onetrust.com/webform/93c12e3c-4cab-41dc-a8c1-b92021bcfa14/2b87200d-4023-4588-9df7-ab0cdea1a67e"
+        } else {
+            "https://www.st.com/content/st_com/en/common/privacy-portal.html"
+        }
+        Dialog(onDismissRequest = { showWebPage.value = WebPageStatus.OFF }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .padding(16.dp)
+            ) {
+                WebViewScreen(url = url)
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TertiaryColor
+                    ),
+                    onClick = { showWebPage.value = WebPageStatus.OFF },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Text(text = "Done", color = PrimaryColor)
                 }
             }
         }

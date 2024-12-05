@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,7 +52,7 @@ fun CarPairedDialog(){
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.fillMaxSize()) {
             Text(
-                text = "Car Paired", style = TextStyle(
+                text = stringResource(id = R.string.dialog_header), style = TextStyle(
                     fontSize = 16.sp,
                     lineHeight = 22.4.sp,
                     fontWeight = FontWeight(700),
@@ -61,7 +62,7 @@ fun CarPairedDialog(){
             )
 
             Text(
-                text = "Your car is now paired with your smartphone. When ready press “start driving”.",
+                text = stringResource(id = R.string.dialog_text),
                 style = TextStyle(
                     fontSize = 14.sp,
                     lineHeight = 19.6.sp,
@@ -82,7 +83,7 @@ fun CarPairedDialog(){
                 .fillMaxWidth(0.8f),
                 color = OnPrimary
             ) {
-                androidx.compose.material3.Text("Visit home page",color = Color(0xFF0047B2), fontSize = 15.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
+                Text(stringResource(id = R.string.dialog_option_homePage),color = Color(0xFF0047B2), fontSize = 15.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
             }
 
             Surface(modifier = Modifier
@@ -91,7 +92,7 @@ fun CarPairedDialog(){
                 .fillMaxWidth(0.8f),
                 color = PrimaryColor
             ) {
-                androidx.compose.material3.Text("Pair your robot",color = OnPrimary, fontSize = 15.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
+                Text(stringResource(id = R.string.dialog_option_startDriving),color = OnPrimary, fontSize = 15.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
             }
 
         }

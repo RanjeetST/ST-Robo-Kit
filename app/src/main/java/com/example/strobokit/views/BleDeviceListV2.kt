@@ -105,7 +105,7 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.BLUETOOTH_SCAN,
                 Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_CONNECT
+                Manifest.permission.BLUETOOTH_CONNECT,
             )
         } else {
             listOf(
@@ -188,7 +188,10 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
                             }
                         }
                         Spacer(modifier = Modifier.height(15.dp))
+                        Text(stringResource(id = R.string.detected_robots), color = Color.Gray, fontSize = 12.sp, textAlign = TextAlign.Start)
                     }
+
+
 
                     itemsIndexed(items = bleDevices.value) { _, item ->
                         Box(
@@ -212,7 +215,6 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
                                             )
                                             .show()
                                     } else {
-                                        // Handle the case when Bluetooth is turned off
                                         Toast
                                             .makeText(
                                                 context,
@@ -222,7 +224,6 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
                                             .show()
                                     }
                                 }
-//                                .padding(4.dp)
                         ) {
                             Row(
                                 modifier = Modifier
@@ -276,7 +277,6 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
                                                 )
                                                 .show()
                                         } else {
-                                            // Handle the case when Bluetooth is turned off
                                             Toast
                                                 .makeText(
                                                     context,

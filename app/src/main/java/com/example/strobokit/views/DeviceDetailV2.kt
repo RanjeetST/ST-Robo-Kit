@@ -199,22 +199,7 @@ fun DeviceDetailV2(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
-//                    CarModel()
-                    Image(painter = painter, contentDescription = "car", contentScale = ContentScale.Crop, modifier = Modifier.size(200.dp))
-//                    Image(painter = painterResource(id = R.drawable.new_car ), contentDescription = "car",Modifier.size(200.dp))
-//                    Box(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .size(200.dp)
-//                    ) {
-//                        Image(
-//                            painter = painter,
-//                            contentDescription = "car",
-//                            modifier = Modifier.size(200.dp),
-//                            contentScale = ContentScale.Crop
-//                        )
-//                    }
+                    Image(painter = painter, contentDescription = "car", contentScale = ContentScale.Crop, modifier = Modifier.size(280.dp))
                 }
 
                 Row(modifier = Modifier
@@ -260,46 +245,18 @@ fun DeviceDetailV2(
 
                 Column(modifier = Modifier.fillMaxHeight(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceEvenly
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Surface(modifier = Modifier
                         .clickable {
-                            viewModel.sendCommand(
-                                BleDeviceDetailViewModel.Commands.FREE_NAVIGATION,
-                                deviceId
-                            )
+                            val batteryValue = batteryPercentage ?: -1
+                            navController.navigate("feature/${deviceId}/controller/${batteryValue}")
                         }
                         .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
                         .fillMaxWidth(0.8f),
                         color = PrimaryColor
                     ) {
-                        Text(stringResource(id = R.string.start_free_navigation),color = OnPrimary, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
-                    }
-                    Surface(modifier = Modifier
-                        .clickable {
-                            viewModel.sendCommand(
-                                BleDeviceDetailViewModel.Commands.FOLLOW_ME,
-                                deviceId
-                            )
-                        }
-                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
-                        .fillMaxWidth(0.8f),
-                        color = PrimaryColor
-                    ) {
-                        Text(stringResource(id = R.string.start_follow_me),color = OnPrimary, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
-                    }
-                    Surface(modifier = Modifier
-                        .clickable {
-                            viewModel.sendCommand(
-                                BleDeviceDetailViewModel.Commands.REMOTE_CONTROL,
-                                deviceId
-                            )
-                        }
-                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
-                        .fillMaxWidth(0.8f),
-                        color = PrimaryColor
-                    ) {
-                        Text(stringResource(id = R.string.start_remote_control),color = OnPrimary, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
+                        Text(stringResource(id = R.string.start_driving),color = OnPrimary, fontSize = 18.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 12.dp), textAlign = TextAlign.Center)
                     }
                 }
             }
