@@ -1,6 +1,8 @@
 package com.example.strobokit.views
 
 import android.annotation.SuppressLint
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -33,8 +35,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +49,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -57,6 +64,7 @@ import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.BuildConfig
+import com.example.strobokit.models.DeveloperMode
 
 @SuppressLint("ServiceCast")
 @Composable
@@ -228,7 +236,7 @@ fun HomeScreenV2(navController: NavController){
                                         fontSize = 10.sp,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
-                                            .align(Alignment.CenterHorizontally) // This centers the text horizontally
+                                            .align(Alignment.CenterHorizontally) 
                                     )
                                 }
                             }
@@ -249,6 +257,10 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
     val showWebPage = rememberSaveable { mutableStateOf(WebPageStatus.OFF) }
     val versionCode = BuildConfig.VERSION_CODE
     val versionName = BuildConfig.VERSION_NAME
+    var tapCount by remember {
+        mutableIntStateOf(0)
+    }
+    val context = LocalContext.current
     Dialog(onDismissRequest = { showDialog.value = false }){
         Box(
             modifier = Modifier
@@ -307,7 +319,25 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
                 Image(
                     painter = painterResource(id = R.drawable.robokit_icon_foreground),
                     contentDescription = "app icon",
-                    modifier = Modifier.size(200.dp),
+                    modifier = Modifier.size(200.dp)
+                        .clickable {
+                            Log.d("developer", "Image clicked")
+                            if (tapCount < 5) {
+                                tapCount++
+                                if (tapCount == 5) {
+                                    DeveloperMode.isDeveloper = true
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            "Developer Mode Activated",
+                                            Toast.LENGTH_SHORT
+                                        )
+                                        .show()
+                                }
+                            } else {
+                                tapCount = 0
+                            }
+                        },
                     contentScale = ContentScale.Crop
                 )
 
@@ -321,7 +351,7 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
                         color = PrimaryColor
                     ) {
                         Text(
-                            text = "Privacy Policy",
+                            text = stringResource(id = R.string.privacy_policy),
                             color = OnPrimary,
                             fontSize = 12.sp,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
@@ -338,7 +368,7 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
                         color = PrimaryColor
                     ) {
                         Text(
-                            text = "Help",
+                            text = stringResource(id = R.string.help),
                             color = OnPrimary,
                             fontSize = 12.sp,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
@@ -354,9 +384,9 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
         var url: String = ""
 
         url = if (showWebPage.value == WebPageStatus.EXERCISE_RIGHTS) {
-            "https://privacyportal-de.onetrust.com/webform/93c12e3c-4cab-41dc-a8c1-b92021bcfa14/2b87200d-4023-4588-9df7-ab0cdea1a67e"
+            stringResource(id = R.string.exercise_rights_url)
         } else {
-            "https://www.st.com/content/st_com/en/common/privacy-portal.html"
+            stringResource(id = R.string.privacy_policy_url)
         }
         Dialog(onDismissRequest = { showWebPage.value = WebPageStatus.OFF }) {
             Box(
@@ -415,7 +445,7 @@ fun HelpDialog(showDialog: MutableState<Boolean>){
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
                 Column(modifier = Modifier.fillMaxHeight(0.2f), verticalArrangement = Arrangement.Center) {
-                    Text(text = "Select Option", color = PrimaryColor, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(id = R.string.select_option), color = PrimaryColor, fontWeight = FontWeight.SemiBold)
                 }
 
                 Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceEvenly) {
@@ -428,7 +458,7 @@ fun HelpDialog(showDialog: MutableState<Boolean>){
                         color = PrimaryColor
                     ) {
                         Text(
-                            text = "Privacy Policy",
+                            text = stringResource(id = R.string.privacy_policy),
                             color = OnPrimary,
                             fontSize = 12.sp,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
@@ -444,7 +474,7 @@ fun HelpDialog(showDialog: MutableState<Boolean>){
                         color = PrimaryColor
                     ) {
                         Text(
-                            text = "Exercise Rights",
+                            text = stringResource(id = R.string.exercise_rights),
                             color = OnPrimary,
                             fontSize = 12.sp,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
@@ -460,7 +490,7 @@ fun HelpDialog(showDialog: MutableState<Boolean>){
                         color = PrimaryColor
                     ) {
                         Text(
-                            text = "Cancel",
+                            text = stringResource(id = R.string.cancel),
                             color = OnPrimary,
                             fontSize = 12.sp,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
@@ -477,9 +507,9 @@ fun HelpDialog(showDialog: MutableState<Boolean>){
         var url: String
 
         url = if (showWebPage.value == WebPageStatus.EXERCISE_RIGHTS) {
-            "https://privacyportal-de.onetrust.com/webform/93c12e3c-4cab-41dc-a8c1-b92021bcfa14/2b87200d-4023-4588-9df7-ab0cdea1a67e"
+            stringResource(id = R.string.exercise_rights_url)
         } else {
-            "https://www.st.com/content/st_com/en/common/privacy-portal.html"
+            stringResource(id = R.string.privacy_policy_url)
         }
         Dialog(onDismissRequest = { showWebPage.value = WebPageStatus.OFF }) {
             Box(
@@ -496,7 +526,7 @@ fun HelpDialog(showDialog: MutableState<Boolean>){
                     onClick = { showWebPage.value = WebPageStatus.OFF },
                     modifier = Modifier.align(Alignment.TopEnd)
                 ) {
-                    Text(text = "Done", color = PrimaryColor)
+                    Text(stringResource(id = R.string.done), color = PrimaryColor)
                 }
             }
         }

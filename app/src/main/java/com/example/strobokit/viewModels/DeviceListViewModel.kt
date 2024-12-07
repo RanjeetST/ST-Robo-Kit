@@ -1,6 +1,5 @@
 package com.example.strobokit.viewModels
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -71,11 +70,6 @@ class BleDeviceListViewModel @Inject constructor(
                 val currentNodeState = it.connectionStatus.current
                 _connectionState.value = currentNodeState
 
-                Log.d(
-                    TAG,
-                    "Node state (prev: $previousNodeState - current: $currentNodeState) retryCount: $retryCount"
-                )
-
                 if (previousNodeState == NodeState.Connecting &&
                     currentNodeState == NodeState.Disconnected
                 ) {
@@ -85,7 +79,6 @@ class BleDeviceListViewModel @Inject constructor(
                         return@collect
                     }
 
-                    Log.d(TAG, "Retry connection...")
                     blueManager.connectToNode(deviceId)
                 }
 

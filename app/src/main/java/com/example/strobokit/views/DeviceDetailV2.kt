@@ -3,7 +3,6 @@ package com.example.strobokit.views
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -30,6 +29,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Battery4Bar
+import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -81,6 +83,7 @@ fun DeviceDetailV2(
 
     val batteryData by viewModel.batteryData.collectAsState(initial = null)
     val batteryPercentage = batteryData?.percentage?.value?.toInt()
+    val batteryVoltage = batteryData?.voltage?.value?.toInt()
 
     val rssiData : String = bleDevice.value?.rssi?.rssi.toString()
 
@@ -209,21 +212,25 @@ fun DeviceDetailV2(
                 ) {
                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = {},modifier = Modifier.size(20.dp)) {
-                            if (batteryPercentage != null) {
-                                if(batteryPercentage > 20) {
-                                    Icon(painterResource(id = R.drawable.battery), contentDescription = "batteryGood", tint = SuccessColor)
+                            if (batteryVoltage != null) {
+                                if(batteryVoltage in 4..5) {
+                                    Icon(Icons.Filled.Battery4Bar, contentDescription = "batteryGood", tint = SuccessColor)
+                                }else if(batteryVoltage > 5){
+                                    Icon(Icons.Filled.BatteryFull, contentDescription = "batteryOk", tint = SuccessColor)
                                 }else{
                                     Icon(painterResource(id = R.drawable.battery), contentDescription = "BatterLow", tint = ErrorColor)
                                 }
                             }else{
-                                Icon(painterResource(id = R.drawable.battery), contentDescription = "batteryGood", tint = SecondaryColor)
+                                Icon(painterResource(id = R.drawable.battery), contentDescription = "BateeryNotFound", tint = SecondaryColor)
                             }
                         }
                         Spacer(modifier = Modifier.width(1.dp))
 
-                        if (batteryPercentage != null) {
-                            if(batteryPercentage > 20) {
+                        if (batteryVoltage != null) {
+                            if(batteryVoltage in 4..5) {
                                 Text(text = stringResource(id = R.string.ok), color = PrimaryColor, fontSize = 10.sp)
+                            }else if(batteryVoltage > 5){
+                                Text(text = stringResource(id = R.string.good), color = PrimaryColor, fontSize = 10.sp)
                             }else{
                                 Text(text = stringResource(id = R.string.low),color = PrimaryColor, fontSize = 10.sp)
                             }
@@ -249,7 +256,7 @@ fun DeviceDetailV2(
                 ) {
                     Surface(modifier = Modifier
                         .clickable {
-                            val batteryValue = batteryPercentage ?: -1
+                            val batteryValue = batteryVoltage ?: -1
                             navController.navigate("feature/${deviceId}/controller/${batteryValue}")
                         }
                         .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
@@ -290,9 +297,6 @@ fun DeviceDetailV2(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         val items = features.value
-                        items.map { item->
-                            Log.d("FEATURES",item.name)
-                        }
 
                         val itemNames =  listOf("Home","Controller","Monitor","Debug")
 
@@ -304,7 +308,7 @@ fun DeviceDetailV2(
                                         .clickable {
                                             when (item) {
                                                 "Controller" -> {
-                                                    val batteryValue = batteryPercentage ?: -1
+                                                    val batteryValue = batteryVoltage ?: -1
                                                     navController.navigate("feature/${deviceId}/controller/${batteryValue}")
                                                 }
 
@@ -386,7 +390,7 @@ fun DeviceDetailV2(
                     Surface(modifier = Modifier
                         .clickable {
                             showDialog.value = false
-                            val batteryValue = batteryPercentage ?: -1
+                            val batteryValue = batteryVoltage ?: -1
                             navController.navigate("feature/${deviceId}/controller/${batteryValue}")
                         }
                         .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))

@@ -1,7 +1,6 @@
 package com.example.strobokit.viewModels
 
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -46,11 +45,9 @@ class FeatureDetailViewModel @Inject constructor(
                 ?.let { feature ->
                     val isCalibrated =
                         calibrationService.startCalibration(nodeId = deviceId, feature = feature)
-                    Log.d(TAG, "calibration status ${isCalibrated.status}")
                     if (!isCalibrated.status) {
                         blueManager.getConfigControlUpdates(nodeId = deviceId).collect {
                             if (it is CalibrationStatus) {
-                                Log.d(TAG, "calibration status ${it.status}")
                             }
                         }
                     }
@@ -79,7 +76,6 @@ class FeatureDetailViewModel @Inject constructor(
 
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
             if(feature is SwitchFeature){
-                Log.d(TAG,"$currentValue")
                 if(currentValue == SwitchStatusType.Off)
                 {
                     blueManager.writeFeatureCommand(
@@ -87,14 +83,12 @@ class FeatureDetailViewModel @Inject constructor(
                         featureCommand = SwitchOn(feature, byteArrayOf(2)),
                         responseTimeout = 1L
                     )
-                    Log.d(TAG,"Switch On Called")
                 }else if(currentValue == SwitchStatusType.On){
                     blueManager.writeFeatureCommand(
                         nodeId = deviceId,
-                        featureCommand = SwitchOff(feature = feature, "Hello , World".toByteArray()),
+                        featureCommand = SwitchOff(feature = feature,byteArrayOf(1)),
                         responseTimeout = 1L
                     )
-                    Log.d(TAG,"Switch Off Called")
                 }
             }
         }

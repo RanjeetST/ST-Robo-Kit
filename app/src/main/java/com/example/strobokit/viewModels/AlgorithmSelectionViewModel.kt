@@ -41,7 +41,6 @@ class AlgorithmSelectionViewModel @Inject constructor(
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == NavigationControl.NAME } ?: return@launch
 
             if(feature is NavigationControl){
-                Log.d(TAG,"${feature.name} + ${commandId.toUByte()}")
                 blueManager.writeFeatureCommand(
                     nodeId = deviceId,
                     featureCommand = SetNavigationMode(

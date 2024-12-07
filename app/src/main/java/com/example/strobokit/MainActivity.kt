@@ -107,7 +107,7 @@ private fun MainScreen(){
                                     viewModel = hiltViewModel(),
                                     nodeId = deviceId,
                                     navController = navController,
-                                    batteryPercentage = batteryPercentage
+                                    batteryVoltage = batteryPercentage
                                 )
                             }
                     }

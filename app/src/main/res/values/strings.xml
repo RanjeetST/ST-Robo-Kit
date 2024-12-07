@@ -34,6 +34,8 @@
 <!--    controller-->
     <string name="throttle">Throttle</string>
     <string name="direction">Direction</string>
+    <string name="good">Good</string>
+
 
 <!--    Plot chart-->
     <string name="monitor">Monitor</string>
@@ -47,4 +49,23 @@
 <!--    build-->
     <string name="version_code">1</string>
     <string name="version_name">1.0</string>
+
+<!--    Composable-->
+    <string name="enable_bluetooth">Enable Bluetooth</string>
+    <string name="enable_bluetooth_text">Bluetooth is turned off. Please enable Bluetooth to continue.</string>
+    <string name="cancel">Cancel</string>
+    <string name="enable_location">Enable Location Services</string>
+    <string name="enable_location_text">Location services are turned off. Please enable location services to continue.</string>
+    <string name="open_Settings">Open Settings</string>
+    <string name="done">Done</string>
+    <string name="select_option">Select Option</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="exercise_rights">Exercise Rights</string>
+    <string name="help">Help</string>
+
+<!--    urls-->
+    <string name="exercise_rights_url">https://privacyportal-de.onetrust.com/webform/93c12e3c-4cab-41dc-a8c1-b92021bcfa14/2b87200d-4023-4588-9df7-ab0cdea1a67e</string>
+    <string name="privacy_policy_url">https://www.st.com/content/st_com/en/common/privacy-portal.html</string>
+
+
 </resources>

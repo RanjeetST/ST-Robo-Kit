@@ -30,7 +30,9 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Battery1Bar
 import androidx.compose.material.icons.filled.Battery2Bar
+import androidx.compose.material.icons.filled.Battery4Bar
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.runtime.Composable
@@ -65,6 +67,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.strobokit.models.DeveloperMode
 import com.example.strobokit.ui.theme.ErrorColor
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
@@ -79,7 +82,7 @@ import kotlin.math.roundToInt
 
 
 @Composable
-fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController,batteryPercentage : Int){
+fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController,batteryVoltage : Int){
     ChangeOrientationToLandscape(context = LocalContext.current)
     val isDisarmed = remember { mutableStateOf("Lock") }
     val shake = remember { Animatable(0f) }
@@ -89,7 +92,12 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
     val lightBackgroundColor = Color(0xFF0A357E)
 
     var selectedIndex by remember { mutableIntStateOf(0) }
-    val options = listOf("Lock", "Drive", "Follow", "Autopilot")
+
+    val options = if(DeveloperMode.isDeveloper == true){
+         listOf("Lock","Drive","Follow","Autopilot")
+    }else{
+        listOf("Lock", "Drive", "Autopilot")
+    }
 
     LaunchedEffect(trigger) {
         if (trigger != 0L) {
@@ -103,12 +111,6 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
         }
     }
 
-//    val gradientBrush = Brush.radialGradient(
-//        0.0f to TertiaryColor,
-//        1f to PrimaryColor,
-//        radius = 1400.0f,
-//        tileMode = TileMode.Repeated
-//    )
     val gradientBrush = Brush.radialGradient(
         0.0f to darkBackgroundColor,
         0.2f to darkBackgroundColor,
@@ -245,18 +247,21 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally){
-                        Log.d("TAG", batteryPercentage.toString())
-                        if(batteryPercentage > 20) {
-                            Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SuccessColor)
-                        }else if(batteryPercentage == -1){
+                        if(batteryVoltage in 4..5) {
+                            Icon(Icons.Filled.Battery4Bar, contentDescription = "batteryGood", tint = SuccessColor)
+                        }else if(batteryVoltage == -1){
                             Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SecondaryColor)
-                        }else{
-                            Icon(Icons.Filled.Battery2Bar, contentDescription = "BatterLow", tint = ErrorColor)
+                        }else if(batteryVoltage > 5){
+                            Icon(Icons.Filled.BatteryFull, contentDescription = "BatterLow", tint = SuccessColor)
+                        }else if(batteryVoltage < 4){
+                            Icon(Icons.Filled.Battery1Bar, contentDescription = "BatterLow", tint = ErrorColor)
                         }
 
-                        if(batteryPercentage > 20) {
+                        if(batteryVoltage in 4..5) {
                             androidx.compose.material3.Text(text = stringResource(id = R.string.ok), fontSize = 10.sp, color = OnPrimary)
-                        }else if(batteryPercentage == -1){
+                        }else if(batteryVoltage > 5){
+                            androidx.compose.material3.Text(text = stringResource(id = R.string.good), fontSize = 10.sp, color = OnPrimary)
+                        }else if(batteryVoltage == -1){
                             androidx.compose.material3.Text(text = stringResource(id = R.string.na), fontSize = 10.sp, color = OnPrimary)
                         }else{
                             androidx.compose.material3.Text(text = stringResource(id = R.string.low), fontSize = 10.sp, color = OnPrimary)
@@ -278,6 +283,11 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
             }
 
             //Custom Slider
+            val customPadding = if(DeveloperMode.isDeveloper == true){
+                5
+            }else{
+                10
+            }
             Column(
                 modifier = Modifier
                     .padding(16.dp)
@@ -371,7 +381,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                             .padding(8.dp)
                             .fillMaxHeight()
                             .width(30.dp)
-                            .offset(x = (selectedIndex * segmentWidth) + 5.dp)
+                            .offset(x = (selectedIndex * segmentWidth) + customPadding.dp)
                             .background(Color(0xFF0A357E), shape = RoundedCornerShape(6.dp))
                             .padding(8.dp),
                         contentAlignment = Alignment.Center
@@ -399,6 +409,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.End
             ) {
+//                ***********************FUTURE USE*****************************
 //                IconButton(onClick = { /* Handle close action */ },
 //                    modifier = Modifier
 //                        .size(40.dp)

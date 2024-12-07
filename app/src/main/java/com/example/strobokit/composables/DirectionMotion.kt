@@ -1,6 +1,5 @@
 package com.example.strobokit.composables
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -51,17 +50,17 @@ fun DirectionMotion(
     viewModel: ControllerViewModel,
     nodeId: String, isDisarmed: MutableState<String>
 ) {
-    var angle by remember { mutableFloatStateOf(0f) } // Start from the top
+    var angle by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
-    var lastSentAngle by remember { mutableIntStateOf(-1) } // Track the last sent angle
-    var shouldSendCommand by remember { mutableStateOf(false) } // Control when to send the command
+    var lastSentAngle by remember { mutableIntStateOf(-1) }
+    var shouldSendCommand by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     // Rotating Circle
-    val ringRadius = 73.dp.dpToPx() - 10.dp.dpToPx() // Adjust radius to fit within the ring
+    val ringRadius = 73.dp.dpToPx() - 10.dp.dpToPx()
     val angleRad = Math.toRadians(angle.toDouble())
-    val circleX = (ringRadius * cos(angleRad - Math.PI / 2)).toFloat() // Adjust for 0 degrees at the top
-    val circleY = (ringRadius * sin(angleRad - Math.PI / 2)).toFloat() // Adjust for 0 degrees at the top
+    val circleX = (ringRadius * cos(angleRad - Math.PI / 2)).toFloat()
+    val circleY = (ringRadius * sin(angleRad - Math.PI / 2)).toFloat()
 
     val parentBackgroundColor = TertiaryColor
     val knobColor = OnPrimary
@@ -70,7 +69,7 @@ fun DirectionMotion(
             red = (it.red * 0.8f),
             green = (it.green * 0.8f),
             blue = (it.blue * 0.8f),
-            alpha = 0.4f // Adjust transparency here
+            alpha = 0.4f
         )
     }
     val gradientBrush = Brush.linearGradient(
@@ -102,7 +101,7 @@ fun DirectionMotion(
                     },
                     onDragEnd = {
                         isDragging = false
-                        angle = 0f // Reset angle to 0 degrees when drag ends
+                        angle = 0f
                     }
                 ) { change, _ ->
                     if (isDragging) {
@@ -113,7 +112,7 @@ fun DirectionMotion(
                                 y.toDouble(),
                                 x.toDouble()
                             )
-                        ) + 450) % 360).toFloat() // Adjust for 0 degrees at the top
+                        ) + 450) % 360).toFloat()
 
                         if (newAngle != angle) {
                             angle = newAngle
@@ -125,7 +124,6 @@ fun DirectionMotion(
                                     val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
                                     if (angleInteger != lastSentAngle) {
                                         if (angleInteger in 1..180) {
-                                            Log.d("Controller", "Move right : $angleInteger")
                                             viewModel.sendCommand(
                                                 featureName = "Navigation Control",
                                                 deviceId = nodeId,
@@ -133,7 +131,6 @@ fun DirectionMotion(
                                                 angle = angleInteger
                                             )
                                         } else if (angleInteger in 181..359) {
-                                            Log.d("Controller", "Move left : ${360 - angleInteger}")
                                             viewModel.sendCommand(
                                                 featureName = "Navigation Control",
                                                 deviceId = nodeId,
@@ -141,7 +138,7 @@ fun DirectionMotion(
                                                 angle = angleInteger
                                             )
                                         }
-                                        lastSentAngle = angleInteger // Update the last sent angle
+                                        lastSentAngle = angleInteger
                                     }
                                 }
                             }

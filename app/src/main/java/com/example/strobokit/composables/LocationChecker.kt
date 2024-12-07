@@ -16,8 +16,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
+import com.example.strobokit.R
 
 @Composable
 fun locationChecker() : Boolean {
@@ -33,8 +35,8 @@ fun locationChecker() : Boolean {
         AlertDialog(
             containerColor = OnPrimary,
             onDismissRequest = { showDialog = false },
-            title = { Text("Enable Location Services") },
-            text = { Text("Location services are turned off. Please enable location services to continue.") },
+            title = { stringResource(id = R.string.enable_location) },
+            text = { stringResource(id = R.string.enable_location_text) },
             confirmButton = {
                 Button(onClick = {
                     showDialog = false
@@ -45,7 +47,7 @@ fun locationChecker() : Boolean {
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryColor
                     )) {
-                    Text("Open Settings", color = OnPrimary)
+                    Text(stringResource(id = R.string.open_Settings), color = OnPrimary)
                 }
             },
             dismissButton = {
@@ -54,7 +56,7 @@ fun locationChecker() : Boolean {
                             containerColor = PrimaryColor
                         )
                     ) {
-                    Text("Cancel",color = OnPrimary)
+                    Text(stringResource(id = R.string.cancel),color = OnPrimary)
                 }
             }
         )

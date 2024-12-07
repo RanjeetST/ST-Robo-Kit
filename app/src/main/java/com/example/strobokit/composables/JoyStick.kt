@@ -1,6 +1,5 @@
 package com.example.strobokit.composables
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -36,7 +35,6 @@ import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
 import com.example.strobokit.ui.theme.TertiaryColor
 import com.example.strobokit.viewModels.ControllerViewModel
-import kotlinx.coroutines.Job
 
 
 @Composable
@@ -57,25 +55,6 @@ fun JoyStick(
     }
     val buttonColor = OnPrimary
 
-//    if(!isDisarmed.value){
-//        gradientBrush = Brush.linearGradient(
-//            colors = listOf(
-//                PrimaryColor.copy(alpha = 0.5f), // Reduced opacity for PrimaryColor
-//                Color.White.copy(alpha = 0.5f)   // Reduced opacity for White
-//            ),
-//            start = Offset(0f, 0f),
-//            end = Offset(900f, 900f)
-//        )
-//
-//        buttonColor = PrimaryColor.copy(alpha = 0.8f).let {
-//            Color(
-//                red = (it.red * 0.8f).toFloat(),
-//                green = (it.green * 0.8f).toFloat(),
-//                blue = (it.blue * 0.8f).toFloat(),
-//                alpha = 0.2f // Reduced transparency to make it more faded
-//            )
-//        }
-//    }
     var joystickCenter by remember { mutableStateOf(Offset.Zero) }
     var handlePosition by remember { mutableStateOf(Offset.Zero) }
     var lastCommand by remember { mutableStateOf("") }
@@ -98,7 +77,6 @@ fun JoyStick(
                         onDragEnd = {
                             if(isDisarmed.value == "Drive")
                             {
-                                Log.d("JOYSTICK", "Stop Called")
                                 viewModel.sendCommand(
                                     featureName = "Navigation Control",
                                     nodeId,
@@ -123,8 +101,7 @@ fun JoyStick(
                                 when {
                                     handlePosition.y.toInt() in -120..-1 -> {
                                         val speed = calculateSpeed(handlePosition.y.toInt(), -120)
-                                        Log.d("JOYSTICK", "Forward Called")
-                                        Log.d("JOYSTICK", "speed = $speed")
+
                                         viewModel.sendCommand(
                                             featureName = "Navigation Control",
                                             deviceId = nodeId,
@@ -135,8 +112,7 @@ fun JoyStick(
                                     }
                                     handlePosition.y.toInt() in 1..120 -> {
                                         val speed = calculateSpeed(handlePosition.y.toInt(), 120)
-                                        Log.d("JOYSTICK", "Backward Called")
-                                        Log.d("JOYSTICK", "speed = $speed")
+
                                         viewModel.sendCommand(
                                             featureName = "Navigation Control",
                                             deviceId = nodeId,
@@ -146,7 +122,6 @@ fun JoyStick(
                                         lastCommand = "Backward"
                                     }
                                     handlePosition.y.toInt() == 0 -> {
-                                        Log.d("JOYSTICK", "Stop Called")
                                         viewModel.sendCommand(
                                             featureName = "Navigation Control",
                                             deviceId = nodeId,

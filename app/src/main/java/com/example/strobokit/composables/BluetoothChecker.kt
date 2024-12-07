@@ -17,8 +17,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.example.strobokit.ui.theme.OnPrimary
 import com.example.strobokit.ui.theme.PrimaryColor
+import com.example.strobokit.R
 
 @SuppressLint("MissingPermission")
 @Composable
@@ -40,8 +42,8 @@ fun bluetoothChecker() : Boolean{
         AlertDialog(
             containerColor = OnPrimary,
             onDismissRequest = { showDialog = false },
-            title = { Text("Enable Bluetooth") },
-            text = { Text("Bluetooth is turned off. Please enable Bluetooth to continue.") },
+            title = { stringResource(id = R.string.enable_bluetooth) },
+            text = { stringResource(id = R.string.enable_bluetooth_text)},
             confirmButton = {
                 Button(onClick = {
                     showDialog = false
@@ -52,7 +54,7 @@ fun bluetoothChecker() : Boolean{
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryColor
                     )) {
-                    Text("Enable Bluetooth",color = OnPrimary)
+                    Text(stringResource(id = R.string.enable_bluetooth),color = OnPrimary)
                 }
             },
             dismissButton = {
@@ -61,7 +63,7 @@ fun bluetoothChecker() : Boolean{
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryColor
                     )) {
-                    Text("Cancel", color = OnPrimary)
+                    Text(stringResource(id = R.string.cancel), color = OnPrimary)
                 }
             }
         )

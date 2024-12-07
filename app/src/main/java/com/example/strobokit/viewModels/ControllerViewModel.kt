@@ -1,6 +1,5 @@
 package com.example.strobokit.viewModels
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.strobokit.composables.ControllerAction
@@ -66,8 +65,6 @@ class ControllerViewModel @Inject constructor(
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
 
             if(feature is NavigationControl){
-                Log.d("RemoteControl","$action + $speed")
-                Log.d("RemoteControl","$lastSpeed")
                     when(action){
                         ControllerAction.Forward -> {
                             lastAction = 'F'
@@ -170,7 +167,6 @@ class ControllerViewModel @Inject constructor(
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == NavigationControl.NAME } ?: return@launch
 
             if(feature is NavigationControl){
-                Log.d("navigation","${feature.name} + ${commandId.toUByte()}")
                 blueManager.writeFeatureCommand(
                     nodeId = deviceId,
                     featureCommand = SetNavigationMode(

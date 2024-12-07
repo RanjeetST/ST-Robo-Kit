@@ -73,7 +73,7 @@ fun FeatureBox(featureName: String,iconSize: Int = 50,textSize:Int = 12,textArea
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .size(textAreaSize.dp)
-                    .align(Alignment.CenterHorizontally) // This centers the text horizontally
+                    .align(Alignment.CenterHorizontally)
             )
         }
     }

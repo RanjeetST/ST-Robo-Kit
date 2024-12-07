@@ -310,7 +310,7 @@ fun PlotChartV2(
         .fillMaxSize()
         .background(OnPrimary)) {
         val logValue = viewModel.featureUpdates.value?.data?.logValue
-//        Log.d("PLOT","$logValue")
+
         val values = logValue?.split(",")?.map { it.trim().toFloat() }
         val x = if (isStart) values?.get(0) else lastX
         val y = if (isStart) values?.get(1) else lastY
