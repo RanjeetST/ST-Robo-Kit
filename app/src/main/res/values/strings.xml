@@ -35,6 +35,7 @@
     <string name="throttle">Throttle</string>
     <string name="direction">Direction</string>
     <string name="good">Good</string>
+    <string name="average">Avg</string>
 
 
 <!--    Plot chart-->
@@ -44,7 +45,12 @@
 
 <!--    debug console-->
     <string name="debug_console">Debug Console</string>
-    <string name="send_debug_message">"Send Debug Message"</string>
+    <string name="send_debug_message">Send Debug Message</string>
+    <string name="info">Info</string>
+    <string name="version_ble">VersionBLE</string>
+    <string name="uid">UID</string>
+
+
 
 <!--    build-->
     <string name="version_code">1</string>
