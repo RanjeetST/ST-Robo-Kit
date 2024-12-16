@@ -133,7 +133,7 @@ fun DeviceDetailV2(
             .fillMaxSize()
 
     ){
-        //top Column
+        //Top Column
         Column(modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(0.9f)

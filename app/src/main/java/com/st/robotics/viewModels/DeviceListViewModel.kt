@@ -39,6 +39,7 @@ class BleDeviceListViewModel @Inject constructor(
     private val _connectionState = MutableStateFlow(NodeState.Disconnected)
     val connectionState: StateFlow<NodeState> = _connectionState.asStateFlow()
 
+    //HANDLES RESCAN ON REFRESH PULL DOWN
     fun onRefresh() {
         viewModelScope.launch {
             isRefreshing = true
@@ -47,6 +48,7 @@ class BleDeviceListViewModel @Inject constructor(
         }
     }
 
+    //FUNCTION TO START SCANNING
     fun startScan() {
         scanPeripheralJob?.cancel()
         scanPeripheralJob = viewModelScope.launch {
@@ -60,6 +62,7 @@ class BleDeviceListViewModel @Inject constructor(
         }
     }
 
+    //TO CONNECT WITH THE NODE
     fun connect(deviceId: String, maxConnectionRetries: Int = MAX_RETRY_CONNECTION,onNodeReady: (()-> Unit)? = null) {
         viewModelScope.launch {
             var retryCount = 0

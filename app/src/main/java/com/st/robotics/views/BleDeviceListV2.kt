@@ -97,6 +97,7 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
 
     var connectedDeviceAddress by remember { mutableStateOf<String?>(null) }
 
+    // CHECKS FOR REQUIRED PERMISSIONS BASED ON THE ANDROID BUILD VERSION
     val permissionsState = rememberMultiplePermissionsState(
         permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             listOf(
@@ -117,6 +118,7 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
     )
 
     if (permissionsState.allPermissionsGranted) {
+        //TO PROMPT THE USER TO ENABLE LOCATION AND BLUETOOTH
         locationChecker()
         bluetoothChecker()
         LaunchedEffect(Unit) {

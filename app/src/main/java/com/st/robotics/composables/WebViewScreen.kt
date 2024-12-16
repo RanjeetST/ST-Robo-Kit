@@ -11,6 +11,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun WebViewScreen(url : String) {
+    //GIVES WEB VIEW FOR EXERCISE RIGHTS AND PRIVACY POLICY POLICY
     AndroidView(
         factory = { context ->
              return@AndroidView WebView(context).apply {

@@ -16,6 +16,7 @@ class AlgorithmSelectionViewModel @Inject constructor(
     companion object{
         private val TAG = AlgorithmSelectionViewModel::class.simpleName
     }
+
     enum class Commands{
         FOLLOW_ME,
         FREE_NAVIGATION,

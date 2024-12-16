@@ -33,6 +33,7 @@ class ControllerViewModel @Inject constructor(
 
     private var rssiJob: Job? = null
 
+    //GIVES AN INSTANCE OF THE NODE
     fun bleDevice(deviceId: String): Flow<Node> =
         try {
             blueManager.getNodeStatus(nodeId = deviceId)
@@ -40,6 +41,7 @@ class ControllerViewModel @Inject constructor(
             flowOf()
         }
 
+    //EXTRACT RSSI VALUE
     fun getRssi(deviceId: String) {
 
         rssiJob = viewModelScope.launch {
@@ -54,10 +56,12 @@ class ControllerViewModel @Inject constructor(
         }
     }
 
+    //DISABLE FEATURES
     fun disableFeatures(deviceId : String){
         rssiJob?.cancel()
     }
 
+    //SEND THE CONTROLLER COMMANDS
     fun sendCommand(featureName: String, deviceId: String, action : ControllerAction, angle : Int = 0, speed : Int = 0) {
 
         viewModelScope.launch {
@@ -150,6 +154,7 @@ class ControllerViewModel @Inject constructor(
         }
     }
 
+    //TO SET THE NAVIGATION MODE OF THE CONNECTED NODE
     fun sendNavigationCommand(command : Commands, deviceId : String){
 
         viewModelScope.launch {

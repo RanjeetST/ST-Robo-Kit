@@ -323,7 +323,8 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
                 Image(
                     painter = painterResource(id = R.drawable.robokit_icon_foreground),
                     contentDescription = "app icon",
-                    modifier = Modifier.size(200.dp)
+                    modifier = Modifier
+                        .size(200.dp)
                         .clickable {
                             Log.d("developer", "Image clicked")
                             if (tapCount < 5) {
@@ -407,7 +408,7 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
                     onClick = { showWebPage.value = WebPageStatus.OFF },
                     modifier = Modifier.align(Alignment.TopEnd)
                 ) {
-                    Text(text = "Done", color = PrimaryColor)
+                    Text(text = stringResource(id = R.string.done), color = PrimaryColor)
                 }
             }
         }

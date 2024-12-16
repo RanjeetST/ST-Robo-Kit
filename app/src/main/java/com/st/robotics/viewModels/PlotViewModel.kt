@@ -30,6 +30,7 @@ class PlotViewModel @Inject constructor(
 
     private var observeFeatureJob: Job? = null
 
+    //TO GET UPDATES ON THE VALUE ON A PARTICULAR FEATURE OF THE NODE
     fun observeFeature(featureName: String, deviceId: String) {
         observeFeatureJob?.cancel()
 
@@ -43,6 +44,7 @@ class PlotViewModel @Inject constructor(
         }
     }
 
+    //TO DISCONNECT FROM THE FEATURE
     fun disconnectFeature(deviceId: String, featureName: String) {
         observeFeatureJob?.cancel()
         _featureUpdates.value = null

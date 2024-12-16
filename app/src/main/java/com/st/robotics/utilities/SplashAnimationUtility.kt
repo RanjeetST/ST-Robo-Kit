@@ -5,6 +5,7 @@ import android.content.res.Resources
 import androidx.compose.ui.unit.Dp
 import java.util.Random
 
+//UTILITY FUNCTIONS
 fun Float.mapInRange(inMin: Float, inMax: Float, outMin: Float, outMax: Float): Float {
     return outMin + (((this - inMin) / (inMax - inMin)) * (outMax - outMin))
 }

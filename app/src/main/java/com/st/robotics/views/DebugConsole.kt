@@ -54,6 +54,7 @@ import com.st.robotics.ui.theme.GreyColor
 import com.st.robotics.ui.theme.OnPrimary
 import com.st.robotics.ui.theme.PrimaryColor
 import com.st.robotics.ui.theme.ST_Magenta
+import com.st.robotics.ui.theme.ST_Maroon
 import com.st.robotics.ui.theme.SuccessColor
 import com.st.robotics.ui.theme.TertiaryColor
 import com.st.robotics.viewModels.DebugConsoleMsg
@@ -212,7 +213,7 @@ fun DebugConsole(
                 .padding(5.dp)
                 .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
                 .weight(1f),
-                color = BrownColor
+                color = ST_Maroon
             ) {
                 androidx.compose.material3.Text(stringResource(id = R.string.uid),color = OnPrimary, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 10.dp), textAlign = TextAlign.Center)
             }

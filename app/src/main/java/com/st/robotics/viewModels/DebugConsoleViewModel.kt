@@ -21,7 +21,7 @@ class DebugConsoleViewModel @Inject constructor(
     private val _debugMessages = MutableStateFlow<List<DebugConsoleMsg>>(emptyList())
     val debugMessages: StateFlow<List<DebugConsoleMsg>> = _debugMessages.asStateFlow()
 
-
+    //SEND DEBUG MESSAGE TO THE NODE
     fun sendDebugMessage(nodeId : String , msg : String){
         viewModelScope.launch{
             _debugMessages.value += DebugConsoleMsg.DebugConsoleCommand(
@@ -34,6 +34,7 @@ class DebugConsoleViewModel @Inject constructor(
         }
     }
 
+    //RECEIVES ANY MESSAGE ON DEBUG CHARACTERISTICS
     fun receiveDebugMessage(nodeId: String){
         viewModelScope.launch {
             var lastReceivedData = System.currentTimeMillis()
@@ -54,6 +55,7 @@ class DebugConsoleViewModel @Inject constructor(
     }
 }
 
+//DATA CLASS FOR THE STRUCTURE OF DEBUG MESSAGE
 sealed class DebugConsoleMsg{
     data class DebugConsoleCommand(
         val command: String,

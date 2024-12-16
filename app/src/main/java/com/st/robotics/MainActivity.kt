@@ -24,7 +24,6 @@ import com.st.robotics.views.DeviceDetailV2
 import com.st.robotics.views.HomeScreenV2
 import com.st.robotics.views.PlotChartV2
 import com.st.robotics.views.SplashScreen
-
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -42,7 +41,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MainScreen(){
-    //to navigate between activities
+
+    //To navigate between activities
     val navController = rememberNavController()
     val startDestination = if (SessionManager.isSplashShown()) "home" else "splash_screen"
 

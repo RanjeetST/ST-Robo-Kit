@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.ActivityInfo
 import androidx.compose.runtime.Composable
 
+//FUNCTION TO HANDLE ORIENTATION OF THE PAGE
 @Composable
 fun ChangeOrientationToLandscape(
     context: Context

@@ -192,6 +192,7 @@ fun PlotChartV2(
         .axisLabelFontSize(12.sp)
         .build()
 
+    //USED 3 LINES TO SET THE MAX,MIN & ACTUAL DATA OF THE CHART BEING PLOTTED
     val lineChartData1 = LineChartData(
         linePlotData = LinePlotData(
             lines = listOf(

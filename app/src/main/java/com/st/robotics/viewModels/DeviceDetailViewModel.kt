@@ -35,6 +35,7 @@ class BleDeviceDetailViewModel @Inject constructor(
     private var featureJob: Job? = null
     private var rssiJob: Job? = null
 
+    //GIVES AN INSTANCE OF THE NODE
     fun bleDevice(deviceId: String): Flow<Node> =
         try {
             blueManager.getNodeStatus(nodeId = deviceId)
@@ -42,6 +43,7 @@ class BleDeviceDetailViewModel @Inject constructor(
             flowOf()
         }
 
+    //GIVES ALL THE FEATURES ADVERTISED BY THE NODE
     fun getFeatures(deviceId: String) {
 
         if(batteryFeature == null){
@@ -76,6 +78,7 @@ class BleDeviceDetailViewModel @Inject constructor(
         }
     }
 
+    //TO DISABLE THE FEATURES WHEN DISCONNECTED
      fun disableFeatures(deviceId : String){
          batteryFeature?.let {
              viewModelScope.launch{
@@ -86,7 +89,7 @@ class BleDeviceDetailViewModel @Inject constructor(
          featureJob?.cancel()
     }
 
-
+    //TO DISCONNECT FROM THE NODE
     fun disconnect(deviceId: String) {
         features.update { emptyList() }
 

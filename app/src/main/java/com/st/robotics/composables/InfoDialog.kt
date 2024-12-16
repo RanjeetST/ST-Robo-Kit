@@ -95,7 +95,7 @@ fun InfoDialog(){
                 modifier = Modifier
                     .size(200.dp)
                     .clickable {
-                        Log.d("developer", "Image clicked")
+//                        TO TURN ON THE DEVELOPER MODE
                         if (tapCount < 5) {
                             tapCount++
                             if (tapCount == 5) {

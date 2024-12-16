@@ -142,6 +142,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
     }
 
 
+    //TO HANDLE THE BEHAVIOUR OF SYSTEM INSETS
     DisposableEffect(context) {
         val window = (context as Activity).window
         val controller = WindowCompat.getInsetsController(window, view)

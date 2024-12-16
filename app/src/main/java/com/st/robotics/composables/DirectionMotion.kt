@@ -99,6 +99,7 @@ fun DirectionMotion(
                         isDragging =
                             hypot(x, y) <= 100.dp.toPx()
                     },
+                    //WHEN USER LEAVE THE KNOB
                     onDragEnd = {
                         isDragging = false
                         angle = 0f
@@ -118,6 +119,7 @@ fun DirectionMotion(
                             angle = newAngle
                             shouldSendCommand = false
                             coroutineScope.launch {
+                                //1/2 SECOND DELAY FOR ANGLE CHANGE
                                 delay(500)
                                 shouldSendCommand = true
                                 if (isDisarmed.value == "Drive" && shouldSendCommand) {

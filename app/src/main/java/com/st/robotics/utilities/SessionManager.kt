@@ -1,5 +1,6 @@
 package com.st.robotics.utilities
 
+//TO MANAGER SESSION FOR CUSTOM SPLASH SCREEN
 object SessionManager {
     private var splashShown: Boolean = false
 
