@@ -1,6 +1,9 @@
 package com.st.robotics.views
 
 import android.annotation.SuppressLint
+import android.graphics.pdf.PdfDocument
+import android.graphics.pdf.PdfRenderer
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -65,7 +68,10 @@ import com.st.robotics.ui.theme.OnPrimary
 import com.st.robotics.ui.theme.PrimaryColor
 import com.st.robotics.ui.theme.TertiaryColor
 import com.st.robotics.BuildConfig
+import com.st.robotics.composables.PdfViewer
+import com.st.robotics.composables.copyPdfFromAssets
 import com.st.robotics.models.DeveloperMode
+import java.io.File
 import kotlin.io.path.fileVisitor
 
 @SuppressLint("ServiceCast")
@@ -257,6 +263,7 @@ fun HomeScreenV2(navController: NavController){
 fun InformationDialog(showDialog : MutableState<Boolean>){
     val showHelpDialog = rememberSaveable { mutableStateOf(false) }
     val showWebPage = rememberSaveable { mutableStateOf(WebPageStatus.OFF) }
+    val showPdf = rememberSaveable { mutableStateOf(false) }
     val versionCode = BuildConfig.VERSION_CODE
     val versionName = BuildConfig.VERSION_NAME
 
@@ -349,7 +356,8 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
                 Column {
                     Surface(modifier = Modifier
                         .clickable {
-                            showWebPage.value = WebPageStatus.PRIVACY_POLICY
+//                            showWebPage.value = WebPageStatus.PRIVACY_POLICY
+                            showHelpDialog.value = true
                         }
                         .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
                         .fillMaxWidth(0.8f),
@@ -366,7 +374,8 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
                     Spacer(modifier = Modifier.height(10.dp))
                     Surface(modifier = Modifier
                         .clickable {
-                            showHelpDialog.value = true
+//                            showHelpDialog.value = true
+                            showPdf.value = true
                         }
                         .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
                         .fillMaxWidth(0.8f),
@@ -413,6 +422,37 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
             }
         }
     }
+
+
+
+    if(showPdf.value){
+        val uri = Uri.parse("file:///android_asset/um.pdf")
+
+        Dialog(onDismissRequest = { showPdf.value = false }) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .padding(16.dp)
+            ) {
+                Surface {
+                    val pdfFile = File(context.filesDir,"um.pdf")
+                    PdfViewer(pdfFile)
+                }
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TertiaryColor
+                    ),
+                    onClick = { showPdf.value = false},
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Text(stringResource(id = R.string.done), color = PrimaryColor)
+                }
+            }
+        }
+    }
+
+
     if(showHelpDialog.value){
         HelpDialog(showHelpDialog)
     }

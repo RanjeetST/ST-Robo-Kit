@@ -41,6 +41,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -203,7 +204,7 @@ fun DebugConsole(
                 .weight(1f),
                 color = ST_Magenta
             ) {
-                androidx.compose.material3.Text(stringResource(id = R.string.version_ble),color = OnPrimary, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 10.dp), textAlign = TextAlign.Center)
+                androidx.compose.material3.Text(stringResource(id = R.string.version_ble),color = OnPrimary, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 10.dp), textAlign = TextAlign.Center, maxLines = 1,  overflow = TextOverflow.Ellipsis)
             }
 
             Surface(modifier = Modifier

@@ -154,8 +154,8 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
         }else{
             // Hide system bars and make the content appear behind them
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            controller.isAppearanceLightStatusBars = false
-            controller.isAppearanceLightNavigationBars = false
+//            controller.isAppearanceLightStatusBars = false
+//            controller.isAppearanceLightNavigationBars = false
             controller.hide(WindowInsetsCompat.Type.systemBars())
         }
 

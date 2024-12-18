@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.st.robotics.composables.Controller
+import com.st.robotics.composables.copyPdfFromAssets
 import com.st.robotics.ui.theme.STRoboKitTheme
 import com.st.robotics.utilities.SessionManager
 import com.st.robotics.views.BleDeviceListV2
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        copyPdfFromAssets(this, "um.pdf")
         enableEdgeToEdge()
         SessionManager.setSplashShown(false)
         setContent {
