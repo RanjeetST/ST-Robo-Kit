@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import co.yml.charts.axis.AxisData
 import co.yml.charts.common.model.Point
@@ -292,7 +293,7 @@ fun PlotChartV2(
         isZoomAllowed = false
     )
 
-    val featureName = listOf(Acceleration.NAME,Gyroscope.NAME, Magnetometer.NAME)
+    val featureName = listOf(Acceleration.NAME,Gyroscope.NAME, Magnetometer.NAME,SceneDescription.NAME)
     val itemPosition = remember { mutableIntStateOf(0) }
     val selectedFeature = remember { mutableStateOf(featureName[itemPosition.intValue]) }
 
@@ -473,7 +474,7 @@ fun PlotChartV2(
                 )
             }
         }else if(selectedFeature.value == SceneDescription.NAME){
-            SceneDescriptor()
+            SceneDescriptor(viewModel = hiltViewModel(),deviceId = deviceId)
         }
     }
 

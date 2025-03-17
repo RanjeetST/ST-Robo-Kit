@@ -1,5 +1,6 @@
 package com.st.robotics.viewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.st.robotics.composables.ControllerAction
@@ -103,13 +104,21 @@ class ControllerViewModel @Inject constructor(
                                 responseTimeout = 1L
                             )
                         }
+                        //TEMPORARY CHANGE IN CODE : R->P
                         ControllerAction.Right -> {
+//                            val actionCode = if(lastSpeed == 0){
+//                                'R'
+//                            } else {
+//                                'P'
+//                            }
+
+                            val actionCode = 'R'
                             blueManager.writeFeatureCommand(
                                 nodeId = deviceId,
                                 featureCommand = MoveCommandDifferentialDriveSimpleMove(
                                     feature = feature,
                                     action = 0x10u,
-                                    direction = 'R'.code.toUByte(),
+                                    direction = actionCode.code.toUByte(),
                                     speed = lastSpeed.toUByte(),
                                     angle = angle.toByte(),
                                     res = byteArrayOf(0)
@@ -118,13 +127,24 @@ class ControllerViewModel @Inject constructor(
                             )
 
                         }
+
+                        //TEMPORARY CHANGE IN CODE : L->Q
                         ControllerAction.Left -> {
+
+//                            val actionCode = if(lastSpeed == 0){
+//                                'L'
+//                            } else {
+//                                'Q'
+//                            }
+
+                            val actionCode = 'L'
+
                             blueManager.writeFeatureCommand(
                                 nodeId = deviceId,
                                 featureCommand = MoveCommandDifferentialDriveSimpleMove(
                                     feature = feature,
                                     action = 0x10u,
-                                    direction = 'L'.code.toUByte(),
+                                    direction = actionCode.code.toUByte(),
                                     speed = lastSpeed.toUByte(),
                                     angle = (360 - angle).toByte(),
                                     res = byteArrayOf(0)
@@ -150,6 +170,118 @@ class ControllerViewModel @Inject constructor(
                             )
                         }
                     }
+            }
+        }
+    }
+
+    fun sendCommand2(featureName: String, deviceId: String, action : ControllerAction, angle : Int = 0, speed : Int = 0) {
+
+        Log.d(TAG, "Speed: $speed")
+        viewModelScope.launch {
+
+            val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
+
+            if(feature is NavigationControl){
+                when(action){
+                    ControllerAction.Forward -> {
+                        lastAction = 'F'
+                        lastSpeed = speed
+                        blueManager.writeFeatureCommand(
+                            nodeId = deviceId,
+                            featureCommand = MoveCommandDifferentialDriveSimpleMove(
+                                feature = feature,
+                                action = 0x10u,
+                                direction = 'F'.code.toUByte(),
+                                speed = lastSpeed.toUByte(),
+                                angle = angle.toByte(),
+                                res = byteArrayOf(0)
+                            ),
+                            responseTimeout = 1L
+                        )
+                    }
+
+                    ControllerAction.Backward -> {
+                        lastSpeed = speed
+                        lastAction = 'B'
+                        blueManager.writeFeatureCommand(
+                            nodeId = deviceId,
+                            featureCommand = MoveCommandDifferentialDriveSimpleMove(
+                                feature = feature,
+                                action = 0x10u,
+                                direction = 'B'.code.toUByte(),
+                                speed = lastSpeed.toUByte(),
+                                angle = angle.toByte(),
+                                res = byteArrayOf(0)
+                            ),
+                            responseTimeout = 1L
+                        )
+                    }
+                    //TEMPORARY CHANGE IN CODE : R->P
+                    ControllerAction.Right -> {
+//                            val actionCode = if(lastSpeed == 0){
+//                                'R'
+//                            } else {
+//                                'P'
+//                            }
+
+                        val actionCode = 'T'
+                        blueManager.writeFeatureCommand(
+                            nodeId = deviceId,
+                            featureCommand = MoveCommandDifferentialDriveSimpleMove(
+                                feature = feature,
+                                action = 0x10u,
+                                direction = actionCode.code.toUByte(),
+                                speed = lastSpeed.toUByte(),
+                                angle = angle.toByte(),
+                                res = byteArrayOf(0)
+                            ),
+                            responseTimeout = 1L
+                        )
+
+                    }
+
+                    //TEMPORARY CHANGE IN CODE : L->Q
+                    ControllerAction.Left -> {
+
+//                            val actionCode = if(lastSpeed == 0){
+//                                'L'
+//                            } else {
+//                                'Q'
+//                            }
+
+                        val actionCode = 'T'
+
+                        blueManager.writeFeatureCommand(
+                            nodeId = deviceId,
+                            featureCommand = MoveCommandDifferentialDriveSimpleMove(
+                                feature = feature,
+                                action = 0x10u,
+                                direction = actionCode.code.toUByte(),
+                                speed = lastSpeed.toUByte(),
+                                angle = (360 - angle).toByte(),
+                                res = byteArrayOf(0)
+                            ),
+                            responseTimeout = 1L
+                        )
+                    }
+
+                    ControllerAction.Stop -> {
+                        lastAction = 'S'
+                        lastSpeed = 0
+                        blueManager.writeFeatureCommand(
+                            nodeId = deviceId,
+                            featureCommand = MoveCommandDifferentialDriveSimpleMove(
+                                feature = feature,
+                                action = 0x10u,
+                                direction = 'S'.code.toUByte(),
+                                speed = 0u,
+                                angle = 0,
+                                res = byteArrayOf(0)
+                            ),
+                            responseTimeout = 1L
+                        )
+                    }
+                }
             }
         }
     }

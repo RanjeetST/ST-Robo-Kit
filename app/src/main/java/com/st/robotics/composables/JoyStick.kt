@@ -59,6 +59,10 @@ fun JoyStick(
     var handlePosition by remember { mutableStateOf(Offset.Zero) }
     var lastCommand by remember { mutableStateOf("") }
     var lastOffsetSent by remember { mutableStateOf(0) }
+    var lastCommandTimestamp = System.currentTimeMillis()
+
+    // TODO : Receive firmware version
+    val firmwareVersion = "1.1"
 
 
     Box(
@@ -69,115 +73,259 @@ fun JoyStick(
         ,
         contentAlignment = Alignment.Center
     ) {
-        Canvas(
-            modifier = Modifier
-                .size(150.dp)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragEnd = {
-                            if(isDisarmed.value == "Drive")
-                            {
-                                viewModel.sendCommand(
-                                    featureName = "Navigation Control",
-                                    nodeId,
-                                    ControllerAction.Stop,
-                                    angle = 0
-                                )
-                            }
-
-                           handlePosition = Offset.Zero
-                            lastCommand = ""
-                        }
-                    ) { change, dragAmount ->
-                        change.consume()
-                        handlePosition = Offset(
-                            x = 0f, // Restrict movement to the Y-axis
-                            y = (handlePosition.y + dragAmount.y).coerceIn(-120f, 120f)
-                        )
-
-                        if (isDisarmed.value == "Drive") {
-                            val offsetDifference = (handlePosition.y - lastOffsetSent).toInt()
-                            if (offsetDifference >= 40 || offsetDifference <= -40 || handlePosition.y == 0f) {
-                                when {
-                                    handlePosition.y.toInt() in -120..-1 -> {
-                                        val speed = calculateSpeed(handlePosition.y.toInt(), -120)
-
-                                        viewModel.sendCommand(
-                                            featureName = "Navigation Control",
-                                            deviceId = nodeId,
-                                            action = ControllerAction.Forward,
-                                            speed = speed
-                                        )
-                                        lastCommand = "Forward"
-                                    }
-                                    handlePosition.y.toInt() in 1..120 -> {
-                                        val speed = calculateSpeed(handlePosition.y.toInt(), 120)
-
-                                        viewModel.sendCommand(
-                                            featureName = "Navigation Control",
-                                            deviceId = nodeId,
-                                            action = ControllerAction.Backward,
-                                            speed = speed
-                                        )
-                                        lastCommand = "Backward"
-                                    }
-                                    handlePosition.y.toInt() == 0 -> {
-                                        viewModel.sendCommand(
-                                            featureName = "Navigation Control",
-                                            deviceId = nodeId,
-                                            action = ControllerAction.Stop,
-                                            speed = 0,
-                                            angle = 0
-                                        )
-                                        lastCommand = "Stop"
-                                    }
+        if (firmwareVersion == "1.1") {
+            Canvas(
+                modifier = Modifier
+                    .size(150.dp)
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragEnd = {
+                                if (isDisarmed.value == "Drive") {
+                                    viewModel.sendCommand2(
+                                        featureName = "Navigation Control",
+                                        nodeId,
+                                        ControllerAction.Stop,
+                                        angle = 0
+                                    )
                                 }
-                                lastOffsetSent = handlePosition.y.toInt()
+
+                                handlePosition = Offset.Zero
+                                lastCommand = ""
                             }
+                        ) { change, dragAmount ->
+                            change.consume()
+                            handlePosition = Offset(
+                                x = 0f, // Restrict movement to the Y-axis
+                                y = (handlePosition.y + dragAmount.y).coerceIn(-120f, 120f)
+                            )
+
+                            if (isDisarmed.value == "Drive") {
+                                val currentTime = System.currentTimeMillis()
+                                val timeDifference = currentTime - lastCommandTimestamp
+                                val offsetDifference = (handlePosition.y - lastOffsetSent).toInt()
+                                if (handlePosition.y.toInt() != lastOffsetSent.toInt() && timeDifference >= 300) {
+                                    when {
+                                        handlePosition.y.toInt() in -120..-1 -> {
+//                                            val speed =
+//                                                calculateSpeed(handlePosition.y.toInt(), -120)
+                                            val maxPosition = -120
+
+                                            val speed = ((handlePosition.y.toFloat() / maxPosition.toFloat()) * 100).toInt()
+
+                                            viewModel.sendCommand2(
+                                                featureName = "Navigation Control",
+                                                deviceId = nodeId,
+                                                action = ControllerAction.Forward,
+                                                speed = speed
+                                            )
+                                            lastCommand = "Forward"
+                                        }
+
+                                        handlePosition.y.toInt() in 1..120 -> {
+//                                            val speed =
+//                                                calculateSpeed(handlePosition.y.toInt(), 120)
+
+                                            val maxPosition = -120
+
+                                            val speed = ((handlePosition.y.toFloat() / maxPosition.toFloat()) * 100).toInt()
+
+                                            viewModel.sendCommand2(
+                                                featureName = "Navigation Control",
+                                                deviceId = nodeId,
+                                                action = ControllerAction.Backward,
+                                                speed = speed
+                                            )
+                                            lastCommand = "Backward"
+                                        }
+
+                                        handlePosition.y.toInt() == 0 -> {
+                                            viewModel.sendCommand2(
+                                                featureName = "Navigation Control",
+                                                deviceId = nodeId,
+                                                action = ControllerAction.Stop,
+                                                speed = 0,
+                                                angle = 0
+                                            )
+                                            lastCommand = "Stop"
+                                        }
+                                    }
+                                    lastOffsetSent = handlePosition.y.toInt()
+                                    lastCommandTimestamp = currentTime
+                                }
+                            }
+
+                            onHandleMoved()
                         }
-
-                        onHandleMoved()
                     }
-                }
-        ) {
-            joystickCenter = center
-
-            // Draw the outer circle
-            drawCircle(
-                color = gradientBrush,
-                radius = size.minDimension / 2,
-                
-            )
-
-            // Draw the handle
-            drawCircle(
-                color = buttonColor,
-                radius = size.minDimension / 6,
-                center = joystickCenter + handlePosition
-            )
-        }
-
-        // Overlay the arrow buttons
-        Box(
-            modifier = Modifier
-                .size(150.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxSize()
             ) {
+                joystickCenter = center
 
-                    Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Move Up", tint = OnPrimary)
+                // Draw the outer circle
+                drawCircle(
+                    color = gradientBrush,
+                    radius = size.minDimension / 2,
 
-
-                Spacer(modifier = Modifier.weight(1f))
-
-
-                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Move Down",tint = OnPrimary
                     )
 
+                // Draw the handle
+                drawCircle(
+                    color = buttonColor,
+                    radius = size.minDimension / 6,
+                    center = joystickCenter + handlePosition
+                )
+            }
+
+            // Overlay the arrow buttons
+            Box(
+                modifier = Modifier
+                    .size(150.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+
+                    Icon(
+                        Icons.Default.KeyboardArrowUp,
+                        contentDescription = "Move Up",
+                        tint = OnPrimary
+                    )
+
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+
+                    Icon(
+                        Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Move Down",
+                        tint = OnPrimary
+                    )
+
+                }
+            }
+        }else{
+            Canvas(
+                modifier = Modifier
+                    .size(150.dp)
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragEnd = {
+                                if (isDisarmed.value == "Drive") {
+                                    viewModel.sendCommand(
+                                        featureName = "Navigation Control",
+                                        nodeId,
+                                        ControllerAction.Stop,
+                                        angle = 0
+                                    )
+                                }
+
+                                handlePosition = Offset.Zero
+                                lastCommand = ""
+                            }
+                        ) { change, dragAmount ->
+                            change.consume()
+                            handlePosition = Offset(
+                                x = 0f, // Restrict movement to the Y-axis
+                                y = (handlePosition.y + dragAmount.y).coerceIn(-120f, 120f)
+                            )
+
+                            if (isDisarmed.value == "Drive") {
+                                val offsetDifference = (handlePosition.y - lastOffsetSent).toInt()
+                                if (offsetDifference >= 40 || offsetDifference <= -40 || handlePosition.y == 0f) {
+                                    when {
+                                        handlePosition.y.toInt() in -120..-1 -> {
+                                            val speed =
+                                                calculateSpeed(handlePosition.y.toInt(), -120)
+
+                                            viewModel.sendCommand(
+                                                featureName = "Navigation Control",
+                                                deviceId = nodeId,
+                                                action = ControllerAction.Forward,
+                                                speed = speed
+                                            )
+                                            lastCommand = "Forward"
+                                        }
+
+                                        handlePosition.y.toInt() in 1..120 -> {
+                                            val speed =
+                                                calculateSpeed(handlePosition.y.toInt(), 120)
+
+                                            viewModel.sendCommand(
+                                                featureName = "Navigation Control",
+                                                deviceId = nodeId,
+                                                action = ControllerAction.Backward,
+                                                speed = speed
+                                            )
+                                            lastCommand = "Backward"
+                                        }
+
+                                        handlePosition.y.toInt() == 0 -> {
+                                            viewModel.sendCommand(
+                                                featureName = "Navigation Control",
+                                                deviceId = nodeId,
+                                                action = ControllerAction.Stop,
+                                                speed = 0,
+                                                angle = 0
+                                            )
+                                            lastCommand = "Stop"
+                                        }
+                                    }
+                                    lastOffsetSent = handlePosition.y.toInt()
+                                }
+                            }
+
+                            onHandleMoved()
+                        }
+                    }
+            ) {
+                joystickCenter = center
+
+                // Draw the outer circle
+                drawCircle(
+                    color = gradientBrush,
+                    radius = size.minDimension / 2,
+
+                    )
+
+                // Draw the handle
+                drawCircle(
+                    color = buttonColor,
+                    radius = size.minDimension / 6,
+                    center = joystickCenter + handlePosition
+                )
+            }
+
+            // Overlay the arrow buttons
+            Box(
+                modifier = Modifier
+                    .size(150.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+
+                    Icon(
+                        Icons.Default.KeyboardArrowUp,
+                        contentDescription = "Move Up",
+                        tint = OnPrimary
+                    )
+
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+
+                    Icon(
+                        Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Move Down",
+                        tint = OnPrimary
+                    )
+
+                }
             }
         }
     }

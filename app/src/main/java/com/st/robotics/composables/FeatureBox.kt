@@ -46,6 +46,8 @@ fun FeatureBox(featureName: String,iconSize: Int = 50,textSize:Int = 12,textArea
         painter = R.drawable.controller
     }else if(featureName == "Monitor"){
         painter = R.drawable.plot
+    }else if (featureName == "Fota"){
+        painter = R.drawable.baseline_border_outer_24
     }
 
     Box(modifier = Modifier

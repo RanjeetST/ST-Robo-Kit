@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.st.blue_sdk.models.NodeState
 import com.st.robotics.R
 import com.st.robotics.composables.FeatureBox
 import com.st.robotics.ui.theme.ErrorColor
@@ -67,7 +69,6 @@ import com.st.robotics.ui.theme.SecondaryColor
 import com.st.robotics.ui.theme.SuccessColor
 import com.st.robotics.utilities.ChangeOrientationToPortrait
 import com.st.robotics.viewModels.BleDeviceDetailViewModel
-import com.st.blue_sdk.models.NodeState
 
 @SuppressLint("MissingPermission")
 @Composable
@@ -84,7 +85,7 @@ fun DeviceDetailV2(
 
     val batteryData by viewModel.batteryData.collectAsState(initial = null)
     val batteryPercentage = batteryData?.percentage?.value?.toInt()
-    val batteryVoltage = batteryData?.voltage?.value?.toInt()
+    val batteryVoltage = batteryData?.voltage?.value?.toFloat()
 
     val rssiData : String = bleDevice.value?.rssi?.rssi.toString()
 
@@ -94,7 +95,6 @@ fun DeviceDetailV2(
 
     val bluetoothManager = remember { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
     val bluetoothAdapter = remember { bluetoothManager.adapter }
-
 
     if(bleDevice.value?.connectionStatus?.current == NodeState.Ready && !isFeaturesFetched && bluetoothAdapter.isEnabled){
         viewModel.getFeatures(deviceId = deviceId)
@@ -112,9 +112,10 @@ fun DeviceDetailV2(
 
     DisposableEffect(Unit) {
         onDispose {
-//            viewModel.disableFeatures(deviceId = deviceId)
+            viewModel.disableFeatures(deviceId = deviceId)
         }
     }
+
 
     val scrollState = rememberScrollState()
 
@@ -179,9 +180,10 @@ fun DeviceDetailV2(
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ){
+
                         if(bleDevice.value?.connectionStatus?.current == NodeState.Ready){
                             Text(text = stringResource(id = R.string.connected),fontSize = 15.sp,color = Color.Black)
-                        }else{
+                        }else {
                             Text(text = "${bleDevice.value?.connectionStatus?.current}",fontSize = 15.sp,color = Color.Black)
                         }
 
@@ -213,11 +215,11 @@ fun DeviceDetailV2(
                 ) {
                     Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = {},modifier = Modifier.size(20.dp)) {
-                            Log.d("Battery",batteryData?.voltage?.value.toString())
+                            Log.d("Battery",batteryVoltage.toString())
                             if (batteryVoltage != null) {
-                                if(batteryVoltage in 4..5) {
+                                if(batteryVoltage in 4.0..5.0) {
                                     Icon(Icons.Filled.Battery4Bar, contentDescription = "batteryGood", tint = SuccessColor)
-                                }else if(batteryVoltage > 5){
+                                }else if(batteryVoltage > 5.0){
                                     Icon(Icons.Filled.BatteryFull, contentDescription = "batteryOk", tint = SuccessColor)
                                 }else{
                                     Icon(painterResource(id = R.drawable.battery), contentDescription = "BatterLow", tint = ErrorColor)
@@ -229,9 +231,9 @@ fun DeviceDetailV2(
                         Spacer(modifier = Modifier.width(1.dp))
 
                         if (batteryVoltage != null) {
-                            if(batteryVoltage in 4..5) {
+                            if(batteryVoltage in 4.0..5.0) {
                                 Text(text = stringResource(id = R.string.average), color = PrimaryColor, fontSize = 10.sp)
-                            }else if(batteryVoltage > 5){
+                            }else if(batteryVoltage > 5.0){
                                 Text(text = stringResource(id = R.string.ok), color = PrimaryColor, fontSize = 10.sp)
                             }else{
                                 Text(text = stringResource(id = R.string.low),color = PrimaryColor, fontSize = 10.sp)
@@ -302,8 +304,9 @@ fun DeviceDetailV2(
 
                         val itemNames =  listOf("Home","Controller","Monitor","Debug")
 
+
                         itemsIndexed(items = itemNames) { _, item ->
-                            if(item == "Home" || item == "Controller" || item == "Monitor" || item == "Debug"){
+                            if(item == "Home" || item == "Controller" || item == "Monitor" || item == "Debug" || item == "Fota"){
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -320,6 +323,10 @@ fun DeviceDetailV2(
 
                                                 "Debug" -> {
                                                     navController.navigate("feature/${deviceId}/debugConsole")
+                                                }
+
+                                                "Fota" -> {
+                                                    navController.navigate("feature/${deviceId}/fota")
                                                 }
                                             }
                                         }

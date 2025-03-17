@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,6 +23,7 @@ import com.st.robotics.utilities.SessionManager
 import com.st.robotics.views.BleDeviceListV2
 import com.st.robotics.views.DebugConsole
 import com.st.robotics.views.DeviceDetailV2
+import com.st.robotics.views.FotaScreen
 import com.st.robotics.views.HomeScreenV2
 import com.st.robotics.views.PlotChartV2
 import com.st.robotics.views.SplashScreen
@@ -106,7 +108,7 @@ private fun MainScreen(){
                     route = "feature/{deviceId}/controller/{batteryPercentage}",
                     arguments = listOf(
                         navArgument("deviceId") { type = NavType.StringType },
-                        navArgument("batteryPercentage") { type = NavType.IntType }
+                        navArgument("batteryPercentage") { type = NavType.FloatType }
                     )
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
@@ -130,6 +132,21 @@ private fun MainScreen(){
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
                         PlotChartV2(
+                            viewModel = hiltViewModel(),
+                            deviceId = deviceId,
+                            navController = navController
+                        )
+                    }
+                }
+
+                composable(
+                    route = "feature/{deviceId}/fota",
+                    arguments = listOf(
+                        navArgument("deviceId") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
+                        FotaScreen(
                             viewModel = hiltViewModel(),
                             deviceId = deviceId,
                             navController = navController

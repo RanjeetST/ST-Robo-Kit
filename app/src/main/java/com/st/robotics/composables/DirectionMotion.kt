@@ -56,6 +56,8 @@ fun DirectionMotion(
     var shouldSendCommand by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
+    val firmwareVersion = "1.1"
+
     // Rotating Circle
     val ringRadius = 73.dp.dpToPx() - 10.dp.dpToPx()
     val angleRad = Math.toRadians(angle.toDouble())
@@ -87,126 +89,259 @@ fun DirectionMotion(
         )
     }
 
-    Box(
-        modifier = Modifier
-            .clip(CircleShape)
-            .alpha(if(isDisarmed.value == "Drive") 1f else if(isDisarmed.value == "Lock") 0.6f else 0f)
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        val x = offset.x - (size.width / 2 + circleX)
-                        val y = offset.y - (size.height / 2 + circleY)
-                        isDragging =
-                            hypot(x, y) <= 100.dp.toPx()
-                    },
-                    //WHEN USER LEAVE THE KNOB
-                    onDragEnd = {
-                        isDragging = false
-                        angle = 0f
-                    }
-                ) { change, _ ->
-                    if (isDragging) {
-                        val x = change.position.x - size.width / 2
-                        val y = change.position.y - size.height / 2
-                        val newAngle = ((Math.toDegrees(
-                            atan2(
-                                y.toDouble(),
-                                x.toDouble()
-                            )
-                        ) + 450) % 360).toFloat()
 
-                        if (newAngle != angle) {
-                            angle = newAngle
-                            shouldSendCommand = false
-                            coroutineScope.launch {
-                                //1/2 SECOND DELAY FOR ANGLE CHANGE
-                                delay(500)
-                                shouldSendCommand = true
-                                if (isDisarmed.value == "Drive" && shouldSendCommand) {
-                                    val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
-                                    if (angleInteger != lastSentAngle) {
-                                        if (angleInteger in 1..180) {
-                                            viewModel.sendCommand(
-                                                featureName = "Navigation Control",
-                                                deviceId = nodeId,
-                                                action = ControllerAction.Right,
-                                                angle = angleInteger
-                                            )
-                                        } else if (angleInteger in 181..359) {
-                                            viewModel.sendCommand(
-                                                featureName = "Navigation Control",
-                                                deviceId = nodeId,
-                                                action = ControllerAction.Left,
-                                                angle = angleInteger
-                                            )
+    if(firmwareVersion == "1.1"){
+        Box(
+            modifier = Modifier
+                .clip(CircleShape)
+                .alpha(if(isDisarmed.value == "Drive") 1f else if(isDisarmed.value == "Lock") 0.6f else 0f)
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { offset ->
+                            val x = offset.x - (size.width / 2 + circleX)
+                            val y = offset.y - (size.height / 2 + circleY)
+                            isDragging =
+                                hypot(x, y) <= 100.dp.toPx()
+                        },
+                        //WHEN USER LEAVE THE KNOB
+                        onDragEnd = {
+                            isDragging = false
+                            angle = 0f
+
+                            viewModel.sendCommand2(
+                                featureName = "Navigation Control",
+                                deviceId = nodeId,
+                                action = ControllerAction.Left,
+                                angle = 0
+                            )
+                        }
+                    ) { change, _ ->
+                        if (isDragging) {
+                            val x = change.position.x - size.width / 2
+                            val y = change.position.y - size.height / 2
+                            val newAngle = ((Math.toDegrees(
+                                atan2(
+                                    y.toDouble(),
+                                    x.toDouble()
+                                )
+                            ) + 450) % 360).toFloat()
+
+                            if (newAngle != angle) {
+                                angle = newAngle
+                                shouldSendCommand = false
+                                coroutineScope.launch {
+                                    //1/2 SECOND DELAY FOR ANGLE CHANGE
+                                    delay(500)
+                                    shouldSendCommand = true
+                                    if (isDisarmed.value == "Drive" && shouldSendCommand) {
+                                        val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
+                                        if (angleInteger != lastSentAngle) {
+                                            if (angleInteger in 1..180) {
+                                                viewModel.sendCommand2(
+                                                    featureName = "Navigation Control",
+                                                    deviceId = nodeId,
+                                                    action = ControllerAction.Right,
+                                                    angle = angleInteger
+                                                )
+                                            } else if (angleInteger in 181..359) {
+                                                viewModel.sendCommand2(
+                                                    featureName = "Navigation Control",
+                                                    deviceId = nodeId,
+                                                    action = ControllerAction.Left,
+                                                    angle = angleInteger
+                                                )
+                                            }
+                                            lastSentAngle = angleInteger
                                         }
-                                        lastSentAngle = angleInteger
                                     }
                                 }
                             }
                         }
+
+                        onHandleMoved()
                     }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            // Outer Ring with Marks
+            Canvas(modifier = Modifier.size(150.dp)) {
+                val ringWidth = 25.dp.toPx()
+                val radius = size.width / 2 - ringWidth / 2
+                drawCircle(
+                    brush = gradientBrush,
+                    style = Stroke(width = 4.dp.toPx()),
+                    radius =( size.width + 2f)/2
+                )
+                drawCircle(
+                    color = hoverAreaColor,
+                    style = Stroke(width = ringWidth),
+                    radius = radius
+                )
+                for (i in 0 until 360 step 1) {
+                    val angleDeg = i * 10f - 90f
+                    val radians = Math.toRadians(angleDeg.toDouble()).toFloat()
 
-                    onHandleMoved()
+                    val markStart = Offset(
+                        x = center.x + (radius - 15) * cos(radians),
+                        y = center.y + (radius - 15) * sin(radians)
+                    )
+
+                    val markEnd = Offset(
+                        x = center.x + (radius+15) * cos(radians),
+                        y = center.y + (radius+15) * sin(radians)
+                    )
+
+                    drawLine(
+                        color = Color.LightGray.copy(alpha = 0.6f),
+                        start = markStart,
+                        end = markEnd,
+                        strokeWidth = 3f
+                    )
                 }
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        // Outer Ring with Marks
-        Canvas(modifier = Modifier.size(150.dp)) {
-            val ringWidth = 25.dp.toPx()
-            val radius = size.width / 2 - ringWidth / 2
-            drawCircle(
-                brush = gradientBrush,
-                style = Stroke(width = 4.dp.toPx()),
-                radius =( size.width + 2f)/2
-            )
-            drawCircle(
-                color = hoverAreaColor,
-                style = Stroke(width = ringWidth),
-                radius = radius
-            )
-            for (i in 0 until 360 step 1) {
-                val angleDeg = i * 10f - 90f
-                val radians = Math.toRadians(angleDeg.toDouble()).toFloat()
-
-                val markStart = Offset(
-                    x = center.x + (radius - 15) * cos(radians),
-                    y = center.y + (radius - 15) * sin(radians)
-                )
-
-                val markEnd = Offset(
-                    x = center.x + (radius+15) * cos(radians),
-                    y = center.y + (radius+15) * sin(radians)
-                )
-
-                drawLine(
-                    color = Color.LightGray.copy(alpha = 0.6f),
-                    start = markStart,
-                    end = markEnd,
-                    strokeWidth = 3f
-                )
             }
-        }
 
+            Box(
+                modifier = Modifier
+                    .size(25.dp)
+                    .offset {
+                        IntOffset(circleX.toInt(), circleY.toInt())
+                    }
+                    .background(buttonColor, CircleShape)
+            )
+
+            // Degree Text
+            Text(
+                text = "${((angle/10).roundToInt()*10.toDouble()).toInt()}°",
+                fontWeight = FontWeight.Normal,
+                fontSize = 20.sp,
+                color = Color.LightGray,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+    }else{
         Box(
             modifier = Modifier
-                .size(25.dp)
-                .offset {
-                    IntOffset(circleX.toInt(), circleY.toInt())
-                }
-                .background(buttonColor, CircleShape)
-        )
+                .clip(CircleShape)
+                .alpha(if(isDisarmed.value == "Drive") 1f else if(isDisarmed.value == "Lock") 0.6f else 0f)
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { offset ->
+                            val x = offset.x - (size.width / 2 + circleX)
+                            val y = offset.y - (size.height / 2 + circleY)
+                            isDragging =
+                                hypot(x, y) <= 100.dp.toPx()
+                        },
+                        //WHEN USER LEAVE THE KNOB
+                        onDragEnd = {
+                            isDragging = false
+                            angle = 0f
+                        }
+                    ) { change, _ ->
+                        if (isDragging) {
+                            val x = change.position.x - size.width / 2
+                            val y = change.position.y - size.height / 2
+                            val newAngle = ((Math.toDegrees(
+                                atan2(
+                                    y.toDouble(),
+                                    x.toDouble()
+                                )
+                            ) + 450) % 360).toFloat()
 
-        // Degree Text
-        Text(
-            text = "${((angle/10).roundToInt()*10.toDouble()).toInt()}°",
-            fontWeight = FontWeight.Normal,
-            fontSize = 20.sp,
-            color = Color.LightGray,
-            modifier = Modifier.align(Alignment.Center)
-        )
+                            if (newAngle != angle) {
+                                angle = newAngle
+                                shouldSendCommand = false
+                                coroutineScope.launch {
+                                    //1/2 SECOND DELAY FOR ANGLE CHANGE
+                                    delay(500)
+                                    shouldSendCommand = true
+                                    if (isDisarmed.value == "Drive" && shouldSendCommand) {
+                                        val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
+                                        if (angleInteger != lastSentAngle) {
+                                            if (angleInteger in 1..180) {
+                                                viewModel.sendCommand(
+                                                    featureName = "Navigation Control",
+                                                    deviceId = nodeId,
+                                                    action = ControllerAction.Right,
+                                                    angle = angleInteger
+                                                )
+                                            } else if (angleInteger in 181..359) {
+                                                viewModel.sendCommand(
+                                                    featureName = "Navigation Control",
+                                                    deviceId = nodeId,
+                                                    action = ControllerAction.Left,
+                                                    angle = angleInteger
+                                                )
+                                            }
+                                            lastSentAngle = angleInteger
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        onHandleMoved()
+                    }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            // Outer Ring with Marks
+            Canvas(modifier = Modifier.size(150.dp)) {
+                val ringWidth = 25.dp.toPx()
+                val radius = size.width / 2 - ringWidth / 2
+                drawCircle(
+                    brush = gradientBrush,
+                    style = Stroke(width = 4.dp.toPx()),
+                    radius =( size.width + 2f)/2
+                )
+                drawCircle(
+                    color = hoverAreaColor,
+                    style = Stroke(width = ringWidth),
+                    radius = radius
+                )
+                for (i in 0 until 360 step 1) {
+                    val angleDeg = i * 10f - 90f
+                    val radians = Math.toRadians(angleDeg.toDouble()).toFloat()
+
+                    val markStart = Offset(
+                        x = center.x + (radius - 15) * cos(radians),
+                        y = center.y + (radius - 15) * sin(radians)
+                    )
+
+                    val markEnd = Offset(
+                        x = center.x + (radius+15) * cos(radians),
+                        y = center.y + (radius+15) * sin(radians)
+                    )
+
+                    drawLine(
+                        color = Color.LightGray.copy(alpha = 0.6f),
+                        start = markStart,
+                        end = markEnd,
+                        strokeWidth = 3f
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(25.dp)
+                    .offset {
+                        IntOffset(circleX.toInt(), circleY.toInt())
+                    }
+                    .background(buttonColor, CircleShape)
+            )
+
+            // Degree Text
+            Text(
+                text = "${((angle/10).roundToInt()*10.toDouble()).toInt()}°",
+                fontWeight = FontWeight.Normal,
+                fontSize = 20.sp,
+                color = Color.LightGray,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
     }
+
+
 }
 
 @Composable

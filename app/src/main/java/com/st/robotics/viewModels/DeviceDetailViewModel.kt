@@ -1,19 +1,24 @@
 package com.st.robotics.viewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.st.blue_sdk.BlueManager
 import com.st.blue_sdk.features.Feature
 import com.st.blue_sdk.features.battery.Battery
 import com.st.blue_sdk.features.battery.BatteryInfo
+import com.st.blue_sdk.models.ConnectionStatus
 import com.st.blue_sdk.models.Node
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -31,6 +36,9 @@ class BleDeviceDetailViewModel @Inject constructor(
     private val _batteryData = MutableSharedFlow<BatteryInfo>()
     val batteryData: Flow<BatteryInfo>
         get() = _batteryData
+    private val _nodeStatus = MutableStateFlow<ConnectionStatus?>(null)
+    val nodeStatus: StateFlow<ConnectionStatus?>
+        get() = _nodeStatus
 
     private var featureJob: Job? = null
     private var rssiJob: Job? = null
