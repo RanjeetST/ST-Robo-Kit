@@ -302,7 +302,7 @@ fun DeviceDetailV2(
                     ) {
                         val items = features.value
 
-                        val itemNames =  listOf("Home","Controller","Monitor","Debug")
+                        val itemNames =  listOf("Home","Controller","Monitor","Debug","Fota")
 
 
                         itemsIndexed(items = itemNames) { _, item ->

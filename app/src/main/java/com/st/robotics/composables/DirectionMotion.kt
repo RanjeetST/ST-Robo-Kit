@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.st.blue_sdk.features.extended.robotics_movement.RoboticsMovement
 import com.st.robotics.ui.theme.OnPrimary
 import com.st.robotics.ui.theme.PrimaryColor
 import com.st.robotics.ui.theme.TertiaryColor
@@ -56,7 +57,7 @@ fun DirectionMotion(
     var shouldSendCommand by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    val firmwareVersion = "1.1"
+    val firmwareVersion = "1.0"
 
     // Rotating Circle
     val ringRadius = 73.dp.dpToPx() - 10.dp.dpToPx()
@@ -109,7 +110,7 @@ fun DirectionMotion(
                             angle = 0f
 
                             viewModel.sendCommand2(
-                                featureName = "Navigation Control",
+                                featureName = RoboticsMovement.NAME,
                                 deviceId = nodeId,
                                 action = ControllerAction.Left,
                                 angle = 0
@@ -138,14 +139,14 @@ fun DirectionMotion(
                                         if (angleInteger != lastSentAngle) {
                                             if (angleInteger in 1..180) {
                                                 viewModel.sendCommand2(
-                                                    featureName = "Navigation Control",
+                                                    featureName = RoboticsMovement.NAME,
                                                     deviceId = nodeId,
                                                     action = ControllerAction.Right,
                                                     angle = angleInteger
                                                 )
                                             } else if (angleInteger in 181..359) {
                                                 viewModel.sendCommand2(
-                                                    featureName = "Navigation Control",
+                                                    featureName = RoboticsMovement.NAME,
                                                     deviceId = nodeId,
                                                     action = ControllerAction.Left,
                                                     angle = angleInteger
@@ -259,14 +260,14 @@ fun DirectionMotion(
                                         if (angleInteger != lastSentAngle) {
                                             if (angleInteger in 1..180) {
                                                 viewModel.sendCommand(
-                                                    featureName = "Navigation Control",
+                                                    featureName = RoboticsMovement.NAME,
                                                     deviceId = nodeId,
                                                     action = ControllerAction.Right,
                                                     angle = angleInteger
                                                 )
                                             } else if (angleInteger in 181..359) {
                                                 viewModel.sendCommand(
-                                                    featureName = "Navigation Control",
+                                                    featureName = RoboticsMovement.NAME,
                                                     deviceId = nodeId,
                                                     action = ControllerAction.Left,
                                                     angle = angleInteger

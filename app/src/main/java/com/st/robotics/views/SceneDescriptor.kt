@@ -20,35 +20,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.st.blue_sdk.features.extended.scene_description.SceneDescription
-import com.st.robotics.ui.theme.OnPrimary
-import kotlin.random.Random
 import com.st.robotics.R
+import com.st.robotics.ui.theme.OnPrimary
 import com.st.robotics.viewModels.SceneDescriptorViewModel
-import kotlin.math.log
+
+import androidx.compose.runtime.*
 
 @Composable
 fun SceneDescriptor(
     viewModel: SceneDescriptorViewModel,
     deviceId: String
 ){
-    
-    val sampleArray = Array(8) { IntArray(8) }
-
-    for (i in sampleArray.indices) {
-        for (j in sampleArray[i].indices) {
-            sampleArray[i][j] = Random.nextInt(0, 6000)
-        }
+    LaunchedEffect(Unit) {
+        viewModel.observeFeature(deviceId = deviceId, featureName = SceneDescription.NAME)
     }
+
+    // Remember the previous non-null value of sampleArray
+    var previousSampleArray by remember { mutableStateOf<List<List<Long>>?>(null) }
 
     Column(modifier = Modifier
         .fillMaxSize()
         .background(OnPrimary)
     ) {
-        val logValue = viewModel.featureUpdates.value?.data?.logValue
+        val logValue = viewModel.featureUpdates.value?.payload?.value
+        val sampleArray = logValue?.tofZones
+
+        // Update previousSampleArray only if sampleArray is not null
+        if (sampleArray != null) {
+            previousSampleArray = sampleArray
+        }
 
         Column(modifier = Modifier
             .background(OnPrimary)
@@ -56,61 +59,58 @@ fun SceneDescriptor(
             .padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(stringResource(id = R.string.ToFData),color = Color.Black)
+            Text(stringResource(id = R.string.ToFData), color = Color.Black)
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.9f)
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.9f),
+            verticalArrangement = Arrangement.Bottom
         ) {
-            if (logValue != null) {
-                Text(color = Color.Black, text = logValue)
-            }else{
-                Text(color = Color.Black,text = "No data received")
+            val arrayToDisplay = previousSampleArray
+
+            if (arrayToDisplay != null) {
+                val rows = arrayToDisplay.size
+
+
+                for (i in 0 until rows) {
+                    val cols = arrayToDisplay[i].size ?: 0
+                    Row(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(3.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        for (j in 0 until cols) {
+                            val value = arrayToDisplay[i][j]
+                            val color = when {
+                                value <= 1000 -> {
+                                    val alphaValue = maxOf(value.toFloat() / 1000f, 0.4f)
+                                    Color.Red.copy(alpha = alphaValue)
+                                }
+                                value in 1001..4000 -> {
+                                    val alphaValue = maxOf(value.toFloat() / 4000, 0.4f)
+                                    Color.Blue.copy(alpha = alphaValue)
+                                }
+                                else -> Color.Black
+                            }
+                            Surface(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .width(40.dp),
+                                color = color,
+                                shape = RoundedCornerShape(10.dp),
+                            ) {
+                                Text(
+                                    text = "$value",
+                                    color = OnPrimary,
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
-
-//        Column(modifier = Modifier
-//            .fillMaxWidth()
-//            .fillMaxHeight(0.9f),
-//            verticalArrangement = Arrangement.Bottom
-//        ) {
-//            for (i in 0..7)
-//            {
-//                Row(modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(3.dp),
-//                    horizontalArrangement = Arrangement.SpaceEvenly
-//                ) {
-//                    for (j in 0 .. 7)
-//                    {
-//                        val color = if(sampleArray[i][j] <= 1000){
-//                            val alphaValue = maxOf(sampleArray[i][j].toFloat()/1000f,0.4f)
-//                            Color.Red.copy(alpha = alphaValue)
-//                        }else if(sampleArray[i][j] in 1001..4000){
-//                            val alphaValue = maxOf(sampleArray[i][j].toFloat()/4000,0.4f)
-//                            Color.Blue.copy(alpha = alphaValue)
-//                        }else{
-//                            Color.Black
-//                        }
-//                        Surface(
-//                            modifier = Modifier
-//                                .height(40.dp)
-//                                .width(40.dp)
-//                            ,
-//                            color = color,
-//                            shape = RoundedCornerShape(10.dp),
-//                        ){
-//                            Text(text = "${sampleArray[i][j]}", color = OnPrimary, textAlign = TextAlign.Center, fontSize = 13.sp)
-//                        }
-//                    }
-//                }
-//            }
-//        }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.observeFeature(deviceId = deviceId, featureName = SceneDescription.NAME)
     }
 }

@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.st.blue_sdk.features.extended.robotics_movement.RoboticsMovement
 import com.st.robotics.ui.theme.OnPrimary
 import com.st.robotics.ui.theme.PrimaryColor
 import com.st.robotics.ui.theme.TertiaryColor
@@ -82,7 +83,7 @@ fun JoyStick(
                             onDragEnd = {
                                 if (isDisarmed.value == "Drive") {
                                     viewModel.sendCommand2(
-                                        featureName = "Navigation Control",
+                                        featureName = RoboticsMovement.NAME,
                                         nodeId,
                                         ControllerAction.Stop,
                                         angle = 0
@@ -113,7 +114,7 @@ fun JoyStick(
                                             val speed = ((handlePosition.y.toFloat() / maxPosition.toFloat()) * 100).toInt()
 
                                             viewModel.sendCommand2(
-                                                featureName = "Navigation Control",
+                                                featureName = RoboticsMovement.NAME,
                                                 deviceId = nodeId,
                                                 action = ControllerAction.Forward,
                                                 speed = speed
@@ -130,7 +131,7 @@ fun JoyStick(
                                             val speed = ((handlePosition.y.toFloat() / maxPosition.toFloat()) * 100).toInt()
 
                                             viewModel.sendCommand2(
-                                                featureName = "Navigation Control",
+                                                featureName = RoboticsMovement.NAME,
                                                 deviceId = nodeId,
                                                 action = ControllerAction.Backward,
                                                 speed = speed
@@ -140,7 +141,7 @@ fun JoyStick(
 
                                         handlePosition.y.toInt() == 0 -> {
                                             viewModel.sendCommand2(
-                                                featureName = "Navigation Control",
+                                                featureName = RoboticsMovement.NAME,
                                                 deviceId = nodeId,
                                                 action = ControllerAction.Stop,
                                                 speed = 0,
@@ -214,7 +215,7 @@ fun JoyStick(
                             onDragEnd = {
                                 if (isDisarmed.value == "Drive") {
                                     viewModel.sendCommand(
-                                        featureName = "Navigation Control",
+                                        featureName = RoboticsMovement.NAME,
                                         nodeId,
                                         ControllerAction.Stop,
                                         angle = 0
@@ -240,7 +241,7 @@ fun JoyStick(
                                                 calculateSpeed(handlePosition.y.toInt(), -120)
 
                                             viewModel.sendCommand(
-                                                featureName = "Navigation Control",
+                                                featureName = RoboticsMovement.NAME,
                                                 deviceId = nodeId,
                                                 action = ControllerAction.Forward,
                                                 speed = speed
@@ -253,7 +254,7 @@ fun JoyStick(
                                                 calculateSpeed(handlePosition.y.toInt(), 120)
 
                                             viewModel.sendCommand(
-                                                featureName = "Navigation Control",
+                                                featureName = RoboticsMovement.NAME,
                                                 deviceId = nodeId,
                                                 action = ControllerAction.Backward,
                                                 speed = speed
@@ -263,7 +264,7 @@ fun JoyStick(
 
                                         handlePosition.y.toInt() == 0 -> {
                                             viewModel.sendCommand(
-                                                featureName = "Navigation Control",
+                                                featureName = RoboticsMovement.NAME,
                                                 deviceId = nodeId,
                                                 action = ControllerAction.Stop,
                                                 speed = 0,

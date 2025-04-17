@@ -474,6 +474,7 @@ fun PlotChartV2(
                 )
             }
         }else if(selectedFeature.value == SceneDescription.NAME){
+            viewModel.disconnectFeature(deviceId,selectedFeature.value)
             SceneDescriptor(viewModel = hiltViewModel(),deviceId = deviceId)
         }
     }
