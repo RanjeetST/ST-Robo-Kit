@@ -176,7 +176,7 @@ fun DeviceDetailV2(
             ) {
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "${bleDevice.value?.device?.name}", fontSize = 20.sp,color = PrimaryColor)
+                    Text(text = "${bleDevice.value?.device?.name ?: ""}", fontSize = 20.sp,color = PrimaryColor)
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ){
