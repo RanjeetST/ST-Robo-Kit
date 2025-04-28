@@ -1,8 +1,6 @@
 package com.st.robotics.views
 
 import android.annotation.SuppressLint
-import android.graphics.pdf.PdfDocument
-import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -61,18 +59,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
-import androidx.room.util.readVersion
+import com.st.robotics.BuildConfig
 import com.st.robotics.R
+import com.st.robotics.composables.PdfViewer
 import com.st.robotics.composables.WebViewScreen
+import com.st.robotics.models.DeveloperMode
 import com.st.robotics.ui.theme.OnPrimary
 import com.st.robotics.ui.theme.PrimaryColor
 import com.st.robotics.ui.theme.TertiaryColor
-import com.st.robotics.BuildConfig
-import com.st.robotics.composables.PdfViewer
-import com.st.robotics.composables.copyPdfFromAssets
-import com.st.robotics.models.DeveloperMode
 import java.io.File
-import kotlin.io.path.fileVisitor
 
 @SuppressLint("ServiceCast")
 @Composable
@@ -104,6 +99,14 @@ fun HomeScreenV2(navController: NavController){
                         .fillMaxWidth()
                         .wrapContentSize(align = Alignment.Center)
                 ) {
+
+                    Row {
+
+                        IconButton(onClick = {navController.navigate("profile")}) {
+                            Icon(painter = painterResource(id = R.drawable.baseline_person_24), contentDescription = "Profile", tint = PrimaryColor)
+                        }
+                    }
+
                     Image(painter = painterResource(id = R.drawable.st_logo_clear), contentDescription = "ST_LOGO", modifier = Modifier
                         .size(30.dp)
                         .align(Alignment.Center))

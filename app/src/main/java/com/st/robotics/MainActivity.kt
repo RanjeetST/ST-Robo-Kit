@@ -10,6 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,6 +26,7 @@ import com.st.robotics.views.DeviceDetailV2
 import com.st.robotics.views.FotaScreen
 import com.st.robotics.views.HomeScreenV2
 import com.st.robotics.views.PlotChartV2
+import com.st.robotics.views.ProfileScreen
 import com.st.robotics.views.SplashScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -151,6 +153,12 @@ private fun MainScreen(){
                             navController = navController
                         )
                     }
+                }
+
+                composable(
+                    route = "profile"
+                ) {
+                    ProfileScreen(viewModel = hiltViewModel(),navController = navController)
                 }
             }
         }
