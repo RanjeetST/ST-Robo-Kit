@@ -1,4 +1,4 @@
-package com.st.robotics.models
+package com.st.robotics.models.dataset
 
 import androidx.annotation.Keep
 import kotlinx.serialization.SerialName

@@ -73,5 +73,9 @@
     <string name="exercise_rights_url">https://privacyportal-de.onetrust.com/webform/93c12e3c-4cab-41dc-a8c1-b92021bcfa14/2b87200d-4023-4588-9df7-ab0cdea1a67e</string>
     <string name="privacy_policy_url">https://www.st.com/content/st_com/en/common/privacy-portal.html</string>
 
+<!--    profile-->
+    <string name="st_qrCode_invalidError">The QR code does not contain the necessary information. Try again.</string>
+    <string name="st_qrCode_expiredError">The scanned QR code may have expired. Refresh the web portal page to generate a new code, then try again.</string>
+
 
 </resources>

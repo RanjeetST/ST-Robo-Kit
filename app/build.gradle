@@ -22,7 +22,58 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        buildConfigField "String", "BLUESTSDK_DB_BASE_URL", "\"https://raw.githubusercontent.com/STMicroelectronics/appconfig/blesensor_5.2.0/bluestsdkv2/\""
+    }
 
+    flavorDimensions += "env"
+
+    productFlavors {
+        prod {
+            dimension "env"
+            buildConfigField "String", "ENVIRONMENT", "\"PROD\""
+            buildConfigField "String", "HELP_URL", "\"https://staiotcraft.st.com/#/wiki?id=2_3_mobile_app.md\""
+            buildConfigField "String", "SECRETS_BASE_URL", "\"https://staiotcraft.st.com/svc/secretstore/v1alpha1/\""
+            buildConfigField "String", "DATASET_BASE_URL", "\"https://staiotcraft.st.com/svc/data/v1alpha1/\""
+            buildConfigField "String", "BASE_URL", "\"https://staiotcraft.st.com/svc/main-rest-api/3/\""
+            buildConfigField "String", "CUSTOM_LOGOUT_URL", "\"https://www.st.com/cas/logout?service=https%3A%2F%2Fstaiotcraft.st.com%2Fsvc%2Fwebtomobile%2Fstvespucci\""
+            buildConfigField "String", "VESPUCCI_CALLBACK", "\"stvespucci://callback\""
+            buildConfigField "String", "APP_CENTER_API_KEY", "\"22224b69-9a65-40f3-be88-d869ef0c1cfc\""
+            buildConfigField "String", "TRACKING_BASE_URL", "\"https://staiotcraft.st.com/svc/tracking-api/v1alpha1/\""
+        }
+
+        preProd {
+            dimension "env"
+            versionNameSuffix "-pre-prod"
+            applicationId "com.st.staiotcraft_pre_prod"
+            buildConfigField "String", "ENVIRONMENT", "\"PRE_PROD\""
+            buildConfigField "String", "HELP_URL", "\"https://qa.stm-vespucci.com/#/wiki?id=2_3_mobile_app.md\""
+            buildConfigField "String", "SECRETS_BASE_URL", "\"https://qa.stm-vespucci.com/svc/secretstore/v1alpha1/\""
+            buildConfigField "String", "DATASET_BASE_URL", "\"https://qa.vespucci.st.com/svc/data/v1alpha1/\""
+            buildConfigField "String", "BASE_URL", "\"https://qa.stm-vespucci.com/svc/main-rest-api/3/\""
+            buildConfigField "String", "CUSTOM_LOGOUT_URL", "\"https://qa-www2.st.com/cas/logout?service=https%3A%2F%2Fvespucci.st.com%2Fsvc%2Fwebtomobile%2Fstvespucci\""
+            buildConfigField "String", "VESPUCCI_CALLBACK", "\"stvespucci://callback\""
+            buildConfigField "String", "APP_CENTER_API_KEY", "\"f871d8b5-d131-46e5-bf52-dab5ce348d6e\""
+            buildConfigField "String", "TRACKING_BASE_URL", "\"https://dev.stm-vespucci.com/svc/tracking-api/v1alpha1/\""
+        }
+
+        dev {
+            dimension "env"
+            versionNameSuffix "-dev"
+            applicationId "com.st.staiotcraft_dev"
+            buildConfigField "String", "ENVIRONMENT", "\"DEV\""
+            buildConfigField "String", "HELP_URL", "\"https://dev.stm-vespucci.com/#/wiki?id=2_3_mobile_app.md\""
+            buildConfigField "String", "SECRETS_BASE_URL", "\"https://dev.stm-vespucci.com/svc/secretstore/v1alpha1/\""
+            buildConfigField "String", "DATASET_BASE_URL", "\"https://dev.stm-vespucci.com/svc/data/v1alpha1/\""
+            buildConfigField "String", "BASE_URL", "\"https://dev.stm-vespucci.com/svc/main-rest-api/3/\""
+            buildConfigField "String", "VESPUCCI_CALLBACK", "\"stvespucci://callback\""
+            buildConfigField "String", "CUSTOM_LOGOUT_URL", "\"\""
+            buildConfigField "String", "APP_CENTER_API_KEY", "\"83664b13-3fbf-4ea6-82f9-a78bf721f044\""
+            buildConfigField "String", "TRACKING_BASE_URL", "\"https://dev.stm-vespucci.com/svc/tracking-api/v1alpha1/\""
+        }
+    }
+
+    hilt {
+        enableAggregatingTask = true
     }
 
     buildTypes {
@@ -33,6 +84,8 @@ android {
         }
     }
     compileOptions {
+        coreLibraryDesugaringEnabled true
+
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }

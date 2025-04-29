@@ -1,7 +1,16 @@
 package com.st.robotics.utilities
 
+import com.st.robotics.api.DatasetApi
+import com.st.robotics.api.ProjectApi
+import com.st.robotics.api.ProjectExampleApi
+import com.st.robotics.api.SecretsApi
+import com.st.robotics.api.TrackingApi
 import com.st.robotics.models.AiProject
-import com.st.robotics.models.Dataset
+import com.st.robotics.models.SignedRef
+import com.st.robotics.models.dataset.CreateBlobResponse
+import com.st.robotics.models.dataset.Dataset
+import com.st.robotics.models.dataset.DatasetStatus
+import com.st.robotics.models.dataset.GetDatasetsResponse
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -14,7 +23,11 @@ import java.util.Locale
 import javax.inject.Inject
 
 class LoginService @Inject constructor(
-
+    private val projectApi: ProjectApi,
+    private val projectExampleAuthApi: ProjectExampleApi,
+    private val datasetApi: DatasetApi,
+    private val trackingApi: TrackingApi,
+    private val secretsApi: SecretsApi
 ) {
     private val cacheProjects = mutableMapOf<String, AiProject>()
     private var _goToMLC = false
