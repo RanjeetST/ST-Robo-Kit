@@ -74,10 +74,18 @@ class ControllerViewModel @Inject constructor(
         viewModelScope.launch {
             val feature =
                 blueManager.nodeFeatures(nodeId).find { it.name == featureName } ?: return@launch
+            val features = listOf(feature)
+
+            //TO ENABLE THE FEATURE SO THAT THE COMMAND CAN BE RECEIVED
+            blueManager.enableFeatures(
+                nodeId = nodeId,
+                features = features
+            )
 
             if(feature is ExtConfiguration){
                 val command = ExtendedFeatureCommand(feature,ExtConfigCommands.buildConfigCommand(ExtConfigCommands.READ_VERSION_FW))
                 val response = blueManager.writeFeatureCommand(
+                    responseTimeout = 1250L,
                     nodeId = nodeId,
                     featureCommand = command
                 )

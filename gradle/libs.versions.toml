@@ -32,6 +32,16 @@ stBlueSdk = "1.2.0"
 ycharts = "2.1.0"
 junitJunit = "4.12"
 playServicesCodeScanner = "16.1.0"
+coil = "2.7.0"
+
+
+[bundles]
+coil = [
+    "coil-kt-compose",
+    "coil-kt-core",
+    "coil-kt-gif",
+    "coil-kt-svg",
+]
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -40,6 +50,10 @@ androidx-animation = { module = "androidx.compose.animation:animation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-ktx-v1120 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
+coil-kt-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+coil-kt-core = { module = "io.coil-kt:coil", version.ref = "coil" }
+coil-kt-gif = { module = "io.coil-kt:coil-gif", version.ref = "coil" }
+coil-kt-svg = { module = "io.coil-kt:coil-svg", version.ref = "coil" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-hilt-navigation-fragment = { module = "androidx.hilt:hilt-navigation-fragment", version.ref = "hiltNavigationFragment" }
 androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }

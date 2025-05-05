@@ -115,6 +115,8 @@ dependencies {
     implementation libs.play.services.code.scanner
     testImplementation libs.junit.junit
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$desugaring_version"
+    implementation 'com.auth0.android:jwtdecode:2.0.2'
+    implementation 'com.auth0:java-jwt:4.5.0'
 
     // Compose
     def composeBom = platform("androidx.compose:compose-bom:$compose_bom_date")
@@ -189,5 +191,8 @@ dependencies {
 
     //for splash screen
     implementation(libs.core.splashscreen)
+
+    //coil
+    implementation(libs.bundles.coil)
 
 }

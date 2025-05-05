@@ -3,12 +3,17 @@ package com.st.robotics.viewModels
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.activity.result.ActivityResultRegistryOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.st.blue_sdk.BlueManager
+import com.st.blue_sdk.features.activity.Activity
 import com.st.robotics.R
+import com.auth0.jwt.JWT
+import com.st.robotics.models.AiProject
 import com.st.robotics.models.LoginSessionData
 import com.st.robotics.models.QrCode
+import com.st.robotics.models.dataset.Dataset
 import com.st.robotics.utilities.LoginService
 import com.st.robotics.utilities.LoginSession
 import com.st.robotics.utilities.QrCodeService
@@ -16,7 +21,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.net.UnknownHostException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,6 +35,8 @@ class ProfileScreenViewModel @Inject constructor(
     private val loginSession: LoginSession,
     private val vespucciService: LoginService,
 ) : ViewModel(){
+
+    private var activityResultRegistryOwner: ActivityResultRegistryOwner? = null
 
     private val _isLoading = MutableStateFlow(value = false)
     val isLoading = _isLoading.asStateFlow()
@@ -39,6 +49,19 @@ class ProfileScreenViewModel @Inject constructor(
 
     private val _qrCodeResult = MutableStateFlow<QrCode?>(value = null)
     val qrCodeResult = _qrCodeResult.asStateFlow()
+
+    private val _sampleProjects = MutableStateFlow<List<AiProject>>(value = emptyList())
+    val sampleProjectList = _sampleProjects.asStateFlow()
+
+    private val _datasetList = MutableStateFlow<List<Dataset>>(value = emptyList())
+    val datasetList = _datasetList.asStateFlow()
+
+    private val _nextPage = MutableStateFlow<String?>(value = null)
+    val nextPage = _nextPage.asStateFlow()
+
+    private val _projects = MutableStateFlow<List<AiProject>>(value = emptyList())
+    val projectList = _projects.asStateFlow()
+
 
     fun startScan(){
         viewModelScope.launch {
@@ -88,6 +111,97 @@ class ProfileScreenViewModel @Inject constructor(
                     _error.emit(value = context.getString(R.string.st_qrCode_invalidError))
                 }
             }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+
+            loginSession.logout()
+            _isLoggedIn.emit(value = false)
+        }
+    }
+
+    fun fetchProjects(){
+        viewModelScope.launch {
+            _isLoading.emit(value = true)
+
+            val result = vespucciService.getSampleProjects()
+
+            if(result.isFailure){
+                _error.emit(value = result.getError(context))
+            } else {
+                _sampleProjects.emit(value = result.getOrDefault(defaultValue = emptyList()))
+            }
+
+            _isLoading.emit(value = false)
+        }
+
+        if (_isLoggedIn.value) {
+            viewModelScope.launch {
+                _isLoading.emit(value = true)
+
+                val result = vespucciService.getAiProjects()
+
+                if (result.isFailure) {
+                    _error.emit(value = result.getError(context = context))
+                    logout()
+                } else {
+                    _projects.emit(value = result.getOrDefault(defaultValue = emptyList()))
+                }
+
+                _isLoading.emit(value = false)
+            }
+
+            viewModelScope.launch {
+                _isLoading.emit(value = true)
+                _nextPage.emit(value = null)
+                _datasetList.emit(value = emptyList())
+
+                val result = vespucciService.getDatasets(nextToken = null)
+
+                if (result.isFailure) {
+                    _error.emit(value = result.getError(context = context))
+                    logout()
+                } else {
+                    _datasetList.emit(value = result.getOrNull()?.items ?: emptyList())
+                    _nextPage.emit(value = result.getOrNull()?.nextToken)
+
+                        datasetList.collect { datasets ->
+                            Log.d(TAG, "Current datasets: $datasets")
+                        }
+                }
+
+                _isLoading.emit(value = false)
+            }
+        }
+    }
+
+    fun initLoginManager(activity : Activity){
+        viewModelScope.launch {
+            activityResultRegistryOwner = activity as ActivityResultRegistryOwner
+
+            _isLoggedIn.emit(value = false)
+
+            _isLoggedIn.onEach { status ->
+                if(status) {
+                    val token = loginSession.getLastVespucciSession().qrCodeIdToken
+
+                }
+            }
+        }
+    }
+
+    private fun Result<Any?>.getError(context: Context): String {
+        val exception = exceptionOrNull()
+        return when {
+            exception is UnknownHostException ->
+                context.getString(R.string.no_network_connection)
+
+            exception is HttpException && exception.code() == 401 ->
+                context.getString(R.string.unauthorized)
+
+            else -> this.exceptionOrNull()?.localizedMessage ?: ""
         }
     }
 
@@ -155,7 +269,7 @@ class ProfileScreenViewModel @Inject constructor(
     }
 
     companion object {
-        private const val TAG = "HomeViewModel"
+        private const val TAG = "ProfileScreenViewModel"
 
         private const val JWT_EMAIL_KEY = "email"
         private const val JWT_USER_ID_KEY = "userId"

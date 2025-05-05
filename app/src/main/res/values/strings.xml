@@ -76,6 +76,9 @@
 <!--    profile-->
     <string name="st_qrCode_invalidError">The QR code does not contain the necessary information. Try again.</string>
     <string name="st_qrCode_expiredError">The scanned QR code may have expired. Refresh the web portal page to generate a new code, then try again.</string>
+    <string name="no_network_connection">No network connection.</string>
+    <string name="unauthorized">The session has expired; please scan the QR code again.</string>
+    <string name="sdDatasets">SD Datasets</string>
 
 
 </resources>
