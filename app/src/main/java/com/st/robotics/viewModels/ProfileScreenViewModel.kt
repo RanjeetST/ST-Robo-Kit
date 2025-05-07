@@ -62,6 +62,9 @@ class ProfileScreenViewModel @Inject constructor(
     private val _projects = MutableStateFlow<List<AiProject>>(value = emptyList())
     val projectList = _projects.asStateFlow()
 
+    private val _email = MutableStateFlow(value = "")
+    val email = _email.asStateFlow()
+
 
     fun startScan(){
         viewModelScope.launch {
@@ -186,6 +189,36 @@ class ProfileScreenViewModel @Inject constructor(
             _isLoggedIn.onEach { status ->
                 if(status) {
                     val token = loginSession.getLastVespucciSession().qrCodeIdToken
+                    val userEmail = try {
+                        val decoded = JWT.decode(token)
+                        val hasEmail = decoded.claims.keys.contains(JWT_EMAIL_KEY)
+                        val hasIdentity = decoded.claims.keys.contains(JWT_IDENTITIES_KEY)
+
+                        when{
+                            hasEmail -> decoded.getClaim(JWT_EMAIL_KEY).asString()
+
+                            hasIdentity -> {
+                                val identities =
+                                    decoded.getClaim(JWT_IDENTITIES_KEY)
+                                        .asArray(Map::class.java)
+
+                                if (identities.isNotEmpty() &&
+                                    identities[0].containsKey(JWT_USER_ID_KEY)
+                                    ) {
+                                    identities[0][JWT_USER_ID_KEY] as String
+                                } else {
+                                    ""
+                                }
+                            }
+
+                            else -> ""
+                        }
+                    } catch (ex : Exception){
+                        Log.w(TAG,"Error while getting email",ex)
+
+                        ""
+                    }
+
 
                 }
             }
