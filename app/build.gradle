@@ -110,6 +110,7 @@ dependencies {
     implementation (libs.st.blue.sdk)
 
     //network
+    implementation libs.bundles.network
     implementation libs.okhttp
     implementation libs.logging.interceptor
     implementation libs.play.services.code.scanner

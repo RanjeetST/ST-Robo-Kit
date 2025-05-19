@@ -1,8 +1,10 @@
 package com.st.robotics.models.dataset
 
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@OptIn(InternalSerializationApi::class)
 @Serializable
 data class GetDatasetsStatusResponse(
     val items: List<DatasetStatus>
@@ -20,6 +22,7 @@ enum class Status {
     SUCCEEDED
 }
 
+@OptIn(InternalSerializationApi::class)
 @Serializable
 data class DatasetStatus(
     @SerialName("blob_id")

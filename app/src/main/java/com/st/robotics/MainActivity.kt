@@ -21,6 +21,7 @@ import com.st.robotics.composables.copyPdfFromAssets
 import com.st.robotics.ui.theme.STRoboKitTheme
 import com.st.robotics.utilities.SessionManager
 import com.st.robotics.views.BleDeviceListV2
+import com.st.robotics.views.DatalogScreen
 import com.st.robotics.views.DebugConsole
 import com.st.robotics.views.DeviceDetailV2
 import com.st.robotics.views.FotaScreen
@@ -42,6 +43,7 @@ class MainActivity : ComponentActivity() {
             MainScreen()
         }
     }
+
 }
 
 @Composable
@@ -159,6 +161,21 @@ private fun MainScreen(){
                     route = "profile"
                 ) {
                     ProfileScreen(viewModel = hiltViewModel(),navController = navController)
+                }
+
+                composable(
+                    route = "project/{projectId}",
+                    arguments = listOf(
+                        navArgument("projectId") { type = NavType.IntType }
+                    )
+                ) { backStackEntry ->
+                    backStackEntry.arguments?.getInt("projectId")?.let { projectId ->
+                        DatalogScreen(
+                            viewModel = hiltViewModel(),
+                            projectId = projectId,
+                            navController = navController
+                        )
+                    }
                 }
             }
         }

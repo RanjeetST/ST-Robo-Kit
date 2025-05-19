@@ -1,6 +1,7 @@
 package com.st.robotics.viewModels
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.activity.result.ActivityResultRegistryOwner
@@ -16,16 +17,20 @@ import com.st.robotics.models.QrCode
 import com.st.robotics.models.dataset.Dataset
 import com.st.robotics.utilities.LoginService
 import com.st.robotics.utilities.LoginSession
+import com.st.robotics.utilities.getError
 import com.st.robotics.utilities.QrCodeService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlin.math.log
 
 @HiltViewModel
 class ProfileScreenViewModel @Inject constructor(
@@ -33,7 +38,7 @@ class ProfileScreenViewModel @Inject constructor(
     private val blueManager: BlueManager,
     private val qrCodeService: QrCodeService,
     private val loginSession: LoginSession,
-    private val vespucciService: LoginService,
+    private val loginService: LoginService,
 ) : ViewModel(){
 
     private var activityResultRegistryOwner: ActivityResultRegistryOwner? = null
@@ -41,7 +46,8 @@ class ProfileScreenViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(value = false)
     val isLoading = _isLoading.asStateFlow()
 
-    private val _isLoggedIn = MutableStateFlow(value = false)
+//    private val _isLoggedIn = MutableStateFlow(value = false)
+    private val _isLoggedIn = MutableStateFlow(value = loginSession.vespucciSessionUpdates.value.qrCodeToken != "")
     val isLoggedIn = _isLoggedIn.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(value = null)
@@ -65,6 +71,81 @@ class ProfileScreenViewModel @Inject constructor(
     private val _email = MutableStateFlow(value = "")
     val email = _email.asStateFlow()
 
+    fun login() {
+        viewModelScope.launch {
+            activityResultRegistryOwner?.let {
+                _isLoggedIn.value =
+                    false
+            }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+
+            loginSession.logout()
+            _isLoggedIn.emit(value = false)
+        }
+    }
+
+    fun fetchProjects(){
+        viewModelScope.launch {
+            _isLoading.emit(value = true)
+
+            val result = loginService.getSampleProjects()
+
+            if(result.isFailure){
+                _error.emit(value = result.getError(context))
+            } else {
+                _sampleProjects.emit(value = result.getOrDefault(defaultValue = emptyList()))
+            }
+
+            _isLoading.emit(value = false)
+        }
+
+        if (_isLoggedIn.value) {
+            viewModelScope.launch {
+                _isLoading.emit(value = true)
+
+                val result = loginService.getAiProjects()
+
+                if (result.isFailure) {
+                    _error.emit(value = result.getError(context = context))
+                    logout()
+                } else {
+                    _projects.emit(value = result.getOrDefault(defaultValue = emptyList()))
+                }
+
+                _isLoading.emit(value = false)
+            }
+
+            viewModelScope.launch {
+                _isLoading.emit(value = true)
+                _nextPage.emit(value = null)
+                _datasetList.emit(value = emptyList())
+
+                val result = loginService.getDatasets(nextToken = null)
+
+                if (result.isFailure) {
+                    _error.emit(value = result.getError(context = context))
+                    logout()
+                } else {
+                    _datasetList.emit(value = result.getOrNull()?.items ?: emptyList())
+                    _nextPage.emit(value = result.getOrNull()?.nextToken)
+
+                        datasetList.collect { datasets ->
+                            Log.d(TAG, "Current datasets: $datasets")
+                        }
+                }
+
+                _isLoading.emit(value = false)
+            }
+        }
+    }
+
+    fun dismissError() {
+        _error.tryEmit(value = null)
+    }
 
     fun startScan(){
         viewModelScope.launch {
@@ -88,7 +169,7 @@ class ProfileScreenViewModel @Inject constructor(
                     loginSession.setProjectName(projectName = value.project)
                     loginSession.setModelName(modelName = value.model)
                     loginSession.setIsTemplate(isTemplate = false)
-                    vespucciService.shouldGoToMLC(goToMLC = true)
+                    loginService.shouldGoToMLC(goToMLC = true)
                     _isLoggedIn.emit(value = true)
 
                     _qrCodeResult.emit(value = value)
@@ -101,7 +182,7 @@ class ProfileScreenViewModel @Inject constructor(
                     loginSession.setProjectName(projectName = value.project)
                     loginSession.setModelName(modelName = value.model)
                     loginSession.setIsTemplate(isTemplate = true)
-                    vespucciService.shouldGoToMLC(goToMLC = true)
+                    loginService.shouldGoToMLC(goToMLC = true)
 
                     _qrCodeResult.emit(value = value)
                 }
@@ -117,74 +198,11 @@ class ProfileScreenViewModel @Inject constructor(
         }
     }
 
-    fun logout() {
+    fun initLoginManager(){
         viewModelScope.launch {
+//            activityResultRegistryOwner = activity as ActivityResultRegistryOwner
 
-            loginSession.logout()
-            _isLoggedIn.emit(value = false)
-        }
-    }
-
-    fun fetchProjects(){
-        viewModelScope.launch {
-            _isLoading.emit(value = true)
-
-            val result = vespucciService.getSampleProjects()
-
-            if(result.isFailure){
-                _error.emit(value = result.getError(context))
-            } else {
-                _sampleProjects.emit(value = result.getOrDefault(defaultValue = emptyList()))
-            }
-
-            _isLoading.emit(value = false)
-        }
-
-        if (_isLoggedIn.value) {
-            viewModelScope.launch {
-                _isLoading.emit(value = true)
-
-                val result = vespucciService.getAiProjects()
-
-                if (result.isFailure) {
-                    _error.emit(value = result.getError(context = context))
-                    logout()
-                } else {
-                    _projects.emit(value = result.getOrDefault(defaultValue = emptyList()))
-                }
-
-                _isLoading.emit(value = false)
-            }
-
-            viewModelScope.launch {
-                _isLoading.emit(value = true)
-                _nextPage.emit(value = null)
-                _datasetList.emit(value = emptyList())
-
-                val result = vespucciService.getDatasets(nextToken = null)
-
-                if (result.isFailure) {
-                    _error.emit(value = result.getError(context = context))
-                    logout()
-                } else {
-                    _datasetList.emit(value = result.getOrNull()?.items ?: emptyList())
-                    _nextPage.emit(value = result.getOrNull()?.nextToken)
-
-                        datasetList.collect { datasets ->
-                            Log.d(TAG, "Current datasets: $datasets")
-                        }
-                }
-
-                _isLoading.emit(value = false)
-            }
-        }
-    }
-
-    fun initLoginManager(activity : Activity){
-        viewModelScope.launch {
-            activityResultRegistryOwner = activity as ActivityResultRegistryOwner
-
-            _isLoggedIn.emit(value = false)
+//            _isLoggedIn.emit(value = false)
 
             _isLoggedIn.onEach { status ->
                 if(status) {
@@ -219,24 +237,12 @@ class ProfileScreenViewModel @Inject constructor(
                         ""
                     }
 
-
+                    _email.update { userEmail }
                 }
-            }
+            }.collect()
         }
     }
 
-    private fun Result<Any?>.getError(context: Context): String {
-        val exception = exceptionOrNull()
-        return when {
-            exception is UnknownHostException ->
-                context.getString(R.string.no_network_connection)
-
-            exception is HttpException && exception.code() == 401 ->
-                context.getString(R.string.unauthorized)
-
-            else -> this.exceptionOrNull()?.localizedMessage ?: ""
-        }
-    }
 
     private suspend fun decodeQrCode(qrCode : String?) : QrCode{
         if (qrCode == null) return QrCode.InvalidQrCode
@@ -263,7 +269,7 @@ class ProfileScreenViewModel @Inject constructor(
             if (queryParamToken != null) {
                 Log.d(TAG, "Token: $queryParamToken")
 
-                val signedRefResponse = vespucciService.getSignedRef(
+                val signedRefResponse = loginService.getSignedRef(
                     shortToken = queryParamToken
                 )
 
@@ -300,6 +306,88 @@ class ProfileScreenViewModel @Inject constructor(
 
         return QrCode.InvalidQrCode
     }
+
+    fun resetGoToMLC() {
+        loginService.shouldGoToMLC(goToMLC = false)
+    }
+
+    fun setProjectName(projectName: String) {
+        loginSession.setProjectName(projectName = projectName)
+        loginSession.setModelName(modelName = "")
+    }
+
+    fun setIsTemplate(isTemplate: Boolean) {
+        loginSession.setIsTemplate(isTemplate = isTemplate)
+        loginService.shouldGoToMLC(goToMLC = isTemplate)
+    }
+
+    fun dismissQrCodeResult() {
+        _qrCodeResult.tryEmit(value = null)
+    }
+
+    fun setIsDataset(isDataset: Boolean) {
+        loginSession.setIsDataset(isDataset = isDataset)
+    }
+
+    fun setDatasetId(datasetId: String) {
+        loginSession.setDatasetId(datasetId = datasetId)
+    }
+
+    fun loadNextDataset(nextToken: String?) {
+        viewModelScope.launch {
+            _isLoading.emit(value = true)
+
+            val result = loginService.getDatasets(nextToken = nextToken)
+
+            if (result.isFailure) {
+                _error.emit(value = result.getError(context = context))
+            } else {
+                _datasetList.update {
+                    it + (result.getOrNull()?.items ?: emptyList())
+                }
+                _nextPage.emit(value = result.getOrNull()?.nextToken)
+            }
+
+            _isLoading.emit(value = false)
+        }
+    }
+
+    fun checkLoginStatus() {
+        viewModelScope.launch {
+            _isLoggedIn.update {
+                 false ||
+                        loginSession.getLastVespucciSession().qrCodeToken.isNullOrEmpty().not()
+            }
+        }
+    }
+
+    fun sendEmail(isUserLoggedIn: Boolean) {
+        val recipient =
+            context.getString(R.string.st_deleteAccount_recipient)
+        val subject =
+            context.getString(R.string.st_deleteAccount_subject)
+        val bodyEmail = if (isUserLoggedIn) "(${_email.value})" else ""
+        val body =
+            context.getString(R.string.st_deleteAccount_body, bodyEmail)
+
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(recipient))
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+            putExtra(Intent.EXTRA_TEXT, body)
+        }
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
+        } else {
+            _error.update {
+                context.getString(R.string.st_deleteAccount_error)
+            }
+        }
+    }
+
 
     companion object {
         private const val TAG = "ProfileScreenViewModel"

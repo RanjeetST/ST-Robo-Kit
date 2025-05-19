@@ -85,6 +85,8 @@ fun HomeScreenV2(navController: NavController){
 
     val painter = painterResource(id = R.drawable.idle_bot)
     val showDialog = rememberSaveable { mutableStateOf(false) }
+    var isNavigating by remember { mutableStateOf(false) }
+
 
 
     Column(
@@ -102,8 +104,22 @@ fun HomeScreenV2(navController: NavController){
 
                     Row {
 
-                        IconButton(onClick = {navController.navigate("profile")}) {
-                            Icon(painter = painterResource(id = R.drawable.baseline_person_24), contentDescription = "Profile", tint = PrimaryColor)
+                        IconButton(
+                            onClick = {
+                                if (!isNavigating) {
+                                    isNavigating = true
+                                    navController.navigate("profile") {
+                                        launchSingleTop = true
+                                    }
+                                    isNavigating = false
+                                }
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_person_24),
+                                contentDescription = "Profile",
+                                tint = PrimaryColor
+                            )
                         }
                     }
 

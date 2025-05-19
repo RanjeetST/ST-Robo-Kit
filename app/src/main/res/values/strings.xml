@@ -79,6 +79,13 @@
     <string name="no_network_connection">No network connection.</string>
     <string name="unauthorized">The session has expired; please scan the QR code again.</string>
     <string name="sdDatasets">SD Datasets</string>
-
-
+    <string name="st_deleteAccount_recipient">support.policies@st.com</string>
+    <string name="st_deleteAccount_subject">Account Deletion Request</string>
+    <string name="st_deleteAccount_body">Dear Support Team,\n\nI hope this message finds you well. I am writing to formally request the deletion of my account associated with the email address %s.\n\nPlease confirm once my account has been permanently deleted along with all associated data, in accordance with your privacy policy and any applicable data protection regulations.\n\nI would appreciate it if you could provide me with confirmation of this action once it has been completed. If you require any additional information to process this request, please let me know.\n\nThank you for your assistance.</string>
+    <string name="st_deleteAccount_error">The ‘Mail’ app is not configured on your device. Please set up an email account in the ‘Mail’ app before proceeding to send emails.\n\nFor more information on how to delete your account, please visit this website https://www.st.com/content/st_com/en/common/terms-of-use.html.</string>
+    <string name="st_datalogList_alreadySucceeded">This datalog has already been uploaded</string>
+    <string name="st_datalogList_alreadyRunning">This datalog has already been uploaded and is being processed</string>
+    <string name="st_datalogList_errorFtpListing">File listing failed…</string>
+    <string name="st_datalogList_errorTemplate">To upload new data to a Sample Project you must clone it first.</string>
+    <string name="st_datalogList_errorFtpDownload">File download failed…</string>
 </resources>

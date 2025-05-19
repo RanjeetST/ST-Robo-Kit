@@ -1,5 +1,6 @@
 package com.st.robotics.views
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,16 +14,21 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.st.blue_sdk.features.activity.Activity
 import com.st.robotics.R
 import com.st.robotics.composables.ProjectScreen
 import com.st.robotics.ui.theme.OnPrimary
@@ -38,6 +44,16 @@ fun ProfileScreen(
     val isUserLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle()
     val error by viewModel.errorMessage.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val backHandlingEnabled by remember { mutableStateOf(true) }
+
+    BackHandler(enabled = backHandlingEnabled) {
+        navController.popBackStack()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.initLoginManager()
+    }
 
     Column(
         modifier = Modifier
@@ -73,7 +89,11 @@ fun ProfileScreen(
         }
 
         if(isUserLoggedIn){
-            ProjectScreen(isUserLoggedIn,viewModel = hiltViewModel())
+            ProjectScreen(
+                isUserLoggedIn,
+                viewModel = hiltViewModel(),
+                navController = navController
+            )
         }else{
             Column(
                 modifier = Modifier.fillMaxSize(),
