@@ -9,6 +9,7 @@ import com.st.blue_sdk.features.extended.ext_configuration.ExtendedFeatureRespon
 import com.st.blue_sdk.features.extended.ext_configuration.request.ExtConfigCommands
 import com.st.blue_sdk.features.extended.ext_configuration.request.ExtendedFeatureCommand
 import com.st.blue_sdk.features.extended.robotics_movement.RoboticsMovement
+import com.st.blue_sdk.features.extended.robotics_movement.request.MoveCommandDifferentialDriveArticulatingMove
 import com.st.blue_sdk.features.extended.robotics_movement.request.MoveCommandDifferentialDriveSimpleMove
 import com.st.blue_sdk.features.extended.robotics_movement.request.RobotDirection
 import com.st.blue_sdk.features.extended.robotics_movement.request.RoboticsActionBits
@@ -36,6 +37,7 @@ class ControllerViewModel @Inject constructor(
 
     private var lastAction = 'S'
     private var lastSpeed = 0
+    private var lastAngle = 0
 
 
     private var rssiJob: Job? = null
@@ -217,114 +219,28 @@ class ControllerViewModel @Inject constructor(
         }
     }
 
-    fun sendCommand2(featureName: String, deviceId: String, action : ControllerAction, angle : Int = 0, speed : Int = 0) {
+    fun sendCommand2(featureName: String, deviceId: String, rotationAngle : Int = lastAngle,linearAngle: Int = 0, speed : Int = lastSpeed) {
 
         viewModelScope.launch {
 
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == featureName } ?: return@launch
 
             if(feature is RoboticsMovement){
-                when(action){
-                    ControllerAction.Forward -> {
-                        lastAction = 'F'
-                        lastSpeed = speed
-                        blueManager.writeFeatureCommand(
-                            nodeId = deviceId,
-                            featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                feature = feature,
-                                action = writeAction,
-                                direction = RobotDirection.FORWARD,
-                                speed = lastSpeed.toUByte(),
-                                angle = angle.toByte(),
-                                res = byteArrayOf(0)
-                            ),
-                            responseTimeout = 1L
-                        )
-                    }
-
-                    ControllerAction.Backward -> {
-                        lastSpeed = speed
-                        lastAction = 'B'
-                        blueManager.writeFeatureCommand(
-                            nodeId = deviceId,
-                            featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                feature = feature,
-                                action = writeAction,
-                                direction = RobotDirection.BACKWARD,
-                                speed = lastSpeed.toUByte(),
-                                angle = angle.toByte(),
-                                res = byteArrayOf(0)
-                            ),
-                            responseTimeout = 1L
-                        )
-                    }
-                    //TEMPORARY CHANGE IN CODE : R->P
-                    ControllerAction.Right -> {
-//                            val actionCode = if(lastSpeed == 0){
-//                                'R'
-//                            } else {
-//                                'P'
-//                            }
-
-                        val actionCode = 'T'
-
-                        blueManager.writeFeatureCommand(
-                            nodeId = deviceId,
-                            featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                feature = feature,
-                                action = writeAction,
-                                direction = RobotDirection.LEFT,
-                                speed = lastSpeed.toUByte(),
-                                angle = angleToPercentage(angle).toByte(),
-                                res = byteArrayOf(0)
-                            ),
-                            responseTimeout = 1L
-                        )
-
-                    }
-
-                    //TEMPORARY CHANGE IN CODE : L->Q
-                    ControllerAction.Left -> {
-
-//                            val actionCode = if(lastSpeed == 0){
-//                                'L'
-//                            } else {
-//                                'Q'
-//                            }
-
-                        val actionCode = 'T'
-
-                        blueManager.writeFeatureCommand(
-                            nodeId = deviceId,
-                            featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                feature = feature,
-                                action = writeAction,
-                                direction = RobotDirection.RIGHT,
-                                speed = lastSpeed.toUByte(),
-                                angle = angleToPercentage(angle).toByte(),
-                                res = byteArrayOf(0)
-                            ),
-                            responseTimeout = 1L
-                        )
-                    }
-
-                    ControllerAction.Stop -> {
-                        lastAction = 'S'
-                        lastSpeed = 0
-                        blueManager.writeFeatureCommand(
-                            nodeId = deviceId,
-                            featureCommand = MoveCommandDifferentialDriveSimpleMove(
-                                feature = feature,
-                                action = writeAction,
-                                direction = RobotDirection.STOP,
-                                speed = 0u,
-                                angle = 0,
-                                res = byteArrayOf(0)
-                            ),
-                            responseTimeout = 1L
-                        )
-                    }
-                }
+                lastSpeed = speed
+                lastAngle = rotationAngle
+                Log.d("TAG","Angle = ${angleToPercentage(lastAngle)} , Speed = $lastSpeed,linearAngle = $linearAngle")
+                blueManager.writeFeatureCommand(
+                    nodeId = deviceId,
+                    featureCommand = MoveCommandDifferentialDriveArticulatingMove(
+                        feature = feature,
+                        action = writeAction,
+                        speed = lastSpeed.toByte(),
+                        rotationAngle = angleToPercentage(lastAngle).toByte(),
+                        linearAngle = linearAngle.toByte(),
+                        res = byteArrayOf(0)
+                    ),
+                    responseTimeout = 1L
+                )
             }
         }
     }

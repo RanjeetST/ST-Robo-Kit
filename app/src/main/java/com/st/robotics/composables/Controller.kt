@@ -75,12 +75,13 @@ import com.st.robotics.utilities.ChangeOrientationToLandscape
 import com.st.robotics.viewModels.BleDeviceDetailViewModel
 import com.st.robotics.viewModels.ControllerViewModel
 import com.st.blue_sdk.models.NodeState
+import com.st.robotics.views.PlotChartV2
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
 
 @Composable
-fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController,batteryVoltage : Int){
+fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController,batteryVoltage : Float){
     ChangeOrientationToLandscape(context = LocalContext.current)
     val isDisarmed = remember { mutableStateOf("Lock") }
     val shake = remember { Animatable(0f) }
@@ -229,55 +230,10 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
 
         //Mid Column
         Column(modifier = Modifier
-            .fillMaxWidth(0.5f)) {
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.5f)
-                .padding(vertical = 20.dp),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .padding(10.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally){
-                        if(batteryVoltage in 4..5) {
-                            Icon(Icons.Filled.Battery4Bar, contentDescription = "batteryGood", tint = SuccessColor)
-                        }else if(batteryVoltage == -1){
-                            Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = SecondaryColor)
-                        }else if(batteryVoltage > 5){
-                            Icon(Icons.Filled.BatteryFull, contentDescription = "BatterLow", tint = SuccessColor)
-                        }else if(batteryVoltage < 4){
-                            Icon(Icons.Filled.Battery1Bar, contentDescription = "BatterLow", tint = ErrorColor)
-                        }
-
-                        if(batteryVoltage in 4..5) {
-                            androidx.compose.material3.Text(text = stringResource(id = R.string.average), fontSize = 10.sp, color = OnPrimary)
-                        }else if(batteryVoltage > 5){
-                            androidx.compose.material3.Text(text = stringResource(id = R.string.ok), fontSize = 10.sp, color = OnPrimary)
-                        }else if(batteryVoltage == -1){
-                            androidx.compose.material3.Text(text = stringResource(id = R.string.na), fontSize = 10.sp, color = OnPrimary)
-                        }else{
-                            androidx.compose.material3.Text(text = stringResource(id = R.string.low), fontSize = 10.sp, color = OnPrimary)
-                        }
-                    }
-
-
-                    Spacer(modifier = Modifier.width(10.dp))
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally){
-                        Icon(
-                            imageVector = Icons.Default.SignalCellularAlt,
-                            contentDescription = "Close Button",
-                            tint = SecondaryColor
-                        )
-                        Text(text = "$rssiData dBm", fontSize = 10.sp, color = OnPrimary)
-                    }
-                }
-            }
+            .fillMaxWidth(0.5f)
+            .fillMaxHeight(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
 
             //Custom Slider
             val customPadding = if(DeveloperMode.isDeveloper == true){
@@ -285,10 +241,22 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
             }else{
                 10
             }
+            Box(modifier = Modifier
+                .width(500.dp)
+            ) {
+                if(options[selectedIndex] == "Autopilot")
+                {
+                    ControllerSensorData(
+                        viewModel = hiltViewModel(),
+                        navController = navController,
+                        deviceId = nodeId
+                    )
+                }
+            }
             Column(
                 modifier = Modifier
                     .padding(16.dp)
-                    .offset { IntOffset(shake.value.roundToInt(), y = 0) }
+                    .offset { IntOffset(shake.value.roundToInt(), y = 0) },
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
@@ -311,7 +279,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                             Box(
                                 modifier = Modifier
                                     .width(1.dp)
-                                    .height(if (selectedIndex == index) 25.dp else 20.dp)
+                                    .height(if (selectedIndex == index) 20.dp else 15.dp)
                                     .background(
                                         color = if (selectedIndex == index) OnPrimary else Color(
                                             0xFF7A7A7A
@@ -327,9 +295,9 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                         .border(
                             1.dp,
                             color = Color(0xFFDBDEE2),
-                            shape = RoundedCornerShape(size = 6.dp)
+                            shape = RoundedCornerShape(size = 12.dp)
                         )
-                        .height(70.dp)
+                        .height(60.dp)
                         .background(
                             color = Color(0xFF01142C),
                             shape = RoundedCornerShape(size = 6.dp)
@@ -398,53 +366,53 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
         Column(modifier = Modifier
             .fillMaxWidth()) {
             //Top right status icon row
-            Row(modifier = Modifier
-                .fillMaxHeight(0.3f)
+            Column(modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 20.dp)
-                ,
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.End
+                .fillMaxHeight(0.3f)
+                .padding(vertical = 20.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-//                ***********************FUTURE USE*****************************
-//                IconButton(onClick = { /* Handle close action */ },
-//                    modifier = Modifier
-//                        .size(40.dp)
-//                        .clip(RoundedCornerShape(10.dp))
-//                        .background(Color.LightGray.copy(alpha = 0.4f))
-//                        .border(
-//                            width = 1.dp,
-//                            brush = borderBrush,
-//                            shape = RoundedCornerShape(10.dp)
-//                        )
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Default.Settings,
-//                        contentDescription = "Settings",
-//                        tint = OnPrimary
-//                    )
-//                }
-//
-//                Spacer(modifier = Modifier.width(16.dp))
-//
-//                IconButton(onClick = { /* Handle close action */ },
-//                    modifier = Modifier
-//                        .size(40.dp)
-//                        .clip(RoundedCornerShape(10.dp))
-//                        .background(Color.LightGray.copy(alpha = 0.4f))
-//                        .border(
-//                            width = 1.dp,
-//                            brush = borderBrush,
-//                            shape = RoundedCornerShape(10.dp)
-//                        )
-//
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Default.Help,
-//                        contentDescription = "Help",
-//                        tint = OnPrimary
-//                    )
-//                }
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .padding(10.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Row (verticalAlignment = Alignment.CenterVertically){
+                        if(batteryVoltage in 4.0..5.0) {
+                            Icon(Icons.Filled.Battery4Bar, contentDescription = "batteryGood", tint = Color.White)
+                        }else if(batteryVoltage == -1f){
+                            Icon(Icons.Filled.BatteryFull, contentDescription = "batteryGood", tint = Color.White)
+                        }else if(batteryVoltage > 5){
+                            Icon(Icons.Filled.BatteryFull, contentDescription = "BatterLow", tint = Color.White)
+                        }else if(batteryVoltage < 4){
+                            Icon(Icons.Filled.Battery1Bar, contentDescription = "BatterLow", tint = Color.White)
+                        }
+
+                        if(batteryVoltage in 4.0..5.0) {
+                            androidx.compose.material3.Text(text = stringResource(id = R.string.average), fontSize = 10.sp, color = Color.White)
+                        }else if(batteryVoltage > 5){
+                            androidx.compose.material3.Text(text = stringResource(id = R.string.ok), fontSize = 10.sp, color = Color.White)
+                        }else if(batteryVoltage == -1f){
+                            androidx.compose.material3.Text(text = stringResource(id = R.string.na), fontSize = 10.sp, color = Color.White)
+                        }else{
+                            androidx.compose.material3.Text(text = stringResource(id = R.string.low), fontSize = 10.sp, color = Color.White)
+                        }
+                    }
+
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Row (verticalAlignment = Alignment.CenterVertically){
+                        Icon(
+                            imageVector = Icons.Default.SignalCellularAlt,
+                            contentDescription = "Close Button",
+                            tint = Color.White
+                        )
+                        Text(text = "$rssiData dBm", fontSize = 10.sp, color = Color.White)
+                    }
+                }
             }
 
             Column(
@@ -469,7 +437,8 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                     },
                     viewModel = hiltViewModel(),
                     nodeId = nodeId,
-                    isDisarmed = isDisarmed)
+                    isDisarmed = isDisarmed
+                )
             }
         }
     }

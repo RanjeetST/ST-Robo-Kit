@@ -85,8 +85,7 @@ fun JoyStick(
                                     viewModel.sendCommand2(
                                         featureName = RoboticsMovement.NAME,
                                         nodeId,
-                                        ControllerAction.Stop,
-                                        angle = 0
+                                        speed = 0,
                                     )
                                 }
 
@@ -116,7 +115,6 @@ fun JoyStick(
                                             viewModel.sendCommand2(
                                                 featureName = RoboticsMovement.NAME,
                                                 deviceId = nodeId,
-                                                action = ControllerAction.Forward,
                                                 speed = speed
                                             )
                                             lastCommand = "Forward"
@@ -133,7 +131,6 @@ fun JoyStick(
                                             viewModel.sendCommand2(
                                                 featureName = RoboticsMovement.NAME,
                                                 deviceId = nodeId,
-                                                action = ControllerAction.Backward,
                                                 speed = speed
                                             )
                                             lastCommand = "Backward"
@@ -143,9 +140,7 @@ fun JoyStick(
                                             viewModel.sendCommand2(
                                                 featureName = RoboticsMovement.NAME,
                                                 deviceId = nodeId,
-                                                action = ControllerAction.Stop,
                                                 speed = 0,
-                                                angle = 0
                                             )
                                             lastCommand = "Stop"
                                         }

@@ -111,7 +111,7 @@ private fun MainScreen(){
                     )
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
-                        backStackEntry.arguments?.getInt("batteryPercentage")
+                        backStackEntry.arguments?.getFloat("batteryPercentage")
                             ?.let { batteryPercentage ->
                                 Controller(
                                     viewModel = hiltViewModel(),

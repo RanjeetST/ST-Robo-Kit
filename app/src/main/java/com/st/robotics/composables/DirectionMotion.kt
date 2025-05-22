@@ -55,9 +55,10 @@ fun DirectionMotion(
     var isDragging by remember { mutableStateOf(false) }
     var lastSentAngle by remember { mutableIntStateOf(-1) }
     var shouldSendCommand by remember { mutableStateOf(false) }
+    var lastCommandTimestamp = System.currentTimeMillis()
     val coroutineScope = rememberCoroutineScope()
 
-    val firmwareVersion = "1.0"
+    val firmwareVersion = "1.1"
 
     // Rotating Circle
     val ringRadius = 73.dp.dpToPx() - 10.dp.dpToPx()
@@ -112,8 +113,7 @@ fun DirectionMotion(
                             viewModel.sendCommand2(
                                 featureName = RoboticsMovement.NAME,
                                 deviceId = nodeId,
-                                action = ControllerAction.Left,
-                                angle = 0
+                                rotationAngle = 0
                             )
                         }
                     ) { change, _ ->
@@ -130,32 +130,32 @@ fun DirectionMotion(
                             if (newAngle != angle) {
                                 angle = newAngle
                                 shouldSendCommand = false
-                                coroutineScope.launch {
-                                    //1/2 SECOND DELAY FOR ANGLE CHANGE
-                                    delay(500)
-                                    shouldSendCommand = true
-                                    if (isDisarmed.value == "Drive" && shouldSendCommand) {
-                                        val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
-                                        if (angleInteger != lastSentAngle) {
-                                            if (angleInteger in 1..180) {
-                                                viewModel.sendCommand2(
-                                                    featureName = RoboticsMovement.NAME,
-                                                    deviceId = nodeId,
-                                                    action = ControllerAction.Right,
-                                                    angle = angleInteger
-                                                )
-                                            } else if (angleInteger in 181..359) {
-                                                viewModel.sendCommand2(
-                                                    featureName = RoboticsMovement.NAME,
-                                                    deviceId = nodeId,
-                                                    action = ControllerAction.Left,
-                                                    angle = angleInteger
-                                                )
-                                            }
-                                            lastSentAngle = angleInteger
+                                //1/2 SECOND DELAY FOR ANGLE CHANGE
+//                                    delay(500)
+                                shouldSendCommand = true
+                                if (isDisarmed.value == "Drive") {
+                                    val currentTime = System.currentTimeMillis()
+                                    val timeDifference = currentTime - lastCommandTimestamp
+                                    val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
+                                    if (angleInteger != lastSentAngle && timeDifference >= 300) {
+                                        if (angleInteger in 1..180) {
+                                            viewModel.sendCommand2(
+                                                featureName = RoboticsMovement.NAME,
+                                                deviceId = nodeId,
+                                                rotationAngle = angleInteger
+                                            )
+                                        } else if (angleInteger in 181..359) {
+                                            viewModel.sendCommand2(
+                                                featureName = RoboticsMovement.NAME,
+                                                deviceId = nodeId,
+                                                rotationAngle = angleInteger
+                                            )
                                         }
+                                        lastSentAngle = angleInteger
+                                        lastCommandTimestamp = currentTime
                                     }
                                 }
+
                             }
                         }
 
