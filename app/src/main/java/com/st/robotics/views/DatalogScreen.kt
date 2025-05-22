@@ -59,14 +59,14 @@ fun DatalogScreen(
     val sdDataLogs by viewModel.sdDataLogs.collectAsStateWithLifecycle(
         initialValue = emptyList()
     )
-    val ftpDataLogs by viewModel.ftpDataLogs.collectAsStateWithLifecycle(
-        initialValue = emptyList()
-    )
-    val dataLogs by remember {
-        derivedStateOf {
-            sdDataLogs + ftpDataLogs
-        }
-    }
+//    val ftpDataLogs by viewModel.ftpDataLogs.collectAsStateWithLifecycle(
+//        initialValue = emptyList()
+//    )
+//    val dataLogs by remember {
+//        derivedStateOf {
+//            sdDataLogs + ftpDataLogs
+//        }
+//    }
     val uploadedDatalog by viewModel.uploadedDatalog.collectAsStateWithLifecycle()
     val progress by viewModel.progress.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -95,13 +95,13 @@ fun DatalogScreen(
         }
     }
     //TODO : CONVERT FILES IN DATALOG FORMAT AND POST IT TO THE RESPECTIVE API
-    val datalogWithLabel by remember(key1 = dataLogs, key2 = uploadedDatalogSet) {
-        derivedStateOf {
-            dataLogs.map { dataLog ->
-                dataLog to uploadedDatalogSet.find { it.name == dataLog.name }?.status
-            }
-        }
-    }
+//    val datalogWithLabel by remember(key1 = dataLogs, key2 = uploadedDatalogSet) {
+//        derivedStateOf {
+//            dataLogs.map { dataLog ->
+//                dataLog to uploadedDatalogSet.find { it.name == dataLog.name }?.status
+//            }
+//        }
+//    }
 
     Column (
         modifier = Modifier
