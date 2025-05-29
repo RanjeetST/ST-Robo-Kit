@@ -302,11 +302,11 @@ fun DeviceDetailV2(
                     ) {
                         val items = features.value
 
-                        val itemNames =  listOf("Home","Controller","Monitor","Debug","Fota")
+                        val itemNames =  listOf("Home","Controller","Monitor","Debug")
 
 
                         itemsIndexed(items = itemNames) { _, item ->
-                            if(item == "Home" || item == "Controller" || item == "Monitor" || item == "Debug" || item == "Fota"){
+                            if(item == "Home" || item == "Controller" || item == "Monitor" || item == "Debug"){
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -324,10 +324,10 @@ fun DeviceDetailV2(
                                                 "Debug" -> {
                                                     navController.navigate("feature/${deviceId}/debugConsole")
                                                 }
-
-                                                "Fota" -> {
-                                                    navController.navigate("feature/${deviceId}/fota")
-                                                }
+                                                /*TODO: TO ADD FOTA ENABLE THIS */
+//                                                "Fota" -> {
+//                                                    navController.navigate("feature/${deviceId}/fota")
+//                                                }
                                             }
                                         }
                                 ) {

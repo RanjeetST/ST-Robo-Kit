@@ -1,6 +1,8 @@
 package com.st.robotics.viewModels
 
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.st.blue_sdk.BlueManager
@@ -11,12 +13,12 @@ import com.st.blue_sdk.features.extended.ext_configuration.request.ExtendedFeatu
 import com.st.blue_sdk.features.extended.robotics_movement.RoboticsMovement
 import com.st.blue_sdk.features.extended.robotics_movement.request.MoveCommandDifferentialDriveArticulatingMove
 import com.st.blue_sdk.features.extended.robotics_movement.request.MoveCommandDifferentialDriveSimpleMove
+import com.st.blue_sdk.features.extended.robotics_movement.request.NavigationMode
 import com.st.blue_sdk.features.extended.robotics_movement.request.RobotDirection
 import com.st.blue_sdk.features.extended.robotics_movement.request.RoboticsActionBits
 import com.st.blue_sdk.features.extended.robotics_movement.request.SetNavigationMode
 import com.st.blue_sdk.models.Node
 import com.st.robotics.composables.ControllerAction
-import com.st.robotics.viewModels.BleDeviceDetailViewModel.Commands
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -39,8 +41,12 @@ class ControllerViewModel @Inject constructor(
     private var lastSpeed = 0
     private var lastAngle = 0
 
-
     private var rssiJob: Job? = null
+
+    val firmwareVersion: State<String?>
+        get() = _firmwareVersion
+
+    private val _firmwareVersion = mutableStateOf<String?>(null)
 
     val writeAction : List<RoboticsActionBits> = listOf(RoboticsActionBits.WRITE)
 
@@ -89,9 +95,10 @@ class ControllerViewModel @Inject constructor(
                     featureCommand = command
                 )
 
-
                 if(response is ExtendedFeatureResponse){
+
                     Log.d("Extended","Firmware version = ${response.response.versionFw}")
+                    _firmwareVersion.value = response.response.versionFw
                 }else{
                     Log.d("Extended","Firmware version : $response")
                 }
@@ -246,21 +253,13 @@ class ControllerViewModel @Inject constructor(
     }
 
     //TO SET THE NAVIGATION MODE OF THE CONNECTED NODE
-    fun sendNavigationCommand(command : Commands, deviceId : String){
-
+    fun sendNavigationCommand(command : NavigationMode, deviceId : String){
+        val armed = if(command == NavigationMode.LOCK){
+            0u
+        }else{
+            1u
+        }
         viewModelScope.launch {
-            getFwVersion(deviceId,ExtConfiguration.NAME)
-            val commandId = when(command){
-                Commands.REMOTE_CONTROL -> {
-                    0x01u
-                }
-                Commands.FREE_NAVIGATION ->{
-                    0x02u
-                }
-                Commands.FOLLOW_ME -> {
-                    0x03u
-                }
-            }
             val feature = blueManager.nodeFeatures(deviceId).find { it.name == RoboticsMovement.NAME } ?: return@launch
 
             if(feature is RoboticsMovement){
@@ -271,8 +270,8 @@ class ControllerViewModel @Inject constructor(
                     featureCommand = SetNavigationMode(
                         feature = feature,
                         action = writeAction,
-                        navigationMode = commandId.toUByte(),
-                        armed = 0u,
+                        navigationMode = command,
+                        armed = armed.toUByte(),
                         res = 0L
                     ),
                     responseTimeout = 1L

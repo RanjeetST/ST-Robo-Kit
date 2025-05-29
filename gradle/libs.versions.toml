@@ -31,6 +31,7 @@ sceneview = "2.2.1"
 stBlueSdk = "1.2.0"
 ycharts = "2.1.0"
 junitJunit = "4.12"
+googleGms = "4.4.2"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -85,4 +86,4 @@ junit-junit = { group = "junit", name = "junit", version.ref = "junitJunit" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-
+googleGms = { id = "com.google.gms.google-services", version.ref = "googleGms" }

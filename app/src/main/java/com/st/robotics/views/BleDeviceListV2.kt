@@ -26,8 +26,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -142,7 +146,31 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
                             .fillMaxWidth()
                             .wrapContentSize(align = Alignment.Center)
                     ) {
-                        androidx.compose.material.Text(stringResource(id = R.string.pair_your_robot))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            androidx.compose.material.IconButton(onClick = { navController.popBackStack() }) {
+                                androidx.compose.material.Icon(
+                                    Icons.Filled.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = PrimaryColor
+                                )
+                            }
+//                            Spacer(modifier = Modifier.weight(1f))
+
+                            androidx.compose.material.Text(stringResource(id = R.string.pair_your_robot))
+
+                            IconButton(onClick = { navController.navigate("/") }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_qr_code),
+                                    contentDescription = "Profile",
+                                    tint = PrimaryColor
+                                )
+                            }
+                        }
                     }
                 },
                 backgroundColor = OnPrimary,

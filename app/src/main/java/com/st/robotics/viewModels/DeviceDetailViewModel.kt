@@ -105,10 +105,4 @@ class BleDeviceDetailViewModel @Inject constructor(
             blueManager.disconnect(nodeId = deviceId)
         }
     }
-
-    enum class Commands{
-        FOLLOW_ME,
-        FREE_NAVIGATION,
-        REMOTE_CONTROL
-    }
 }

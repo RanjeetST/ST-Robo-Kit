@@ -151,7 +151,7 @@ fun ControllerSensorData(
         .steps(maxOf(ceil((yMaxValue1 - yMinValue1) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
         .labelData { index ->
             val range = yMaxValue1 - yMinValue1
-            val numberOfSteps = maxOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
+            val numberOfSteps = minOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
             val stepSize = range / numberOfSteps
             (yMinValue1 + index * stepSize).toInt().toString()
         }
@@ -165,7 +165,7 @@ fun ControllerSensorData(
         .steps(maxOf(ceil((yMaxValue2 - yMinValue2) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
         .labelData { index ->
             val range = yMaxValue2 - yMinValue2
-            val numberOfSteps = maxOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
+            val numberOfSteps = minOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
             val stepSize = range / numberOfSteps
             (yMinValue2 + index * stepSize).toInt().toString()
         }
@@ -179,7 +179,7 @@ fun ControllerSensorData(
         .steps(maxOf(ceil((yMaxValue3 - yMinValue3) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
         .labelData { index ->
             val range = yMaxValue3 - yMinValue3
-            val numberOfSteps = maxOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
+            val numberOfSteps = minOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
             val stepSize = range / numberOfSteps
             (yMinValue3 + index * stepSize).toInt().toString()
         }
@@ -199,7 +199,7 @@ fun ControllerSensorData(
                 ),
                 Line(
                     dataPoints = xLineData.takeLast(visibleRange.toInt()),
-                    lineStyle = LineStyle(color = ST_Magenta, width = 6f, lineType = LineType.Straight())
+                    lineStyle = LineStyle(color = ST_Magenta, width = 4f, lineType = LineType.Straight())
                 ),
                 Line(
                     dataPoints = maxLineData1.takeLast(visibleRange.toInt()),
@@ -232,7 +232,7 @@ fun ControllerSensorData(
                 ),
                 Line(
                     dataPoints = yLineData.takeLast(visibleRange.toInt()),
-                    lineStyle = LineStyle(color = SecondaryColor, width = 6f, lineType = LineType.Straight())
+                    lineStyle = LineStyle(color = SecondaryColor, width = 4f, lineType = LineType.Straight())
                 ),
                 Line(
                     dataPoints = maxLineData2.takeLast(visibleRange.toInt()),
@@ -265,7 +265,7 @@ fun ControllerSensorData(
                 ),
                 Line(
                     dataPoints = zLineData.takeLast(visibleRange.toInt()),
-                    lineStyle = LineStyle(color = TertiaryColor, width = 6f, lineType = LineType.Straight())
+                    lineStyle = LineStyle(color = TertiaryColor, width = 4f, lineType = LineType.Straight())
                 ),
                 Line(
                     dataPoints = maxLineData3.takeLast(visibleRange.toInt()),
@@ -289,7 +289,7 @@ fun ControllerSensorData(
         isZoomAllowed = false
     )
 
-    val featureName = listOf(Acceleration.NAME,Gyroscope.NAME, Magnetometer.NAME,SceneDescription.NAME)
+    val featureName = listOf(Acceleration.NAME,Gyroscope.NAME, Magnetometer.NAME)
     val isDropDownExpanded = remember { mutableStateOf(false) }
     val itemPosition = remember { mutableIntStateOf(0) }
     val selectedFeature = remember { mutableStateOf(featureName[itemPosition.intValue]) }
@@ -427,10 +427,10 @@ fun ControllerSensorData(
 
 
         if (selectedFeature.value != SceneDescription.NAME &&xLineData.isNotEmpty() && yLineData.isNotEmpty() && zLineData.isNotEmpty()) {
-            Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Row(modifier = Modifier.fillMaxHeight(0.5f).fillMaxWidth()) {
                     Row(modifier = Modifier
-                        .fillMaxWidth(0.5f)
+                        .fillMaxWidth(0.5f).padding(2.dp)
                         .background(Color.White)
                         .fillMaxHeight(),
                         verticalAlignment = Alignment.CenterVertically,) {
@@ -445,7 +445,7 @@ fun ControllerSensorData(
                     }
 
                     Row(modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth().padding(2.dp)
                         .background(Color.White)
                         .fillMaxHeight(),
                         verticalAlignment = Alignment.CenterVertically,) {
@@ -460,9 +460,12 @@ fun ControllerSensorData(
                         )
                     }
                 }
-                Row {
+                Row(modifier = Modifier
+                    .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
                     Row(modifier = Modifier
-                        .fillMaxWidth().fillMaxHeight()
+                        .fillMaxWidth(0.5f).padding(2.dp)
                         .background(Color.White),
                         verticalAlignment = Alignment.CenterVertically,) {
 
@@ -470,8 +473,7 @@ fun ControllerSensorData(
                         LineChart(
                             modifier = Modifier
                                 .background(OnPrimary)
-                                .fillMaxWidth()
-                                .fillMaxHeight(),
+                                .fillMaxWidth(),
                             lineChartData = lineChartData3
                         )
                     }

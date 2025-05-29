@@ -1,9 +1,11 @@
 package com.st.robotics.composables
 
 import android.app.Activity
+import android.graphics.Paint
 import android.os.Build
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
+import androidx.appcompat.app.ActionBar
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -65,6 +67,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import androidx.navigation.Navigator
+import com.st.blue_sdk.features.extended.ext_configuration.ExtConfiguration
+import com.st.blue_sdk.features.extended.robotics_movement.request.NavigationMode
 import com.st.robotics.models.DeveloperMode
 import com.st.robotics.ui.theme.ErrorColor
 import com.st.robotics.ui.theme.OnPrimary
@@ -83,7 +89,7 @@ import kotlin.math.roundToInt
 @Composable
 fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: NavController,batteryVoltage : Float){
     ChangeOrientationToLandscape(context = LocalContext.current)
-    val isDisarmed = remember { mutableStateOf("Lock") }
+    val isDisarmed = remember { mutableStateOf(NavigationMode.LOCK) }
     val shake = remember { Animatable(0f) }
     var trigger by remember { mutableLongStateOf(0L) }
 
@@ -93,10 +99,12 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     val options = if(DeveloperMode.isDeveloper == true){
-         listOf("Lock","Drive","Follow","Autopilot")
+        listOf(NavigationMode.LOCK,NavigationMode.DRIVE,NavigationMode.FOLLOW_ME,NavigationMode.AUTOPILOT)
     }else{
-        listOf("Lock", "Drive", "Autopilot")
+        listOf(NavigationMode.LOCK,NavigationMode.DRIVE,NavigationMode.AUTOPILOT)
     }
+
+    val firmwareVersion = viewModel.firmwareVersion.value
 
     LaunchedEffect(trigger) {
         if (trigger != 0L) {
@@ -108,6 +116,10 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
             }
             shake.animateTo(0f)
         }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.getFwVersion(nodeId = nodeId, featureName = ExtConfiguration.NAME)
     }
 
     val gradientBrush = Brush.radialGradient(
@@ -122,6 +134,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
         start = androidx.compose.ui.geometry.Offset(0f, 0f),
         end = androidx.compose.ui.geometry.Offset(200f, 200f)
     )
+
     val view = LocalView.current
     val context = LocalContext.current
 
@@ -173,7 +186,12 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
 
         //left column
         Column(modifier = Modifier
-            .fillMaxWidth(0.3f)
+            .fillMaxWidth( if (options[selectedIndex] != NavigationMode.AUTOPILOT){
+                0.3f
+            } else {
+                0.2f
+            }
+            )
         ) {
             //Top Left close button
             Row(modifier = Modifier
@@ -204,35 +222,51 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(),
-                verticalArrangement = Arrangement.Top,
+                    .fillMaxHeight()
+                    .padding(bottom = 2.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if(isDisarmed.value == "Lock" || isDisarmed.value == "Drive")
-                {
-                    Text(color = OnPrimary, fontSize = 15.sp, text = stringResource(id = R.string.throttle))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    if(isDisarmed.value == NavigationMode.LOCK|| isDisarmed.value == NavigationMode.DRIVE)
+                    {
+                        Text(color = OnPrimary, fontSize = 15.sp, text = stringResource(id = R.string.throttle))
+                    }
+
+
+                    JoyStick( onHandleMoved = {
+                        trigger = if(isDisarmed.value == NavigationMode.LOCK){
+                            System.currentTimeMillis()
+                        }else{
+                            0
+                        }
+                    },
+                        viewModel = hiltViewModel(),
+                        nodeId = nodeId,
+                        isDisarmed
+                    )
                 }
 
-
-                JoyStick( onHandleMoved = {
-                    trigger = if(isDisarmed.value == "Lock"){
-                        System.currentTimeMillis()
-                    }else{
-                        0
-                    }
-                },
-                    viewModel = hiltViewModel(),
-                    nodeId = nodeId,
-                    isDisarmed
-                )
+                Text(color = OnPrimary, fontSize = 12.sp, text = "$firmwareVersion")
             }
         }
 
         //Mid Column
         Column(modifier = Modifier
-            .fillMaxWidth(0.5f)
+            .fillMaxWidth(if(options[selectedIndex] != NavigationMode.AUTOPILOT){
+                    0.5f
+                } else {
+                    0.75f
+                }
+            )
             .fillMaxHeight(),
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             //Custom Slider
@@ -241,10 +275,16 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
             }else{
                 10
             }
-            Box(modifier = Modifier
-                .width(500.dp)
+            Box(modifier = Modifier.
+            fillMaxHeight(
+                if(options[selectedIndex] == NavigationMode.AUTOPILOT){
+                    0.6f
+                } else {
+                    0f
+                }
+            )
             ) {
-                if(options[selectedIndex] == "Autopilot")
+                if(options[selectedIndex] == NavigationMode.AUTOPILOT)
                 {
                     ControllerSensorData(
                         viewModel = hiltViewModel(),
@@ -256,9 +296,14 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
             Column(
                 modifier = Modifier
                     .padding(16.dp)
+                    .fillMaxWidth(if (options[selectedIndex] != NavigationMode.AUTOPILOT){
+                        1f
+                    } else {
+                        0.5f
+                    })
                     .offset { IntOffset(shake.value.roundToInt(), y = 0) },
             ) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
@@ -269,7 +314,7 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             androidx.compose.material3.Text(
-                                text = option,
+                                text = option.name,
                                 fontSize = 12.sp,
                                 fontWeight = if (selectedIndex == index) FontWeight.Bold else FontWeight.Normal,
                                 color = if (selectedIndex == index) OnPrimary else Color(0xFF7A7A7A),
@@ -321,19 +366,24 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                                         selectedIndex = index
                                         isDisarmed.value = options[selectedIndex]
 
-                                        if (options[selectedIndex] == "Follow") {
+                                        if (options[selectedIndex] == NavigationMode.FOLLOW_ME) {
                                             viewModel.sendNavigationCommand(
-                                                BleDeviceDetailViewModel.Commands.FOLLOW_ME,
+                                                NavigationMode.FOLLOW_ME,
                                                 deviceId = nodeId
                                             )
-                                        } else if (options[selectedIndex] == "Autopilot") {
+                                        } else if (options[selectedIndex] == NavigationMode.AUTOPILOT) {
                                             viewModel.sendNavigationCommand(
-                                                BleDeviceDetailViewModel.Commands.FREE_NAVIGATION,
+                                                NavigationMode.AUTOPILOT,
                                                 deviceId = nodeId
                                             )
-                                        } else if (options[selectedIndex] == "Drive") {
+                                        } else if (options[selectedIndex] == NavigationMode.DRIVE) {
                                             viewModel.sendNavigationCommand(
-                                                BleDeviceDetailViewModel.Commands.REMOTE_CONTROL,
+                                                NavigationMode.AUTOPILOT,
+                                                deviceId = nodeId
+                                            )
+                                        } else if(options[selectedIndex] == NavigationMode.LOCK){
+                                            viewModel.sendNavigationCommand(
+                                                NavigationMode.LOCK,
                                                 deviceId = nodeId
                                             )
                                         }
@@ -422,14 +472,14 @@ fun Controller(viewModel: ControllerViewModel,nodeId : String,navController: Nav
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if(isDisarmed.value == "Lock" || isDisarmed.value == "Drive")
+                if(isDisarmed.value == NavigationMode.LOCK || isDisarmed.value == NavigationMode.DRIVE)
                 {
                     Text(color = OnPrimary, fontSize = 15.sp, text = stringResource(id = R.string.direction))
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 DirectionMotion(
                     onHandleMoved = {
-                        trigger = if (isDisarmed.value == "Lock") {
+                        trigger = if (isDisarmed.value == NavigationMode.LOCK) {
                             System.currentTimeMillis()
                         } else {
                             0

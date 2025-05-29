@@ -58,25 +58,25 @@ private fun MainScreen(){
                 modifier = Modifier.padding(innerPadding)) {
 
                 composable(
-                    route = "splash_screen"
+                    route = Route.SPLASH_SCREEN
                 ){
                     SplashScreen(navController = navController)
                 }
 
                 composable(
-                    route = "home"
+                    route = Route.HOME
                 ){
                     HomeScreenV2(navController = navController)
                 }
 
                 composable(
-                    route="device_list"
+                    route= Route.DEVICE_LIST
                 ){
                     BleDeviceListV2(viewModel = hiltViewModel(),navController = navController)
                 }
 
                 composable(
-                    route = "detail/{deviceId}",
+                    route = Route.DETAIL,
                     arguments = listOf(navArgument("deviceId"){type = NavType.StringType})
                 ){backStackEntry ->
                    backStackEntry.arguments?.getString("deviceId")?.let{deviceId ->
@@ -89,7 +89,7 @@ private fun MainScreen(){
                 }
 
                 composable(
-                    route = "feature/{deviceId}/debugConsole",
+                    route = Route.DEBUG_CONSOLE,
                     arguments = listOf(
                         navArgument("deviceId") { type = NavType.StringType }
                     )
@@ -104,7 +104,7 @@ private fun MainScreen(){
                 }
 
                 composable(
-                    route = "feature/{deviceId}/controller/{batteryPercentage}",
+                    route = Route.CONTROLLER,
                     arguments = listOf(
                         navArgument("deviceId") { type = NavType.StringType },
                         navArgument("batteryPercentage") { type = NavType.FloatType }
@@ -124,7 +124,7 @@ private fun MainScreen(){
                 }
 
                 composable(
-                    route = "feature/{deviceId}/plot",
+                    route = Route.PLOT,
                     arguments = listOf(
                         navArgument("deviceId") { type = NavType.StringType }
                     )
@@ -139,7 +139,7 @@ private fun MainScreen(){
                 }
 
                 composable(
-                    route = "feature/{deviceId}/fota",
+                    route = Route.FOTA,
                     arguments = listOf(
                         navArgument("deviceId") { type = NavType.StringType }
                     )
@@ -155,4 +155,15 @@ private fun MainScreen(){
             }
         }
     }
+}
+
+object Route {
+    const val SPLASH_SCREEN = "splash_screen"
+    const val HOME = "home"
+    const val DEVICE_LIST = "device_list"
+    const val DETAIL = "detail/{deviceId}"
+    const val DEBUG_CONSOLE = "feature/{deviceId}/debugConsole"
+    const val CONTROLLER = "feature/{deviceId}/controller/{batteryPercentage}"
+    const val PLOT = "feature/{deviceId}/plot"
+    const val FOTA = "feature/{deviceId}/fota"
 }

@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.st.blue_sdk.features.extended.robotics_movement.RoboticsMovement
+import com.st.blue_sdk.features.extended.robotics_movement.request.NavigationMode
 import com.st.robotics.ui.theme.OnPrimary
 import com.st.robotics.ui.theme.PrimaryColor
 import com.st.robotics.ui.theme.TertiaryColor
@@ -49,7 +50,8 @@ import kotlin.math.sin
 fun DirectionMotion(
     onHandleMoved: ()->Unit,
     viewModel: ControllerViewModel,
-    nodeId: String, isDisarmed: MutableState<String>
+    nodeId: String,
+    isDisarmed: MutableState<NavigationMode>
 ) {
     var angle by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
@@ -58,7 +60,11 @@ fun DirectionMotion(
     var lastCommandTimestamp = System.currentTimeMillis()
     val coroutineScope = rememberCoroutineScope()
 
-    val firmwareVersion = "1.1"
+    val firmwareVersion = viewModel.firmwareVersion.value
+    //Eg. 123.456.789
+    val versionPattern = Regex("""\d+\.\d+\.\d+""")
+
+    val FIRMWARE_VERSION = "STM32H725IGT6_STSW-ROBKIT1_1.1.0"
 
     // Rotating Circle
     val ringRadius = 73.dp.dpToPx() - 10.dp.dpToPx()
@@ -92,11 +98,11 @@ fun DirectionMotion(
     }
 
 
-    if(firmwareVersion == "1.1"){
+    if(versionPattern.find(firmwareVersion.toString())?.value == FIRMWARE_VERSION){
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .alpha(if(isDisarmed.value == "Drive") 1f else if(isDisarmed.value == "Lock") 0.6f else 0f)
+                .alpha(if(isDisarmed.value == NavigationMode.DRIVE) 1f else if(isDisarmed.value == NavigationMode.LOCK) 0.6f else 0f)
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragStart = { offset ->
@@ -133,7 +139,7 @@ fun DirectionMotion(
                                 //1/2 SECOND DELAY FOR ANGLE CHANGE
 //                                    delay(500)
                                 shouldSendCommand = true
-                                if (isDisarmed.value == "Drive") {
+                                if (isDisarmed.value == NavigationMode.DRIVE) {
                                     val currentTime = System.currentTimeMillis()
                                     val timeDifference = currentTime - lastCommandTimestamp
                                     val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
@@ -223,7 +229,7 @@ fun DirectionMotion(
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .alpha(if(isDisarmed.value == "Drive") 1f else if(isDisarmed.value == "Lock") 0.6f else 0f)
+                .alpha(if(isDisarmed.value == NavigationMode.DRIVE) 1f else if(isDisarmed.value == NavigationMode.LOCK) 0.6f else 0f)
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDragStart = { offset ->
@@ -255,7 +261,7 @@ fun DirectionMotion(
                                     //1/2 SECOND DELAY FOR ANGLE CHANGE
                                     delay(500)
                                     shouldSendCommand = true
-                                    if (isDisarmed.value == "Drive" && shouldSendCommand) {
+                                    if (isDisarmed.value == NavigationMode.DRIVE && shouldSendCommand) {
                                         val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
                                         if (angleInteger != lastSentAngle) {
                                             if (angleInteger in 1..180) {

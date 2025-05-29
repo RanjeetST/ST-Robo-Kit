@@ -32,6 +32,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.st.blue_sdk.features.extended.robotics_movement.RoboticsMovement
+import com.st.blue_sdk.features.extended.robotics_movement.request.NavigationMode
 import com.st.robotics.ui.theme.OnPrimary
 import com.st.robotics.ui.theme.PrimaryColor
 import com.st.robotics.ui.theme.TertiaryColor
@@ -43,8 +44,10 @@ fun JoyStick(
     onHandleMoved: ()-> Unit,
     viewModel: ControllerViewModel,
     nodeId: String,
-    isDisarmed: MutableState<String>
+    isDisarmed: MutableState<NavigationMode>,
 ) {
+
+
 
     val gradientBrush =  TertiaryColor.copy(alpha = 0.8f).let {
         Color(
@@ -63,25 +66,29 @@ fun JoyStick(
     var lastCommandTimestamp = System.currentTimeMillis()
 
     // TODO : Receive firmware version
-    val firmwareVersion = "1.1"
+//    val firmwareVersion = "1.1"
+    val firmwareVersion = viewModel.firmwareVersion.value
 
+    //Eg. 123.456.789
+    val versionPattern = Regex("""\d+\.\d+\.\d+""")
 
+    val FIRMWARE_VERSION = "STM32H725IGT6_STSW-ROBKIT1_1.1.0"
     Box(
         modifier = Modifier
             .padding(6.dp)
             .clip(CircleShape)
-            .alpha(if(isDisarmed.value == "Drive") 1f else if(isDisarmed.value == "Lock") 0.6f else 0f)
+            .alpha(if(isDisarmed.value == NavigationMode.DRIVE) 1f else if(isDisarmed.value == NavigationMode.LOCK) 0.6f else 0f)
         ,
         contentAlignment = Alignment.Center
     ) {
-        if (firmwareVersion == "1.1") {
+        if (versionPattern.find(firmwareVersion.toString())?.value == FIRMWARE_VERSION) {
             Canvas(
                 modifier = Modifier
                     .size(150.dp)
                     .pointerInput(Unit) {
                         detectDragGestures(
                             onDragEnd = {
-                                if (isDisarmed.value == "Drive") {
+                                if (isDisarmed.value == NavigationMode.DRIVE) {
                                     viewModel.sendCommand2(
                                         featureName = RoboticsMovement.NAME,
                                         nodeId,
@@ -99,7 +106,7 @@ fun JoyStick(
                                 y = (handlePosition.y + dragAmount.y).coerceIn(-120f, 120f)
                             )
 
-                            if (isDisarmed.value == "Drive") {
+                            if (isDisarmed.value == NavigationMode.DRIVE) {
                                 val currentTime = System.currentTimeMillis()
                                 val timeDifference = currentTime - lastCommandTimestamp
                                 val offsetDifference = (handlePosition.y - lastOffsetSent).toInt()
@@ -208,7 +215,7 @@ fun JoyStick(
                     .pointerInput(Unit) {
                         detectDragGestures(
                             onDragEnd = {
-                                if (isDisarmed.value == "Drive") {
+                                if (isDisarmed.value == NavigationMode.DRIVE) {
                                     viewModel.sendCommand(
                                         featureName = RoboticsMovement.NAME,
                                         nodeId,
@@ -227,7 +234,7 @@ fun JoyStick(
                                 y = (handlePosition.y + dragAmount.y).coerceIn(-120f, 120f)
                             )
 
-                            if (isDisarmed.value == "Drive") {
+                            if (isDisarmed.value == NavigationMode.DRIVE) {
                                 val offsetDifference = (handlePosition.y - lastOffsetSent).toInt()
                                 if (offsetDifference >= 40 || offsetDifference <= -40 || handlePosition.y == 0f) {
                                     when {
