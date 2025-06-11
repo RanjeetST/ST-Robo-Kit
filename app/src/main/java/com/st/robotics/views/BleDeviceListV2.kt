@@ -1,11 +1,14 @@
 package com.st.robotics.views
 
+import MessageDialog
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
+import android.os.Looper
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,6 +31,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -39,6 +43,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -68,7 +73,12 @@ import com.st.robotics.ui.theme.PrimaryColor
 import com.st.robotics.viewModels.BleDeviceListViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.st.blue_sdk.models.Boards
 import com.st.blue_sdk.models.NodeState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterialApi::class)
 @SuppressLint("MissingPermission")
@@ -77,6 +87,7 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
 
     var doNotShowRationale by rememberSaveable { mutableStateOf(false) }
     val connectionState by viewModel.connectionState.collectAsState()
+    val pendingNavigationAddress by viewModel.pendingNavigationAddress.collectAsState()
     var hasNavigated by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -85,6 +96,13 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
     var bluetoothAdapter by remember { mutableStateOf<BluetoothAdapter?>(null) }
 
     val painter = painterResource(id = R.drawable.new_car)
+    var isFiltered by remember { mutableStateOf(true) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.cancelQrScan()
+        }
+    }
 
     LaunchedEffect(Unit) {
         bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -96,6 +114,9 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
             viewModel.onRefresh()
         }
     })
+
+    val dialogMessage by viewModel.dialogMessage.collectAsState()
+
 
     val isScanning by viewModel.isLoading.collectAsStateWithLifecycle()
 
@@ -121,6 +142,7 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
         }
     )
 
+
     if (permissionsState.allPermissionsGranted) {
         //TO PROMPT THE USER TO ENABLE LOCATION AND BLUETOOTH
         locationChecker()
@@ -139,44 +161,92 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
                 .fillMaxSize()
                 .background(Color(0xFFF7F8FA))
         ) {
-            TopAppBar(
-                title = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentSize(align = Alignment.Center)
+            if (dialogMessage != null) {
+                MessageDialog(
+                    message = dialogMessage!!,
+                    onDismiss = { viewModel.dismissDialog() }
+                )
+            }
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp), // Standard TopAppBar height
+                color = OnPrimary,
+                elevation = 4.dp
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    // Back button - positioned at start
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.align(Alignment.CenterStart)
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            androidx.compose.material.IconButton(onClick = { navController.popBackStack() }) {
-                                androidx.compose.material.Icon(
-                                    Icons.Filled.ArrowBack,
-                                    contentDescription = "Back",
-                                    tint = PrimaryColor
-                                )
-                            }
-//                            Spacer(modifier = Modifier.weight(1f))
+                        Icon(
+                            Icons.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = PrimaryColor
+                        )
+                    }
 
-                            androidx.compose.material.Text(stringResource(id = R.string.pair_your_robot))
+                    // Title - perfectly centered on screen
+                    androidx.compose.material.Text(
+                        text = stringResource(id = R.string.pair_your_robot),
+                        modifier = Modifier.align(Alignment.Center),
+                        color = PrimaryColor,
+                        style = MaterialTheme.typography.h6
 
-                            IconButton(onClick = { navController.navigate("/") }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_qr_code),
-                                    contentDescription = "Profile",
-                                    tint = PrimaryColor
-                                )
-                            }
+                    )
+
+                    // Action buttons - positioned at end
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    ) {
+                        IconButton(onClick = {
+                            viewModel.scanQrCode(
+                                onNodeFound = { address ->
+                                    // Launch a coroutine to handle the delay
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        val isMainThread = Looper.myLooper() == Looper.getMainLooper()
+                                        Log.d("BleDeviceListV2", " [MainThread: $isMainThread] [Thread: ${Thread.currentThread().name}]")
+
+                                        // To ensure live variables are available
+                                        delay(100)
+
+                                        // Update the connected device address and connect
+                                        connectedDeviceAddress = address
+                                        viewModel.connect(address.toString())
+                                    }
+                                },
+                            )
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.qr_code_scanner_24px),
+                                contentDescription = "Scan QR Code",
+                                tint = PrimaryColor
+                            )
+                        }
+
+                        IconButton(onClick = {
+                            isFiltered = !isFiltered
+                            //viewModel.startScan(filter = isFiltered)
+                        }) {
+                            Icon(
+                                painter = painterResource(
+                                    id = if (isFiltered) {
+                                        R.drawable.filter_list_24px // Original icon
+                                    } else {
+                                        R.drawable.filter_list_off_24px // Alternative icon
+                                    }
+                                ),
+                                contentDescription = "Toggle Filter",
+                                tint = PrimaryColor
+                            )
                         }
                     }
-                },
-                backgroundColor = OnPrimary,
-                contentColor = PrimaryColor
-            )
-
+                }
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -223,7 +293,17 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
 
 
 
-                    itemsIndexed(items = bleDevices.value) { _, item ->
+                    itemsIndexed(items =
+                        if(isFiltered){
+                            bleDevices.value.filter { node ->
+                                node.boardType == Boards.Model.STEVALROBKIT
+                            }
+                        }else{
+                            bleDevices.value
+                        }
+
+
+                    ) { _, item ->
                         Box(
                             modifier = Modifier
                                 .padding(4.dp)
@@ -326,8 +406,9 @@ fun BleDeviceListV2(viewModel: BleDeviceListViewModel, navController: NavControl
                     }
                 }
                 LaunchedEffect(connectionState) {
-                    if (connectionState == NodeState.Connected && !hasNavigated) {
+                    if (connectionState == NodeState.Ready && !hasNavigated) {
                         hasNavigated = true
+                        viewModel.cancelQrScan()
                         connectedDeviceAddress?.let {
                             navController.navigate("detail/$it")
                         }

@@ -1,6 +1,7 @@
 package com.st.robotics
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -31,15 +32,50 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    val TAG = "MainActivity"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         copyPdfFromAssets(this, "um.pdf")
         enableEdgeToEdge()
         SessionManager.setSplashShown(false)
+
         setContent {
             MainScreen()
         }
+
+
     }
+
+//    override fun onStart() {
+//        super.onStart()
+//        Log.d(TAG, "onStart called")
+//    }
+//
+//    override fun onResume() {
+//        super.onResume()
+//        Log.d(TAG, "onResume called")
+//    }
+//
+//    override fun onPause() {
+//        super.onPause()
+//        Log.d(TAG, "onPause called")
+//    }
+//
+//    override fun onStop() {
+//        super.onStop()
+//        Log.d(TAG, "onStop called")
+//    }
+//
+//    override fun onRestart() {
+//        super.onRestart()
+//        Log.d(TAG, "onRestart called")
+//    }
+//
+//    override fun onDestroy() {
+//        super.onDestroy()
+//        Log.d(TAG, "onDestroy called")
+//    }
 }
 
 @Composable
@@ -106,20 +142,15 @@ private fun MainScreen(){
                 composable(
                     route = Route.CONTROLLER,
                     arguments = listOf(
-                        navArgument("deviceId") { type = NavType.StringType },
-                        navArgument("batteryPercentage") { type = NavType.FloatType }
+                        navArgument("deviceId") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
                     backStackEntry.arguments?.getString("deviceId")?.let { deviceId ->
-                        backStackEntry.arguments?.getFloat("batteryPercentage")
-                            ?.let { batteryPercentage ->
-                                Controller(
-                                    viewModel = hiltViewModel(),
-                                    nodeId = deviceId,
-                                    navController = navController,
-                                    batteryVoltage = batteryPercentage
-                                )
-                            }
+                        Controller(
+                            viewModel = hiltViewModel(),
+                            nodeId = deviceId,
+                            navController = navController,
+                        )
                     }
                 }
 
@@ -163,7 +194,7 @@ object Route {
     const val DEVICE_LIST = "device_list"
     const val DETAIL = "detail/{deviceId}"
     const val DEBUG_CONSOLE = "feature/{deviceId}/debugConsole"
-    const val CONTROLLER = "feature/{deviceId}/controller/{batteryPercentage}"
+    const val CONTROLLER = "feature/{deviceId}/controller"
     const val PLOT = "feature/{deviceId}/plot"
     const val FOTA = "feature/{deviceId}/fota"
 }

@@ -86,7 +86,7 @@ fun ControllerSensorData(
     var xValue by remember { mutableFloatStateOf(0f) }
     var xAxisMinValue by remember { mutableFloatStateOf(0f) }
     val visibleRange = 50f
-    val MIN_NUMBER_OF_STEPS = 1
+    val MIN_NUMBER_OF_STEPS = 2
 
     val xAxisData = AxisData.Builder()
         .steps(10)
@@ -148,7 +148,7 @@ fun ControllerSensorData(
     }
 
     val yAxisData1 = AxisData.Builder()
-        .steps(maxOf(ceil((yMaxValue1 - yMinValue1) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
+        .steps(minOf(ceil((yMaxValue1 - yMinValue1) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
         .labelData { index ->
             val range = yMaxValue1 - yMinValue1
             val numberOfSteps = minOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
@@ -162,7 +162,7 @@ fun ControllerSensorData(
         .build()
 
     val yAxisData2 = AxisData.Builder()
-        .steps(maxOf(ceil((yMaxValue2 - yMinValue2) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
+        .steps(minOf(ceil((yMaxValue2 - yMinValue2) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
         .labelData { index ->
             val range = yMaxValue2 - yMinValue2
             val numberOfSteps = minOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
@@ -176,7 +176,7 @@ fun ControllerSensorData(
         .build()
 
     val yAxisData3 = AxisData.Builder()
-        .steps(maxOf(ceil((yMaxValue3 - yMinValue3) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
+        .steps(minOf(ceil((yMaxValue3 - yMinValue3) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
         .labelData { index ->
             val range = yMaxValue3 - yMinValue3
             val numberOfSteps = minOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
@@ -220,7 +220,9 @@ fun ControllerSensorData(
             }
         ),
         backgroundColor = PrimaryColor,
-        isZoomAllowed = false
+        isZoomAllowed = false,
+        paddingRight = 0.dp,
+        containerPaddingEnd = 0.dp
     )
 
     val lineChartData2 = LineChartData(
@@ -239,6 +241,7 @@ fun ControllerSensorData(
                     lineStyle = LineStyle(color = Color.Transparent, width = 1f, lineType = LineType.Straight())
                 )
             ),
+
         ),
         xAxisData = xAxisData,
         yAxisData = yAxisData2,
@@ -253,7 +256,9 @@ fun ControllerSensorData(
             }
         ),
         backgroundColor = PrimaryColor,
-        isZoomAllowed = false
+        isZoomAllowed = false,
+        paddingRight = 0.dp,
+        containerPaddingEnd = 0.dp
     )
 
     val lineChartData3 = LineChartData(
@@ -286,7 +291,10 @@ fun ControllerSensorData(
             }
         ),
         backgroundColor = PrimaryColor,
-        isZoomAllowed = false
+        isZoomAllowed = false,
+        paddingRight = 0.dp,
+        containerPaddingEnd = 0.dp
+
     )
 
     val featureName = listOf(Acceleration.NAME,Gyroscope.NAME, Magnetometer.NAME)
@@ -363,6 +371,7 @@ fun ControllerSensorData(
                                         isDropDownExpanded.value = false
                                         itemPosition.value = index
                                         selectedFeature.value = sensorName
+                                        isStart = true
                                     })
                             }
                         }
@@ -437,7 +446,7 @@ fun ControllerSensorData(
 
                         LineChart(
                             modifier = Modifier
-                                .background(OnPrimary)
+                                .background(PrimaryColor)
                                 .fillMaxWidth()
                                 .fillMaxHeight(),
                             lineChartData = lineChartData1
@@ -453,7 +462,7 @@ fun ControllerSensorData(
 
                         LineChart(
                             modifier = Modifier
-                                .background(OnPrimary)
+                                .background(PrimaryColor)
                                 .fillMaxWidth()
                                 .fillMaxHeight(),
                             lineChartData = lineChartData2
@@ -469,10 +478,9 @@ fun ControllerSensorData(
                         .background(Color.White),
                         verticalAlignment = Alignment.CenterVertically,) {
 
-
                         LineChart(
                             modifier = Modifier
-                                .background(OnPrimary)
+                                .background(PrimaryColor)
                                 .fillMaxWidth(),
                             lineChartData = lineChartData3
                         )

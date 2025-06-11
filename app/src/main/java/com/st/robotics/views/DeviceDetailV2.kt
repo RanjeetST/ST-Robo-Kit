@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import com.st.blue_sdk.features.extended.ext_configuration.ExtConfiguration
 import com.st.blue_sdk.models.NodeState
 import com.st.robotics.R
 import com.st.robotics.composables.FeatureBox
@@ -78,8 +79,6 @@ fun DeviceDetailV2(
     deviceId: String
 ){
 
-    ChangeOrientationToPortrait(context = LocalContext.current)
-
     val bleDevice = viewModel.bleDevice(deviceId = deviceId).collectAsState(initial = null)
     val features = viewModel.features.collectAsState()
 
@@ -96,9 +95,16 @@ fun DeviceDetailV2(
     val bluetoothManager = remember { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
     val bluetoothAdapter = remember { bluetoothManager.adapter }
 
-    if(bleDevice.value?.connectionStatus?.current == NodeState.Ready && !isFeaturesFetched && bluetoothAdapter.isEnabled){
-        viewModel.getFeatures(deviceId = deviceId)
-        isFeaturesFetched = true
+    LaunchedEffect(bleDevice.value?.connectionStatus?.current, bluetoothAdapter.isEnabled) {
+        val device = bleDevice.value
+        if (device?.connectionStatus?.current == NodeState.Ready &&
+            bluetoothAdapter.isEnabled &&
+            !isFeaturesFetched
+        ) {
+            viewModel.getFeatures(deviceId = deviceId)
+            //viewModel.getFwVersion(nodeId = deviceId, featureName = ExtConfiguration.NAME)
+            isFeaturesFetched = true
+        }
     }
 
     val backHandlingEnabled by remember { mutableStateOf(true) }
@@ -110,9 +116,13 @@ fun DeviceDetailV2(
         navController.popBackStack()
     }
 
+    LaunchedEffect(Unit) {
+        ChangeOrientationToPortrait(context = context)
+    }
+
     DisposableEffect(Unit) {
         onDispose {
-            viewModel.disableFeatures(deviceId = deviceId)
+            //viewModel.disableFeatures(deviceId = deviceId)
         }
     }
 
@@ -225,7 +235,7 @@ fun DeviceDetailV2(
                                     Icon(painterResource(id = R.drawable.battery), contentDescription = "BatterLow", tint = ErrorColor)
                                 }
                             }else{
-                                Icon(painterResource(id = R.drawable.battery), contentDescription = "BateeryNotFound", tint = SecondaryColor)
+                                Icon(Icons.Filled.Battery4Bar, contentDescription = "batteryGood", tint = SuccessColor)
                             }
                         }
                         Spacer(modifier = Modifier.width(1.dp))
@@ -239,7 +249,7 @@ fun DeviceDetailV2(
                                 Text(text = stringResource(id = R.string.low),color = PrimaryColor, fontSize = 10.sp)
                             }
                         }else{
-                            Text(text = stringResource(id = R.string.na),color = PrimaryColor, fontSize = 10.sp)
+                            Text(text = stringResource(id = R.string.average),color = PrimaryColor, fontSize = 10.sp)
                         }
 
                     }
@@ -261,7 +271,7 @@ fun DeviceDetailV2(
                     Surface(modifier = Modifier
                         .clickable {
                             val batteryValue = batteryVoltage ?: -1
-                            navController.navigate("feature/${deviceId}/controller/${batteryValue}")
+                            navController.navigate("feature/${deviceId}/controller")
                         }
                         .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
                         .fillMaxWidth(0.8f),
@@ -314,7 +324,7 @@ fun DeviceDetailV2(
                                             when (item) {
                                                 "Controller" -> {
                                                     val batteryValue = batteryVoltage ?: -1
-                                                    navController.navigate("feature/${deviceId}/controller/${batteryValue}")
+                                                    navController.navigate("feature/${deviceId}/controller")
                                                 }
 
                                                 "Monitor" -> {
@@ -400,7 +410,7 @@ fun DeviceDetailV2(
                         .clickable {
                             showDialog.value = false
                             val batteryValue = batteryVoltage ?: -1
-                            navController.navigate("feature/${deviceId}/controller/${batteryValue}")
+                            navController.navigate("feature/${deviceId}/controller")
                         }
                         .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
                         .fillMaxWidth(0.8f),

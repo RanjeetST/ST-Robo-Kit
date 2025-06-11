@@ -6,6 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.st.blue_sdk.BlueManager
+import com.st.blue_sdk.features.Feature
+import com.st.blue_sdk.features.battery.Battery
+import com.st.blue_sdk.features.battery.BatteryInfo
 import com.st.blue_sdk.features.extended.ext_configuration.ExtConfiguration
 import com.st.blue_sdk.features.extended.ext_configuration.ExtendedFeatureResponse
 import com.st.blue_sdk.features.extended.ext_configuration.request.ExtConfigCommands
@@ -23,6 +26,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -37,15 +41,21 @@ class ControllerViewModel @Inject constructor(
         private val TAG = ControllerViewModel::class.simpleName
     }
 
+    private var batteryFeature : Feature<*> ? = null
+
     private var lastAction = 'S'
     private var lastSpeed = 0
     private var lastAngle = 0
 
     private var rssiJob: Job? = null
+    private var featureJob: Job? = null
+
+    private val _batteryData = MutableSharedFlow<BatteryInfo>()
+    val batteryData: Flow<BatteryInfo>
+        get() = _batteryData
 
     val firmwareVersion: State<String?>
         get() = _firmwareVersion
-
     private val _firmwareVersion = mutableStateOf<String?>(null)
 
     val writeAction : List<RoboticsActionBits> = listOf(RoboticsActionBits.WRITE)
@@ -60,6 +70,32 @@ class ControllerViewModel @Inject constructor(
 
     //EXTRACT RSSI VALUE
     fun getRssi(deviceId: String) {
+
+        if(batteryFeature == null){
+            blueManager.nodeFeatures(nodeId = deviceId).find{
+                Battery.NAME == it.name
+            }?.let { f ->
+                batteryFeature = f
+            }
+        }
+
+        batteryFeature?.let{
+
+            featureJob = viewModelScope.launch{
+                if(batteryFeature != null){
+                    blueManager.enableFeatures(
+                        nodeId = deviceId,
+                        features = listOf(it)
+                    )
+                }
+                blueManager.getFeatureUpdates(nodeId = deviceId, listOf(it)).collect {
+                    val data = it.data
+                    if (data is BatteryInfo) {
+                        _batteryData.emit(data)
+                    }
+                }
+            }
+        }
 
         rssiJob = viewModelScope.launch {
             try {
@@ -88,20 +124,28 @@ class ControllerViewModel @Inject constructor(
                 features = features
             )
             if(feature is ExtConfiguration){
-                val command = ExtendedFeatureCommand(feature,ExtConfigCommands.buildConfigCommand(ExtConfigCommands.READ_VERSION_FW))
-                val response = blueManager.writeFeatureCommand(
-                    responseTimeout = 1250L,
-                    nodeId = nodeId,
-                    featureCommand = command
-                )
+                var MAX_TRY = 3
 
-                if(response is ExtendedFeatureResponse){
+                while (_firmwareVersion.value == null && MAX_TRY > 0){
+                    val command = ExtendedFeatureCommand(feature,ExtConfigCommands.buildConfigCommand(ExtConfigCommands.READ_VERSION_FW))
+                    val response = blueManager.writeFeatureCommand(
+                        responseTimeout = 1250L,
+                        nodeId = nodeId,
+                        featureCommand = command
+                    )
 
-                    Log.d("Extended","Firmware version = ${response.response.versionFw}")
-                    _firmwareVersion.value = response.response.versionFw
-                }else{
-                    Log.d("Extended","Firmware version : $response")
+                    if(response is ExtendedFeatureResponse){
+
+                        Log.d("Extended","Firmware version = ${response.response.versionFw}")
+                        _firmwareVersion.value = response.response.versionFw
+                    }else{
+                        Log.d("Extended","Firmware version : $response")
+                    }
+
+                    MAX_TRY -= 1
+                    delay(100)
                 }
+
             }
         }
     }
@@ -254,6 +298,7 @@ class ControllerViewModel @Inject constructor(
 
     //TO SET THE NAVIGATION MODE OF THE CONNECTED NODE
     fun sendNavigationCommand(command : NavigationMode, deviceId : String){
+
         val armed = if(command == NavigationMode.LOCK){
             0u
         }else{
@@ -264,7 +309,7 @@ class ControllerViewModel @Inject constructor(
 
             if(feature is RoboticsMovement){
 
-
+                Log.d("lock22","Sent stop command")
                 blueManager.writeFeatureCommand(
                     nodeId = deviceId,
                     featureCommand = SetNavigationMode(

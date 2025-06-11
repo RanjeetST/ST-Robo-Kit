@@ -4,6 +4,7 @@ package com.st.robotics.utilities
 object SessionManager {
     private var splashShown: Boolean = false
 
+
     fun isSplashShown(): Boolean {
         return splashShown
     }
@@ -11,4 +12,6 @@ object SessionManager {
     fun setSplashShown(value: Boolean) {
         splashShown = value
     }
+
+
 }

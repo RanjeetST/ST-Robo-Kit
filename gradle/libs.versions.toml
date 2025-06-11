@@ -31,7 +31,7 @@ sceneview = "2.2.1"
 stBlueSdk = "1.2.0"
 ycharts = "2.1.0"
 junitJunit = "4.12"
-googleGms = "4.4.2"
+playServicesCodeScanner = "16.1.0"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -82,8 +82,8 @@ ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 ycharts = { module = "co.yml:ycharts", version.ref = "ycharts" }
 junit-junit = { group = "junit", name = "junit", version.ref = "junitJunit" }
+play-services-code-scanner = { group = "com.google.android.gms", name = "play-services-code-scanner", version.ref = "playServicesCodeScanner" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-googleGms = { id = "com.google.gms.google-services", version.ref = "googleGms" }

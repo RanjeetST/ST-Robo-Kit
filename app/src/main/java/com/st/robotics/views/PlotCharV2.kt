@@ -396,7 +396,7 @@ fun PlotChartV2(
                                     Text(text = sensorName, modifier = Modifier.padding(10.dp),color = OnPrimary,fontSize = 12.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                                 }
                             }
-                            if(selectedFeature.value == sensorName){
+                            if(selectedFeature.value == sensorName && selectedFeature.value != SceneDescription.NAME){
                                 IconButton(onClick = { isStart = !isStart }) {
                                     if(!isStart){
                                         Icon(

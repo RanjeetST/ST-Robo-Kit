@@ -1,5 +1,6 @@
 package com.st.robotics.composables
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -46,9 +47,6 @@ fun JoyStick(
     nodeId: String,
     isDisarmed: MutableState<NavigationMode>,
 ) {
-
-
-
     val gradientBrush =  TertiaryColor.copy(alpha = 0.8f).let {
         Color(
             red = (it.red * 0.8f),
@@ -81,7 +79,8 @@ fun JoyStick(
         ,
         contentAlignment = Alignment.Center
     ) {
-        if (versionPattern.find(firmwareVersion.toString())?.value == FIRMWARE_VERSION) {
+
+        if(versionPattern.find(firmwareVersion.toString())?.value == versionPattern.find(FIRMWARE_VERSION.toString())?.value){
             Canvas(
                 modifier = Modifier
                     .size(150.dp)

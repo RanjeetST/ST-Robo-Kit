@@ -1,5 +1,7 @@
 package com.st.robotics.viewModels
 
+import android.net.Uri
+import android.os.Looper
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +14,7 @@ import com.st.blue_sdk.models.Boards
 import com.st.blue_sdk.models.Node
 import com.st.blue_sdk.models.NodeState
 import com.st.robotics.models.QrCode
+import com.st.robotics.utilities.QrCodeService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -25,21 +28,20 @@ import kotlin.collections.contains
 
 @HiltViewModel
 class BleDeviceListViewModel @Inject constructor(
-    private val blueManager: BlueManager
+    private val blueManager: BlueManager,
+    private val qrCodeService: QrCodeService
 ) : ViewModel() {
     companion object {
         private val TAG = BleDeviceDetailViewModel::class.simpleName
         private const val MAX_RETRY_CONNECTION = 3
         val ROBOTICS_SUPPORTED_BOARDS = listOf(
-            Boards.Model.STEVALROBKIT,
-            Boards.Model.SENSOR_TILE_BOX_PRO,
-            Boards.Model.SENSOR_TILE_BOX,
-//            Boards.Model.GENERIC
+            Boards.Model.STEVALROBKIT
         )
     }
 
     val scanBleDevices = MutableStateFlow<List<Node>>(emptyList())
     val isLoading = MutableStateFlow(false)
+    private var filter: Boolean = false
 
     private var scanPeripheralJob: Job? = null
 
@@ -49,19 +51,35 @@ class BleDeviceListViewModel @Inject constructor(
     private val _connectionState = MutableStateFlow(NodeState.Disconnected)
     val connectionState: StateFlow<NodeState> = _connectionState.asStateFlow()
 
+    private val _pendingNavigationAddress = MutableStateFlow<String?>(null)
+    val pendingNavigationAddress: StateFlow<String?> = _pendingNavigationAddress.asStateFlow()
+
     private var connectionJob: Job? = null
+    private var qrScanJob: Job? = null
+
+    private val _dialogMessage = MutableStateFlow<String?>(null)
+    val dialogMessage: StateFlow<String?> = _dialogMessage.asStateFlow()
+
+    fun showDialog(message: String) {
+        _dialogMessage.value = message
+    }
+
+    fun dismissDialog() {
+        _dialogMessage.value = null
+    }
 
     //HANDLES RESCAN ON REFRESH PULL DOWN
     fun onRefresh() {
         viewModelScope.launch {
             isRefreshing = true
-            startScan()
+            startScan(filter = filter)
             isRefreshing = false
         }
     }
 
     //FUNCTION TO START SCANNING
-    fun startScan() {
+    fun startScan(filter : Boolean = this.filter) {
+        this.filter = filter
 //        connectionJob?.cancel()
         scanPeripheralJob?.cancel()
         scanPeripheralJob = viewModelScope.launch {
@@ -73,91 +91,80 @@ class BleDeviceListViewModel @Inject constructor(
                 val filteredNodes = nodes.filter { node ->
                     ROBOTICS_SUPPORTED_BOARDS.contains(node.boardType)
                 }
-                nodes.map { node ->
-                    Log.d("Board",node.boardType.toString())
-                    Log.d("Board",node.advertiseInfo?.getAddress().toString())
+//                nodes.map { node ->
+//                    Log.d("Board",node.boardType.toString())
+//                    Log.d("Board",node.advertiseInfo?.getAddress().toString())
+//                }
+                if(filter){
+                    scanBleDevices.tryEmit(value = filteredNodes)
+                }else{
+                    scanBleDevices.tryEmit(value = nodes)
                 }
-                scanBleDevices.tryEmit(value = filteredNodes)
+
             }
         }
     }
 
-    fun scanQrCode(){
-        viewModelScope.launch {
+    fun scanQrCode(onNodeFound: (String?) -> Unit) {
+        qrScanJob?.cancel()
 
+        qrScanJob = viewModelScope.launch {
             val value = decodeQrCode(qrCodeService.scan())
+            val uri: Uri = Uri.parse(value)
+
+            val address = uri.getQueryParameter("address")
+                ?: uri.getQueryParameter("mac")
+                ?: uri.getQueryParameter("url")
+
+            if (address != null) {
+                // Get current list of nodes instead of collecting continuously
+                val currentNodes = scanBleDevices.value
+                val matchingNode = currentNodes.find { node -> node.device.address == address }
+
+                if (matchingNode != null) {
+                    onNodeFound(address)
+                    Log.d(TAG, "Node found via QR code. Address: $address")
+                } else {
+                    showDialog("No matching node found for address: $address")
+                }
+            } else {
+                showDialog("Invalid QR code: Address not found")
+            }
         }
     }
 
-    private suspend fun decodeQrCode(qrCode : String?) : QrCode{
-        if (qrCode == null) return QrCode.InvalidQrCode
+    fun cancelQrScan() {
+        qrScanJob?.cancel()
+        qrScanJob = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        scanPeripheralJob?.cancel()
+        connectionJob?.cancel()
+        qrScanJob?.cancel()
+    }
+
+    fun clearPendingNavigation() {
+        _pendingNavigationAddress.value = null
+    }
+
+    private suspend fun decodeQrCode(qrCode : String?) : String{
+        if (qrCode == null) return ""
 
         Log.e(TAG, "qrCode = $qrCode")
 
-        val data: Uri? = Uri.parse(qrCode)
-
-        if (data != null) {
-            val queryParamToken = data.getQueryParameter(TOKEN_DEEPLINK_KEY)
-            val queryParamProject = data.getQueryParameter(PROJECT_NAME_DEEPLINK_KEY)
-            val queryParamModel = data.getQueryParameter(MODEL_DEEPLINK_KEY)
-
-            if (queryParamProject != null && queryParamModel != null && queryParamToken == null) {
-                Log.d(TAG, "Project: $queryParamProject")
-                Log.d(TAG, "Model: $queryParamModel")
-
-                return QrCode.TemplateQrCode(
-                    project = queryParamProject,
-                    model = queryParamModel
-                )
-            }
-
-            if (queryParamToken != null) {
-                Log.d(TAG, "Token: $queryParamToken")
-
-                val signedRefResponse = loginService.getSignedRef(
-                    shortToken = queryParamToken
-                )
-
-                if (signedRefResponse.isFailure) {
-                    return QrCode.ExpiredQrCode
-                } else {
-                    val signedRef = signedRefResponse.getOrNull()
-
-                    if (signedRef != null) {
-                        val project = signedRef.projectId
-                        val model = signedRef.modelId
-                        val accessToken = signedRef.accessToken
-                        val idToken = signedRef.idToken
-
-                        return if (project != null && model != null) {
-                            QrCode.ProjectQrCode(
-                                project = project,
-                                model = model,
-                                accessToken = accessToken,
-                                idToken = idToken
-                            )
-                        } else {
-                            QrCode.LoginQrCode(
-                                accessToken = accessToken,
-                                idToken = idToken
-                            )
-                        }
-                    } else {
-                        return QrCode.ExpiredQrCode
-                    }
-                }
-            }
-        }
-
-        return QrCode.InvalidQrCode
+        return qrCode
     }
 
     //TO CONNECT WITH THE NODE
     fun connect(deviceId: String, maxConnectionRetries: Int = MAX_RETRY_CONNECTION,onNodeReady: (()-> Unit)? = null) {
         connectionJob?.cancel()
         connectionJob = viewModelScope.launch {
+            val isMainThread = Looper.myLooper() == Looper.getMainLooper()
+            Log.d("BleDeviceListV2", " [MainThread: $isMainThread] [Thread: ${Thread.currentThread().name}]")
             var retryCount = 0
-            var callback = onNodeReady
+            //var callback = onNodeReady
             connectionJob?.cancel()
             blueManager.connectToNode(deviceId).collect {
 
@@ -178,10 +185,10 @@ class BleDeviceListViewModel @Inject constructor(
                 }
 
                 if (currentNodeState == NodeState.Ready) {
-
-                    delay(500)
-                    callback?.invoke()
-                    callback = null
+                    Log.d(TAG, "Node is ready. Connection state: $currentNodeState")
+                    //delay(500)
+                    //callback?.invoke()
+                    //callback = null
                 }
             }
         }

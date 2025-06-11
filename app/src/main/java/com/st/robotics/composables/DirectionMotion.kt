@@ -98,7 +98,7 @@ fun DirectionMotion(
     }
 
 
-    if(versionPattern.find(firmwareVersion.toString())?.value == FIRMWARE_VERSION){
+    if(versionPattern.find(firmwareVersion.toString())?.value == versionPattern.find(FIRMWARE_VERSION.toString())?.value){
         Box(
             modifier = Modifier
                 .clip(CircleShape)
@@ -216,14 +216,14 @@ fun DirectionMotion(
                     .background(buttonColor, CircleShape)
             )
 
-            // Degree Text
-            Text(
-                text = "${((angle/10).roundToInt()*10.toDouble()).toInt()}°",
-                fontWeight = FontWeight.Normal,
-                fontSize = 20.sp,
-                color = Color.LightGray,
-                modifier = Modifier.align(Alignment.Center)
-            )
+            // Degree Text - hidden for now
+//            Text(
+//                text = "${((angle/10).roundToInt()*10.toDouble()).toInt()}°",
+//                fontWeight = FontWeight.Normal,
+//                fontSize = 20.sp,
+//                color = Color.Transparent,
+//                modifier = Modifier.align(Alignment.Center)
+//            )
         }
     }else{
         Box(
