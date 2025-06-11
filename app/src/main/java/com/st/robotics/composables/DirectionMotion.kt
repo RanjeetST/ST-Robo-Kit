@@ -38,6 +38,8 @@ import com.st.robotics.ui.theme.OnPrimary
 import com.st.robotics.ui.theme.PrimaryColor
 import com.st.robotics.ui.theme.TertiaryColor
 import com.st.robotics.viewModels.ControllerViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.atan2
@@ -55,7 +57,7 @@ fun DirectionMotion(
 ) {
     var angle by remember { mutableFloatStateOf(0f) }
     var isDragging by remember { mutableStateOf(false) }
-    var lastSentAngle by remember { mutableIntStateOf(-1) }
+    var lastSentAngle by remember { mutableIntStateOf(0) }
     var shouldSendCommand by remember { mutableStateOf(false) }
     var lastCommandTimestamp = System.currentTimeMillis()
     val coroutineScope = rememberCoroutineScope()
@@ -138,30 +140,33 @@ fun DirectionMotion(
                                 shouldSendCommand = false
                                 //1/2 SECOND DELAY FOR ANGLE CHANGE
 //                                    delay(500)
-                                shouldSendCommand = true
-                                if (isDisarmed.value == NavigationMode.DRIVE) {
-                                    val currentTime = System.currentTimeMillis()
-                                    val timeDifference = currentTime - lastCommandTimestamp
-                                    val angleInteger =  ((angle/10).roundToInt()*10.toDouble()).toInt()
-                                    if (angleInteger != lastSentAngle && timeDifference >= 300) {
-                                        if (angleInteger in 1..180) {
-                                            viewModel.sendCommand2(
-                                                featureName = RoboticsMovement.NAME,
-                                                deviceId = nodeId,
-                                                rotationAngle = angleInteger
-                                            )
-                                        } else if (angleInteger in 181..359) {
-                                            viewModel.sendCommand2(
-                                                featureName = RoboticsMovement.NAME,
-                                                deviceId = nodeId,
-                                                rotationAngle = angleInteger
-                                            )
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    shouldSendCommand = true
+                                    if (isDisarmed.value == NavigationMode.DRIVE) {
+                                        delay(300)
+                                        val currentTime = System.currentTimeMillis()
+                                        val timeDifference = currentTime - lastCommandTimestamp
+                                        val angleInteger =
+                                            ((angle / 10).roundToInt() * 10.toDouble()).toInt()
+                                        if (angleInteger != lastSentAngle && timeDifference >= 300) {
+                                            if (angleInteger in 1..180) {
+                                                viewModel.sendCommand2(
+                                                    featureName = RoboticsMovement.NAME,
+                                                    deviceId = nodeId,
+                                                    rotationAngle = angleInteger
+                                                )
+                                            } else if (angleInteger in 181..359) {
+                                                viewModel.sendCommand2(
+                                                    featureName = RoboticsMovement.NAME,
+                                                    deviceId = nodeId,
+                                                    rotationAngle = angleInteger
+                                                )
+                                            }
+                                            lastSentAngle = angleInteger
+                                            lastCommandTimestamp = currentTime
                                         }
-                                        lastSentAngle = angleInteger
-                                        lastCommandTimestamp = currentTime
                                     }
                                 }
-
                             }
                         }
 
