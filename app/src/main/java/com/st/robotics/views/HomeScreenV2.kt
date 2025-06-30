@@ -372,23 +372,23 @@ fun InformationDialog(showDialog : MutableState<Boolean>){
                         )
                     }
                     Spacer(modifier = Modifier.height(10.dp))
-                    Surface(modifier = Modifier
-                        .clickable {
-//                            showHelpDialog.value = true
-                            showPdf.value = true
-                        }
-                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
-                        .fillMaxWidth(0.8f),
-                        color = PrimaryColor
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.help),
-                            color = OnPrimary,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
-                            textAlign = TextAlign.Center
-                        )
-                    }
+//                    Surface(modifier = Modifier
+//                        .clickable {
+////                            showHelpDialog.value = true
+//                            showPdf.value = true
+//                        }
+//                        .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
+//                        .fillMaxWidth(0.8f),
+//                        color = PrimaryColor
+//                    ) {
+//                        Text(
+//                            text = stringResource(id = R.string.help),
+//                            color = OnPrimary,
+//                            fontSize = 12.sp,
+//                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp),
+//                            textAlign = TextAlign.Center
+//                        )
+//                    }
                 }
 
             }

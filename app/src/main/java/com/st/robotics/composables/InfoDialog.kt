@@ -124,16 +124,16 @@ fun InfoDialog(){
             ) {
                 Text(text = "Privacy Policy",color = OnPrimary, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 6.dp), textAlign = TextAlign.Center)
             }
-            Spacer(modifier = Modifier.height(10.dp))
-            Surface(modifier = Modifier
-                .clickable {
-                }
-                .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
-                .fillMaxWidth(0.8f),
-                color = PrimaryColor
-            ) {
-                Text(text = "Help",color = OnPrimary, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 6.dp), textAlign = TextAlign.Center)
-            }
+//            Spacer(modifier = Modifier.height(10.dp))
+//            Surface(modifier = Modifier
+//                .clickable {
+//                }
+//                .clip(RoundedCornerShape(12.dp, 3.dp, 12.dp, 3.dp))
+//                .fillMaxWidth(0.8f),
+//                color = PrimaryColor
+//            ) {
+//                Text(text = "Help",color = OnPrimary, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 8.dp,vertical = 6.dp), textAlign = TextAlign.Center)
+//            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.st.robotics.composables
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,6 +61,8 @@ import com.st.robotics.ui.theme.TertiaryColor
 import com.st.robotics.viewModels.PlotViewModel
 import com.st.robotics.views.SceneDescriptor
 import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun ControllerSensorData(
@@ -71,88 +74,78 @@ fun ControllerSensorData(
     var yLineData by remember { mutableStateOf(listOf<Point>()) }
     var zLineData by remember { mutableStateOf(listOf<Point>()) }
 
-    //to set max and min for Y axis
-    var maxLineData1 by remember { mutableStateOf(listOf<Point>()) }
-    var minLineData1 by remember { mutableStateOf(listOf<Point>()) }
-
-    var maxLineData2 by remember { mutableStateOf(listOf<Point>()) }
-    var minLineData2 by remember { mutableStateOf(listOf<Point>()) }
-
-    var maxLineData3 by remember { mutableStateOf(listOf<Point>()) }
-    var minLineData3 by remember { mutableStateOf(listOf<Point>()) }
-
     var isStart by remember {mutableStateOf(true)}
 
     var xValue by remember { mutableFloatStateOf(0f) }
     var xAxisMinValue by remember { mutableFloatStateOf(0f) }
-    val visibleRange = 50f
-    val MIN_NUMBER_OF_STEPS = 2
+    val visibleRange = 105f
+    val MIN_NUMBER_OF_STEPS = 20
 
     val xAxisData = AxisData.Builder()
-        .steps(10)
-        .axisStepSize(2.8.dp)
-        .labelAndAxisLinePadding(5.dp)
+        .steps(5)
+        .axisStepSize(3.dp)
+        .labelAndAxisLinePadding(2.dp)
         .backgroundColor(PrimaryColor)
         .axisLineColor(Color.Transparent)
         .build()
 
+    // Calculate tight Y-axis ranges with only 3 labels around actual data
     val yMinValue1 by remember {
         derivedStateOf {
-            minOf(
-                xLineData.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f,
-                minLineData1.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f,
-            )
+            val minVal = xLineData.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f
+            val maxVal = xLineData.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f
+            val center = (minVal + maxVal) / 2
+            center - 10f // Show 10 units below center
         }
     }
     val yMaxValue1 by remember {
         derivedStateOf {
-            maxOf(
-                xLineData.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f,
-                maxLineData1.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f
-            )
+            val minVal = xLineData.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f
+            val maxVal = xLineData.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f
+            val center = (minVal + maxVal) / 2
+            center + 10f // Show 10 units above center
         }
     }
 
     val yMinValue2 by remember {
         derivedStateOf {
-            minOf(
-                yLineData.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f,
-                minLineData2.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f,
-            )
+            val minVal = yLineData.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f
+            val maxVal = yLineData.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f
+            val center = (minVal + maxVal) / 2
+            center - 10f
         }
     }
     val yMaxValue2 by remember {
         derivedStateOf {
-            maxOf(
-                yLineData.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f,
-                maxLineData2.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f
-            )
+            val minVal = yLineData.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f
+            val maxVal = yLineData.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f
+            val center = (minVal + maxVal) / 2
+            center + 10f
         }
     }
 
     val yMinValue3 by remember {
         derivedStateOf {
-            minOf(
-                zLineData.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f,
-                minLineData3.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f,
-            )
+            val minVal = zLineData.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f
+            val maxVal = zLineData.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f
+            val center = (minVal + maxVal) / 2
+            center - 10f
         }
     }
     val yMaxValue3 by remember {
         derivedStateOf {
-            maxOf(
-                zLineData.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f,
-                maxLineData3.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f
-            )
+            val minVal = zLineData.takeLast(visibleRange.toInt()).minOfOrNull { it.y } ?: 0f
+            val maxVal = zLineData.takeLast(visibleRange.toInt()).maxOfOrNull { it.y } ?: 0f
+            val center = (minVal + maxVal) / 2
+            center + 10f
         }
     }
 
     val yAxisData1 = AxisData.Builder()
-        .steps(minOf(ceil((yMaxValue1 - yMinValue1) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
+        .steps(3) // Fixed to 3 steps
         .labelData { index ->
             val range = yMaxValue1 - yMinValue1
-            val numberOfSteps = minOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
-            val stepSize = range / numberOfSteps
+            val stepSize = range / 2 // 2 intervals for 3 labels
             (yMinValue1 + index * stepSize).toInt().toString()
         }
         .axisLineColor(Color.Gray)
@@ -162,11 +155,10 @@ fun ControllerSensorData(
         .build()
 
     val yAxisData2 = AxisData.Builder()
-        .steps(minOf(ceil((yMaxValue2 - yMinValue2) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
+        .steps(3) // Fixed to 3 steps
         .labelData { index ->
             val range = yMaxValue2 - yMinValue2
-            val numberOfSteps = minOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
-            val stepSize = range / numberOfSteps
+            val stepSize = range / 2 // 2 intervals for 3 labels
             (yMinValue2 + index * stepSize).toInt().toString()
         }
         .axisLineColor(Color.Gray)
@@ -176,11 +168,10 @@ fun ControllerSensorData(
         .build()
 
     val yAxisData3 = AxisData.Builder()
-        .steps(minOf(ceil((yMaxValue3 - yMinValue3) / 1000).toInt(), MIN_NUMBER_OF_STEPS))
+        .steps(3) // Fixed to 3 steps
         .labelData { index ->
             val range = yMaxValue3 - yMinValue3
-            val numberOfSteps = minOf((range / 1000).toInt(), MIN_NUMBER_OF_STEPS)
-            val stepSize = range / numberOfSteps
+            val stepSize = range / 2 // 2 intervals for 3 labels
             (yMinValue3 + index * stepSize).toInt().toString()
         }
         .axisLineColor(Color.Gray)
@@ -189,21 +180,13 @@ fun ControllerSensorData(
         .axisLabelFontSize(10.sp)
         .build()
 
-    //USED 3 LINES TO SET THE MAX,MIN & ACTUAL DATA OF THE CHART BEING PLOTTED
+    // Simplified LineChartData - only use actual data points
     val lineChartData1 = LineChartData(
         linePlotData = LinePlotData(
             lines = listOf(
                 Line(
-                    dataPoints = minLineData1.takeLast(visibleRange.toInt()),
-                    lineStyle = LineStyle(color = Color.Transparent, width = 1f, lineType = LineType.Straight())
-                ),
-                Line(
                     dataPoints = xLineData.takeLast(visibleRange.toInt()),
                     lineStyle = LineStyle(color = ST_Magenta, width = 4f, lineType = LineType.Straight())
-                ),
-                Line(
-                    dataPoints = maxLineData1.takeLast(visibleRange.toInt()),
-                    lineStyle = LineStyle(color = Color.Transparent, width = 1f, lineType = LineType.Straight())
                 )
             ),
         ),
@@ -229,19 +212,10 @@ fun ControllerSensorData(
         linePlotData = LinePlotData(
             lines = listOf(
                 Line(
-                    dataPoints = minLineData2.takeLast(visibleRange.toInt()),
-                    lineStyle = LineStyle(color = Color.Transparent, width = 1f, lineType = LineType.Straight())
-                ),
-                Line(
                     dataPoints = yLineData.takeLast(visibleRange.toInt()),
                     lineStyle = LineStyle(color = SecondaryColor, width = 4f, lineType = LineType.Straight())
-                ),
-                Line(
-                    dataPoints = maxLineData2.takeLast(visibleRange.toInt()),
-                    lineStyle = LineStyle(color = Color.Transparent, width = 1f, lineType = LineType.Straight())
                 )
             ),
-
         ),
         xAxisData = xAxisData,
         yAxisData = yAxisData2,
@@ -265,16 +239,8 @@ fun ControllerSensorData(
         linePlotData = LinePlotData(
             lines = listOf(
                 Line(
-                    dataPoints = minLineData3.takeLast(visibleRange.toInt()),
-                    lineStyle = LineStyle(color = Color.Transparent, width = 1f, lineType = LineType.Straight())
-                ),
-                Line(
                     dataPoints = zLineData.takeLast(visibleRange.toInt()),
                     lineStyle = LineStyle(color = TertiaryColor, width = 4f, lineType = LineType.Straight())
-                ),
-                Line(
-                    dataPoints = maxLineData3.takeLast(visibleRange.toInt()),
-                    lineStyle = LineStyle(color = Color.Transparent, width = 1f, lineType = LineType.Straight())
                 )
             ),
         ),
@@ -294,7 +260,6 @@ fun ControllerSensorData(
         isZoomAllowed = false,
         paddingRight = 0.dp,
         containerPaddingEnd = 0.dp
-
     )
 
     val featureName = listOf(Acceleration.NAME,Gyroscope.NAME, Magnetometer.NAME)
@@ -303,11 +268,6 @@ fun ControllerSensorData(
     val selectedFeature = remember { mutableStateOf(featureName[itemPosition.intValue]) }
 
     val featureUnits = mapOf("Gyroscope" to "dps", "Magnetometer" to "mGa", "Accelerometer" to "mg")
-
-//    BackHandler {
-//        viewModel.disconnectFeature(deviceId, selectedFeature.value)
-//        navController.popBackStack()
-//    }
 
     var lastX by remember { mutableStateOf<Float?>(null) }
     var lastY by remember { mutableStateOf<Float?>(null) }
@@ -341,7 +301,7 @@ fun ControllerSensorData(
                     .fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
 
-                ) {
+                    ) {
                     Box(
                         modifier = Modifier
                     ) {
@@ -393,35 +353,11 @@ fun ControllerSensorData(
                     }
                 }
 
-//                if (selectedFeature.value != SceneDescription.NAME) {
-//                    Row(
-//                        Modifier
-//                            .fillMaxWidth(),
-//                        horizontalArrangement = Arrangement.Center) {
-//                        Text(text = "X: 1,", color = ST_Magenta, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-//                        Spacer(modifier = Modifier.width(5.dp))
-//                        Text(text = "Y: 1,", color = SecondaryColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-//                        Spacer(modifier = Modifier.width(5.dp))
-//                        Text(text = "Z: 1", color = TertiaryColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-//
-////                        Text(text = "X: $x ${featureUnits[selectedFeature.value]},", color = ST_Magenta, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-////                        Spacer(modifier = Modifier.width(5.dp))
-////                        Text(text = "Y: $y ${featureUnits[selectedFeature.value]},", color = SecondaryColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-////                        Spacer(modifier = Modifier.width(5.dp))
-////                        Text(text = "Z: $z ${featureUnits[selectedFeature.value]}", color = TertiaryColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-//                    }
-//                }
-
                 if (selectedFeature.value != SceneDescription.NAME &&xLineData.isNotEmpty() && yLineData.isNotEmpty() && zLineData.isNotEmpty()) {
                     Row(
                         Modifier
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center) {
-//                        Text(text = "X: 1,", color = ST_Magenta, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-//                        Spacer(modifier = Modifier.width(5.dp))
-//                        Text(text = "Y: 1,", color = SecondaryColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-//                        Spacer(modifier = Modifier.width(5.dp))
-//                        Text(text = "Z: 1", color = TertiaryColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
 
                         Text(text = "X: $x ${featureUnits[selectedFeature.value]},", color = ST_Magenta, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.width(5.dp))
@@ -432,8 +368,6 @@ fun ControllerSensorData(
                 }
             }
         }
-
-
 
         if (selectedFeature.value != SceneDescription.NAME &&xLineData.isNotEmpty() && yLineData.isNotEmpty() && zLineData.isNotEmpty()) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -458,7 +392,6 @@ fun ControllerSensorData(
                         .background(Color.White)
                         .fillMaxHeight(),
                         verticalAlignment = Alignment.CenterVertically,) {
-
 
                         LineChart(
                             modifier = Modifier
@@ -500,24 +433,11 @@ fun ControllerSensorData(
             val values = logValue.split(",").map { it.trim().toFloat() }
             if (values.size == 3) {
                 val (x, y, z) = values
-                var buffer = 500f
 
-                if(selectedFeature.value == Gyroscope.NAME){
-                    buffer = 1000f
-                }
-
+                // Simply add the actual data points without artificial buffer
                 xLineData = xLineData + Point(xValue, x)
                 yLineData = yLineData + Point(xValue, y)
                 zLineData = zLineData + Point(xValue, z)
-
-                maxLineData1 = maxLineData1 + Point(xValue, x + buffer)
-                minLineData1 = minLineData1 + Point(xValue, x - buffer)
-
-                maxLineData2 = maxLineData2 + Point(xValue, y + buffer)
-                minLineData2 = minLineData2 + Point(xValue, y - buffer)
-
-                maxLineData3 = maxLineData3 + Point(xValue,z + buffer)
-                minLineData3 = minLineData3 + Point(xValue, z - buffer)
 
                 xValue += 1f
                 if (xValue > visibleRange) {
@@ -531,12 +451,8 @@ fun ControllerSensorData(
         xLineData = emptyList()
         yLineData = emptyList()
         zLineData = emptyList()
-        maxLineData1 = emptyList()
-        minLineData1 = emptyList()
-        maxLineData2 = emptyList()
-        minLineData2 = emptyList()
-        maxLineData3 = emptyList()
-        minLineData3 = emptyList()
+        xValue = 0f
+        xAxisMinValue = 0f
 
         viewModel.observeFeature(deviceId = deviceId, featureName = selectedFeature.value)
     }

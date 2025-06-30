@@ -279,7 +279,13 @@ class ControllerViewModel @Inject constructor(
             if(feature is RoboticsMovement){
                 lastSpeed = speed
                 lastAngle = rotationAngle
-                Log.d("TAG","Angle = ${angleToPercentage(lastAngle)} , Speed = $lastSpeed,linearAngle = $linearAngle")
+
+                // Check if this is a curve command (both angle and speed provided)
+                var isCurveCommand = rotationAngle != 0 && speed != 0
+
+               // Log.d("TAG","Angle = ${angleToPercentage(lastAngle)} , Speed = $lastSpeed,linearAngle = $linearAngle")
+
+                // Send the initial command
                 blueManager.writeFeatureCommand(
                     nodeId = deviceId,
                     featureCommand = MoveCommandDifferentialDriveArticulatingMove(
@@ -292,6 +298,24 @@ class ControllerViewModel @Inject constructor(
                     ),
                     responseTimeout = 1L
                 )
+
+                // If it's a curve command, resend ONLY the speed command after a delay
+                if (isCurveCommand) {
+                    // Add delay to allow curve to complete
+                    isCurveCommand = false
+
+                    delay(2000) // Adjust this delay based on your rover's curve completion time
+
+                    //Log.d("TAG", "Resending speed command after curve completion, $lastSpeed")
+                    // Send ONLY speed command (no angle) to continue straight movement
+                    sendCommand2(
+                        featureName = featureName,
+                        deviceId = deviceId,
+                        rotationAngle = 0, // No rotation for straight movement
+                        linearAngle = linearAngle,
+                        speed = lastSpeed
+                    )
+                }
             }
         }
     }
